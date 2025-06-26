@@ -44,6 +44,7 @@ import io.ballerina.flowmodelgenerator.extension.request.CopilotContextRequest;
 import io.ballerina.flowmodelgenerator.extension.request.EnclosedFuncDefRequest;
 import io.ballerina.flowmodelgenerator.extension.request.FilePathRequest;
 import io.ballerina.flowmodelgenerator.extension.request.FlowModelAvailableNodesRequest;
+import io.ballerina.flowmodelgenerator.extension.request.FlowModelDifferenceRequest;
 import io.ballerina.flowmodelgenerator.extension.request.FlowModelGeneratorRequest;
 import io.ballerina.flowmodelgenerator.extension.request.FlowModelNodeTemplateRequest;
 import io.ballerina.flowmodelgenerator.extension.request.FlowModelSourceGeneratorRequest;
@@ -91,6 +92,7 @@ import org.eclipse.lsp4j.services.LanguageServer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -261,6 +263,45 @@ public class FlowModelGeneratorService implements ExtendedLanguageServerService 
             } catch (Throwable e) {
                 return response;
             }
+        });
+    }
+
+    @JsonRequest
+    public CompletableFuture<FlowModelGeneratorResponse> flowModelDifference(FlowModelDifferenceRequest request) {
+        return CompletableFuture.supplyAsync(() -> {
+            FlowModelGeneratorResponse response = new FlowModelGeneratorResponse();
+            try {
+                Path projectPath = Path.of(request.projectPath());
+                WorkspaceManager workspaceManager = this.workspaceManagerProxy.get();
+
+                // Load the project
+                Project project = workspaceManager.loadProject(projectPath);
+
+                // Process each file in the fileContentMap
+                for (Map.Entry<String, String> entry : request.fileContentMap().entrySet()) {
+                    String fileName = entry.getKey();
+                    String fileContent = entry.getValue();
+                    Path filePath = projectPath.resolve(fileName);
+
+                    // Create temporary file with new content
+                    Optional<SemanticModel> semanticModel = workspaceManager.semanticModel(filePath);
+                    Optional<Document> document = workspaceManager.document(filePath);
+
+                    if (semanticModel.isEmpty() || document.isEmpty()) {
+                        continue;
+                    }
+
+                    // TODO: Implement difference calculation logic
+                    // This is a placeholder for the actual difference calculation
+                    ModelGenerator modelGenerator = new ModelGenerator(project, semanticModel.get(), filePath);
+                    JsonElement flowModel = modelGenerator.getModuleNodes();
+                    response.setFlowDesignModel(flowModel);
+                    break; // For now, process only the first file
+                }
+            } catch (Throwable e) {
+                response.setError(e);
+            }
+            return response;
         });
     }
 

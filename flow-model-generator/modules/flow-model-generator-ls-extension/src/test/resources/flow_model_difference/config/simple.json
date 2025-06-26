@@ -1,0 +1,9 @@
+{
+  "fileContentMap": {
+    "main.bal": "function main() {\n    string message = \"Hello\";\n    string result = message + \", World!\";\n    io:println(result);\n}"
+  },
+  "mainFile": "source.bal",
+  "description": "Test flow model generation for single file with main function",
+  "diagram": {}
+}
+
