@@ -37,6 +37,8 @@ import io.ballerina.flowmodelgenerator.core.SuggestedModelGenerator;
 import io.ballerina.flowmodelgenerator.core.analyzers.function.ModuleNodeAnalyzer;
 import io.ballerina.flowmodelgenerator.core.diagnostics.DiagnosticRequest;
 import io.ballerina.flowmodelgenerator.core.diagnostics.DiagnosticsDebouncer;
+import io.ballerina.flowmodelgenerator.core.difference.DifferenceDebouncer;
+import io.ballerina.flowmodelgenerator.core.difference.DifferenceRequest;
 import io.ballerina.flowmodelgenerator.core.search.SearchCommand;
 import io.ballerina.flowmodelgenerator.core.utils.FileSystemUtils;
 import io.ballerina.flowmodelgenerator.extension.request.ComponentDeleteRequest;
@@ -271,33 +273,21 @@ public class FlowModelGeneratorService implements ExtendedLanguageServerService 
         return CompletableFuture.supplyAsync(() -> {
             FlowModelGeneratorResponse response = new FlowModelGeneratorResponse();
             try {
-                Path projectPath = Path.of(request.projectPath());
                 WorkspaceManager workspaceManager = this.workspaceManagerProxy.get();
-
-                // Load the project
-                Project project = workspaceManager.loadProject(projectPath);
-
-                // Process each file in the fileContentMap
-                for (Map.Entry<String, String> entry : request.fileContentMap().entrySet()) {
-                    String fileName = entry.getKey();
-                    String fileContent = entry.getValue();
-                    Path filePath = projectPath.resolve(fileName);
-
-                    // Create temporary file with new content
-                    Optional<SemanticModel> semanticModel = workspaceManager.semanticModel(filePath);
-                    Optional<Document> document = workspaceManager.document(filePath);
-
-                    if (semanticModel.isEmpty() || document.isEmpty()) {
-                        continue;
-                    }
-
-                    // TODO: Implement difference calculation logic
-                    // This is a placeholder for the actual difference calculation
-                    ModelGenerator modelGenerator = new ModelGenerator(project, semanticModel.get(), filePath);
-                    JsonElement flowModel = modelGenerator.getModuleNodes();
-                    response.setFlowDesignModel(flowModel);
-                    break; // For now, process only the first file
-                }
+                
+                // Create a difference request
+                DifferenceRequest differenceRequest = new DifferenceRequest(
+                    request.projectPath(), 
+                    request.fileContentMap(), 
+                    workspaceManager
+                );
+                
+                // Use the debouncer to handle the request
+                JsonElement result = DifferenceDebouncer.getInstance()
+                    .debounce(differenceRequest)
+                    .get(); // This will block until the debounced task completes
+                    
+                response.setFlowDesignModel(result);
             } catch (Throwable e) {
                 response.setError(e);
             }
