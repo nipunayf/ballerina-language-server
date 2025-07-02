@@ -142,6 +142,12 @@ public class DifferenceRequest implements Callable<JsonElement> {
                 }
             }
 
+            // Generate an error message o if the respective function definition node is not found
+            if (targetFunctionNode == null) {
+                throw new IllegalArgumentException("Function '" + functionName + "' not found in file '" +
+                        fileName + "'.");
+            }
+
             ModelGenerator modelGenerator = new ModelGenerator(project, semanticModel.get(), targetFilePath);
             JsonElement diagram = modelGenerator.getFlowModel(document.get(), targetFunctionNode, null, null);
             return diagram;

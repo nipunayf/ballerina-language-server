@@ -21,7 +21,9 @@ package io.ballerina.flowmodelgenerator.extension;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import io.ballerina.flowmodelgenerator.extension.request.FlowModelDifferenceRequest;
+import io.ballerina.flowmodelgenerator.extension.request.FlowModelGeneratorRequest;
 import io.ballerina.modelgenerator.commons.AbstractLSTest;
+import io.ballerina.tools.text.LinePosition;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -43,7 +45,21 @@ public class FlowModelDifferenceTest extends AbstractLSTest {
         Path configJsonPath = configDir.resolve(config);
         TestConfig testConfig = gson.fromJson(Files.newBufferedReader(configJsonPath), TestConfig.class);
 
-        FlowModelDifferenceRequest request = new FlowModelDifferenceRequest(testConfig.fileContentMap());
+        FlowModelGeneratorRequest flowModelRequest = new FlowModelGeneratorRequest(
+                getSourcePath(testConfig.projectPath()),
+                testConfig.start(),
+                testConfig.end()
+        );
+        JsonObject flowModelResponse =
+                getResponse(flowModelRequest, "flowDesignService/getFlowModel").getAsJsonObject("flowModel");
+
+        FlowModelDifferenceRequest request = new FlowModelDifferenceRequest(
+                getSourcePath(testConfig.projectPath()),
+                testConfig.fileContentMap(),
+                testConfig.fileName(),
+                testConfig.functionName(),
+                flowModelResponse
+        );
         JsonObject jsonModel = getResponseAndCloseFile(request, testConfig.projectPath()).getAsJsonObject("flowModel");
 
         // Assert only the file name since the absolute path may vary depending on the machine
@@ -56,6 +72,7 @@ public class FlowModelDifferenceTest extends AbstractLSTest {
         boolean flowEquality = modifiedDiagram.equals(testConfig.diagram());
         if (!fileNameEquality || !flowEquality) {
             TestConfig updatedConfig = new TestConfig(testConfig.fileContentMap(), testConfig.projectPath(),
+                    testConfig.fileName(), testConfig.functionName(), testConfig.start(), testConfig.end(),
                     testConfig.description(), modifiedDiagram);
 //            updateConfig(configJsonPath, updatedConfig);
             compareJsonElements(modifiedDiagram, testConfig.diagram());
@@ -83,15 +100,28 @@ public class FlowModelDifferenceTest extends AbstractLSTest {
      *
      * @param fileContentMap A map where fileName is mapped to the content of the file
      * @param projectPath    The project path (used for test source resolution)
+     * @param fileName       The name of the file to identify the relevant flow
+     * @param functionName   The name of the function to identify the relevant flow
+     * @param start          The start position of the range
+     * @param end            The end position of the range
      * @param description    The description of the test
      * @param diagram        The expected diagram for the given inputs
      * @since 1.0.0
      */
-    private record TestConfig(Map<String, String> fileContentMap, String projectPath, String description, 
+    private record TestConfig(Map<String, String> fileContentMap, String projectPath, String fileName,
+                              String functionName, LinePosition start, LinePosition end, String description,
                               JsonObject diagram) {
 
         public String description() {
             return description == null ? "" : description;
+        }
+
+        public String fileName() {
+            return fileName == null ? "" : fileName;
+        }
+
+        public String functionName() {
+            return functionName == null ? "" : functionName;
         }
     }
 }
