@@ -94,7 +94,6 @@ import org.eclipse.lsp4j.services.LanguageServer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -274,19 +273,21 @@ public class FlowModelGeneratorService implements ExtendedLanguageServerService 
             FlowModelGeneratorResponse response = new FlowModelGeneratorResponse();
             try {
                 WorkspaceManager workspaceManager = this.workspaceManagerProxy.get();
-                
+
                 // Create a difference request
                 DifferenceRequest differenceRequest = new DifferenceRequest(
-                    request.projectPath(), 
-                    request.fileContentMap(), 
-                    workspaceManager
+                        request.projectPath(),
+                        request.fileContentMap(),
+                        request.fileName(),
+                        request.functionName(),
+                        workspaceManager
                 );
-                
+
                 // Use the debouncer to handle the request
                 JsonElement result = DifferenceDebouncer.getInstance()
-                    .debounce(differenceRequest)
-                    .get(); // This will block until the debounced task completes
-                    
+                        .debounce(differenceRequest)
+                        .get(); // This will block until the debounced task completes
+
                 response.setFlowDesignModel(result);
             } catch (Throwable e) {
                 response.setError(e);

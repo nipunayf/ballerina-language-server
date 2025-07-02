@@ -20,9 +20,14 @@ package io.ballerina.flowmodelgenerator.core.difference;
 
 import com.google.gson.JsonElement;
 import io.ballerina.compiler.api.SemanticModel;
+import io.ballerina.compiler.syntax.tree.FunctionDefinitionNode;
+import io.ballerina.compiler.syntax.tree.ModuleMemberDeclarationNode;
+import io.ballerina.compiler.syntax.tree.ModulePartNode;
+import io.ballerina.compiler.syntax.tree.NodeList;
 import io.ballerina.flowmodelgenerator.core.ModelGenerator;
 import io.ballerina.projects.Document;
 import io.ballerina.projects.Project;
+import io.ballerina.projects.ProjectKind;
 import io.ballerina.tools.text.TextDocument;
 import org.ballerinalang.langserver.commons.eventsync.exceptions.EventSyncException;
 import org.ballerinalang.langserver.commons.workspace.WorkspaceDocumentException;
@@ -36,8 +41,8 @@ import java.util.concurrent.Callable;
 
 /**
  * Represents a request for obtaining flow model differences by applying file content changes to a shadowed project.
- * This class implements {@link Callable}, and returns a {@link JsonElement} with the flow model after applying 
- * the specified file changes.
+ * This class implements {@link Callable}, and returns a {@link JsonElement} with the flow model after applying the
+ * specified file changes.
  *
  * @since 1.1.0
  */
@@ -45,13 +50,17 @@ public class DifferenceRequest implements Callable<JsonElement> {
 
     private final String projectPath;
     private final Map<String, String> fileContentMap;
+    private final String fileName;
+    private final String functionName;
     private final WorkspaceManager workspaceManager;
     private final Map<Path, TextDocument> originalDocuments;
 
-    public DifferenceRequest(String projectPath, Map<String, String> fileContentMap, 
-                            WorkspaceManager workspaceManager) {
+    public DifferenceRequest(String projectPath, Map<String, String> fileContentMap,
+                             String fileName, String functionName, WorkspaceManager workspaceManager) {
         this.projectPath = projectPath;
         this.fileContentMap = fileContentMap;
+        this.fileName = fileName;
+        this.functionName = functionName;
         this.workspaceManager = workspaceManager;
         this.originalDocuments = new HashMap<>();
     }
@@ -62,59 +71,87 @@ public class DifferenceRequest implements Callable<JsonElement> {
             Path projectDir = Path.of(projectPath);
             Project project = workspaceManager.loadProject(projectDir);
 
-            // Apply file content changes to the project
-            for (Map.Entry<String, String> entry : fileContentMap.entrySet()) {
-                String fileName = entry.getKey();
-                String fileContent = entry.getValue();
-                Path filePath = projectDir.resolve(fileName);
-
-                Optional<Document> document = workspaceManager.document(filePath);
-                if (document.isEmpty()) {
-                    continue;
+            // When the project is a single file
+            Path targetFilePath;
+            if (project.kind() == ProjectKind.SINGLE_FILE_PROJECT) {
+                if (fileContentMap.size() != 1) {
+                    throw new IllegalArgumentException(
+                            "Single file project should have exactly one file content change.");
                 }
-
-                // Store original document for reverting later
-                originalDocuments.put(filePath, document.get().textDocument());
-
-                // Apply the new content to the document
+                targetFilePath = projectDir;
+                String fileContent = fileContentMap.values().iterator().next();
+                Optional<Document> document = workspaceManager.document(projectDir);
+                if (document.isEmpty()) {
+                    throw new WorkspaceDocumentException("Document not found for the single file project.");
+                }
+                originalDocuments.put(projectDir, document.get().textDocument());
                 document.get()
                         .modify()
                         .withContent(fileContent)
                         .apply();
-            }
+            } else {
+                // Apply file content changes to the project
+                targetFilePath = projectDir.resolve(fileName);
+                for (Map.Entry<String, String> entry : fileContentMap.entrySet()) {
+                    String entryFileName = entry.getKey();
+                    String fileContent = entry.getValue();
+                    Path filePath = projectDir.resolve(entryFileName);
 
-            // Generate flow model for the first modified file
-            // (This matches the current implementation behavior)
-            for (Map.Entry<String, String> entry : fileContentMap.entrySet()) {
-                String fileName = entry.getKey();
-                Path filePath = projectDir.resolve(fileName);
+                    Optional<Document> document = workspaceManager.document(filePath);
+                    if (document.isEmpty()) {
+                        continue;
+                    }
 
-                Optional<SemanticModel> semanticModel = workspaceManager.semanticModel(filePath);
-                Optional<Document> document = workspaceManager.document(filePath);
+                    // Store original document for reverting later
+                    originalDocuments.put(filePath, document.get().textDocument());
 
-                if (semanticModel.isEmpty() || document.isEmpty()) {
-                    continue;
+                    // Apply the new content to the document
+                    document.get()
+                            .modify()
+                            .withContent(fileContent)
+                            .apply();
                 }
+            }
+            Optional<SemanticModel> semanticModel = workspaceManager.semanticModel(targetFilePath);
+            Optional<Document> document = workspaceManager.document(targetFilePath);
 
-                // Generate the flow model with the updated content
-                ModelGenerator modelGenerator = new ModelGenerator(project, semanticModel.get(), filePath);
-                JsonElement flowModel = modelGenerator.getModuleNodes();
-                return flowModel;
+            if (semanticModel.isEmpty() || document.isEmpty()) {
+                return null;
             }
 
-            return null;
+            // Find the new line range of the function
+            ModulePartNode modulePartNode = document.get().syntaxTree().rootNode();
+            NodeList<ModuleMemberDeclarationNode> members = modulePartNode.members();
+
+            // Find the function node with the matching name
+            ModuleMemberDeclarationNode targetFunctionNode = null;
+            for (ModuleMemberDeclarationNode member : members) {
+                if (member instanceof FunctionDefinitionNode functionDefinitionNode) {
+                    if (functionDefinitionNode.functionName().text().equals(functionName)) {
+                        targetFunctionNode = member;
+                        break;
+                    }
+                }
+            }
+
+            ModelGenerator modelGenerator = new ModelGenerator(project, semanticModel.get(), targetFilePath);
+            JsonElement diagram = modelGenerator.getFlowModel(document.get(), targetFunctionNode, null, null);
+            return diagram;
         } catch (WorkspaceDocumentException | EventSyncException e) {
             return null;
         }
     }
 
     /**
-     * Generates a unique key for this difference request based on project path and file content map.
+     * Generates a unique key for this difference request based on project path, file content map, fileName, and
+     * functionName.
      *
      * @return a unique key for this request
      */
     public String getKey() {
-        return projectPath + ":" + fileContentMap.hashCode();
+        return projectPath + ":" + fileContentMap.hashCode() + ":" +
+                (fileName != null ? fileName : "") + ":" +
+                (functionName != null ? functionName : "");
     }
 
     /**
@@ -124,11 +161,11 @@ public class DifferenceRequest implements Callable<JsonElement> {
         for (Map.Entry<Path, TextDocument> entry : originalDocuments.entrySet()) {
             Path filePath = entry.getKey();
             TextDocument originalDoc = entry.getValue();
-            
-            workspaceManager.document(filePath).ifPresent(document -> 
-                document.modify()
-                    .withContent(String.join(System.lineSeparator(), originalDoc.textLines()))
-                    .apply()
+
+            workspaceManager.document(filePath).ifPresent(document ->
+                    document.modify()
+                            .withContent(String.join(System.lineSeparator(), originalDoc.textLines()))
+                            .apply()
             );
         }
         originalDocuments.clear();

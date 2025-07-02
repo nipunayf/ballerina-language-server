@@ -107,6 +107,22 @@ public class ModelGenerator {
         int end = textDocument.textPositionFrom(lineRange.endLine());
         NonTerminalNode canvasNode = modulePartNode.findNode(TextRange.from(start, end - start), true);
 
+        return getFlowModel(document, canvasNode, dataMappingDoc, functionsDoc);
+    }
+
+    /**
+     * Generates a flow model for the given canvas node.
+     *
+     * @param document the document containing the canvas node
+     * @param canvasNode the canvas node to analyze
+     * @param dataMappingDoc document containing data mapping functions
+     * @param functionsDoc document containing natural functions
+     * @return JSON representation of the flow model
+     */
+    public JsonElement getFlowModel(Document document, NonTerminalNode canvasNode, Document dataMappingDoc,
+                                    Document functionsDoc) {
+        TextDocument textDocument = document.textDocument();
+
         // Obtain the connections visible at the module-level
         List<FlowNode> moduleConnections =
                 semanticModel.visibleSymbols(document, canvasNode.lineRange().startLine()).stream()
