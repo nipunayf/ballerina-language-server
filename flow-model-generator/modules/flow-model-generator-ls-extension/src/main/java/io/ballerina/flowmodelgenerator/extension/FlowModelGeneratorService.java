@@ -280,8 +280,8 @@ public class FlowModelGeneratorService implements ExtendedLanguageServerService 
                         request.fileContentMap(),
                         request.fileName(),
                         request.functionName(),
-                        workspaceManager
-                );
+                        request.currentFlowDiagram(),
+                        workspaceManager);
 
                 // Use the debouncer to handle the request
                 JsonElement result = DifferenceDebouncer.getInstance()

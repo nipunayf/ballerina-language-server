@@ -2,10 +2,17 @@
   "fileContentMap": {
     "source.bal": "function main() {\n    string message = \"Hello\";\n    string result = message + \", World!\";\n    io:println(result);\n}"
   },
+  "start": {
+    "line": 2,
+    "offset": 0
+  },
+  "end": {
+    "line": 5,
+    "offset": 1
+  },
   "projectPath": "source.bal",
   "fileName": "source.bal",
   "functionName": "main",
   "description": "Test flow model generation for single file with main function",
   "diagram": {}
 }
-

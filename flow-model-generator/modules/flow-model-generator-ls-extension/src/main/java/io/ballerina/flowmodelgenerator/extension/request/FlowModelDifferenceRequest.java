@@ -18,14 +18,14 @@
 
 package io.ballerina.flowmodelgenerator.extension.request;
 
-import io.ballerina.flowmodelgenerator.core.model.Diagram;
+import com.google.gson.JsonObject;
 
 import java.util.Map;
 
 /**
  * Represents the request for the flow model difference API.
  *
- * @param projectPath         the path to the project
+ * @param projectPath        the path to the project
  * @param fileContentMap     map where fileName is mapped to the content of the file
  * @param fileName           the name of the file to identify the relevant flow
  * @param functionName       the name of the function to identify the relevant flow
@@ -33,5 +33,5 @@ import java.util.Map;
  * @since 1.0.0
  */
 public record FlowModelDifferenceRequest(String projectPath, Map<String, String> fileContentMap,
-                                         String fileName, String functionName, Diagram currentFlowDiagram) {
+                                         String fileName, String functionName, JsonObject currentFlowDiagram) {
 }

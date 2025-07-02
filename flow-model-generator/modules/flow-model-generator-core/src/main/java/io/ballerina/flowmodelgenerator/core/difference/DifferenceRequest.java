@@ -18,13 +18,16 @@
 
 package io.ballerina.flowmodelgenerator.core.difference;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.syntax.tree.FunctionDefinitionNode;
 import io.ballerina.compiler.syntax.tree.ModuleMemberDeclarationNode;
 import io.ballerina.compiler.syntax.tree.ModulePartNode;
 import io.ballerina.compiler.syntax.tree.NodeList;
 import io.ballerina.flowmodelgenerator.core.ModelGenerator;
+import io.ballerina.flowmodelgenerator.core.model.Diagram;
 import io.ballerina.projects.Document;
 import io.ballerina.projects.Project;
 import io.ballerina.projects.ProjectKind;
@@ -48,19 +51,24 @@ import java.util.concurrent.Callable;
  */
 public class DifferenceRequest implements Callable<JsonElement> {
 
+    private static final Gson GSON = new Gson();
+
     private final String projectPath;
     private final Map<String, String> fileContentMap;
     private final String fileName;
     private final String functionName;
     private final WorkspaceManager workspaceManager;
     private final Map<Path, TextDocument> originalDocuments;
+    private final Diagram currentFlowDiagram;
 
     public DifferenceRequest(String projectPath, Map<String, String> fileContentMap,
-                             String fileName, String functionName, WorkspaceManager workspaceManager) {
+                             String fileName, String functionName, JsonObject currentFlowDiagram,
+                             WorkspaceManager workspaceManager) {
         this.projectPath = projectPath;
         this.fileContentMap = fileContentMap;
         this.fileName = fileName;
         this.functionName = functionName;
+        this.currentFlowDiagram = GSON.fromJson(currentFlowDiagram, Diagram.class);
         this.workspaceManager = workspaceManager;
         this.originalDocuments = new HashMap<>();
     }
