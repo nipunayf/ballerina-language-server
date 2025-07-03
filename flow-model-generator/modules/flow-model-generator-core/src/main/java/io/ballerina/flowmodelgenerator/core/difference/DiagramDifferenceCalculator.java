@@ -190,7 +190,7 @@ public class DiagramDifferenceCalculator {
     private static String getNodeSignature(FlowNode node) {
         // Use sourceCode as the primary identifier for node comparison
         if (node.codedata() != null && node.codedata().sourceCode() != null) {
-            return node.codedata().sourceCode();
+            return node.codedata().sourceCode().trim();
         }
 
         // Fallback to id if sourceCode is not available

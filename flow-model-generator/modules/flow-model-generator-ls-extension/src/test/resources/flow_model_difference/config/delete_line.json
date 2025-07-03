@@ -1,0 +1,115 @@
+{
+  "fileContentMap": {
+    "source.bal": "import ballerina/io;\n\npublic function main() {\n    io:println(message);\n}"
+  },
+  "projectPath": "source.bal",
+  "fileName": "source.bal",
+  "functionName": "main",
+  "start": {
+    "line": 2,
+    "offset": 0
+  },
+  "end": {
+    "line": 5,
+    "offset": 1
+  },
+  "description": "Test diff when an existing line is deleted from the function body.",
+  "diagram": {
+    "fileName": "source.bal",
+    "nodes": [
+      {
+        "id": "34504",
+        "metadata": {
+          "label": "Start"
+        },
+        "codedata": {
+          "node": "EVENT_START",
+          "lineRange": {
+            "fileName": "source.bal",
+            "startLine": {
+              "line": 2,
+              "offset": 23
+            },
+            "endLine": {
+              "line": 4,
+              "offset": 1
+            }
+          },
+          "sourceCode": "public function main() {\n    io:println(message);\n}"
+        },
+        "returning": false,
+        "diagnostics": {
+          "hasDiagnostics": true
+        },
+        "flags": 0,
+        "suggested": false
+      },
+      {
+        "id": "34868",
+        "metadata": {
+          "label": "println",
+          "description": "Prints `any`, `error` or string templates(such as `The respective int value is ${val}`) value(s) to the STDOUT\nfollowed by a new line.\n```ballerina\nio:println(\"Start processing the CSV file from \", srcFileName);\n```\n",
+          "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_io_1.8.0.png"
+        },
+        "codedata": {
+          "node": "FUNCTION_CALL",
+          "org": "ballerina",
+          "module": "io",
+          "packageName": "io",
+          "symbol": "println",
+          "version": "1.8.0",
+          "lineRange": {
+            "fileName": "source.bal",
+            "startLine": {
+              "line": 3,
+              "offset": 4
+            },
+            "endLine": {
+              "line": 3,
+              "offset": 24
+            }
+          },
+          "sourceCode": "io:println(message);"
+        },
+        "returning": false,
+        "properties": {
+          "values": {
+            "metadata": {
+              "label": "values",
+              "description": "The value(s) to be printed"
+            },
+            "valueType": "EXPRESSION_SET",
+            "valueTypeConstraint": "io:Printable",
+            "value": [
+              "message"
+            ],
+            "placeholder": "()",
+            "optional": false,
+            "editable": true,
+            "advanced": false,
+            "hidden": false,
+            "codedata": {
+              "kind": "REST_PARAMETER",
+              "originalName": "values"
+            },
+            "typeMembers": [
+              {
+                "type": "Printable",
+                "packageInfo": "ballerina:io:1.8.0",
+                "packageName": "io",
+                "kind": "ARRAY_TYPE",
+                "selected": false
+              }
+            ]
+          }
+        },
+        "diagnostics": {
+          "hasDiagnostics": true
+        },
+        "flags": 0,
+        "suggested": true
+      }
+    ],
+    "connections": []
+  }
+}
