@@ -149,8 +149,16 @@ public class DifferenceRequest implements Callable<JsonElement> {
             }
 
             ModelGenerator modelGenerator = new ModelGenerator(project, semanticModel.get(), targetFilePath);
-            JsonElement diagram = modelGenerator.getFlowModel(document.get(), targetFunctionNode, null, null);
-            return diagram;
+            JsonElement newDiagramJson = modelGenerator.getFlowModel(document.get(), targetFunctionNode, null, null);
+
+            // Convert JsonElement to Diagram object for processing
+            Diagram newDiagram = GSON.fromJson(newDiagramJson, Diagram.class);
+            
+            // Calculate differences and mark suggested changes
+            Diagram resultDiagram = DiagramDifferenceCalculator.computeDifferences(currentFlowDiagram, newDiagram);
+            
+            // Convert back to JsonElement for return
+            return GSON.toJsonTree(resultDiagram);
         } catch (WorkspaceDocumentException | EventSyncException e) {
             return null;
         }

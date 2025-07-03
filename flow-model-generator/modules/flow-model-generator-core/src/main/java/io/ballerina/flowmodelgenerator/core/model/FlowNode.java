@@ -33,6 +33,7 @@ import java.util.Optional;
  * @param properties  The properties of the node.
  * @param diagnostics The diagnostics of the node.
  * @param flags       The flags of the node.
+ * @param suggested   Whether the node is suggested (marked as different).
  * @since 1.0.0
  */
 public record FlowNode(
@@ -43,8 +44,22 @@ public record FlowNode(
         List<Branch> branches,
         Map<String, Property> properties,
         Diagnostics diagnostics,
-        int flags
+        int flags,
+        boolean suggested
 ) {
+
+    public FlowNode(
+        String id,
+        Metadata metadata,
+        Codedata codedata,
+        boolean returning,
+        List<Branch> branches,
+        Map<String, Property> properties,
+        Diagnostics diagnostics,
+        int flags
+    ) {
+        this(id, metadata, codedata, returning, branches, properties, diagnostics, flags, false);
+    }
 
     public Optional<Property> getProperty(String key) {
         return Optional.ofNullable(properties).map(props -> props.get(key));

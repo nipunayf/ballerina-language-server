@@ -1,6 +1,6 @@
 {
   "fileContentMap": {
-    "source.bal": "function main() {\n    string message = \"Hello\";\n    string result = message + \", World!\";\n    io:println(result);\n}"
+    "source.bal": "import ballerina/io;\npublic function main(string user) {\n    string message = \"Hello, World!\";\n    io:println(message + user);\n}"
   },
   "start": {
     "line": 2,
