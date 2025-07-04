@@ -11,7 +11,7 @@
  *  Unless required by applicable law or agreed to in writing,
  *  software distributed under the License is distributed on an
  *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *  KIND, either ex`pre`ss or implied.  See the License for the
+ *  KIND, either express or implied.  See the License for the
  *  specific language governing permissions and limitations
  *  under the License.
  */
@@ -35,7 +35,7 @@ import java.util.Set;
  * This implementation follows the Zhang-Shasha algorithm principles for computing tree edit distance and marks nodes as
  * suggested based on detected changes. Only marks nodes as suggested, not individual properties. Properties are not
  * considered in the difference calculation. EVENT_START nodes are excluded from the comparison. Node comparison is
- * based solely on sourceCode, not node IDs.
+ * based solely on sourceCode.
  *
  * @since 1.1.0
  */
@@ -51,24 +51,18 @@ public class DiagramDifferenceCalculator {
      */
     public static Diagram computeDifferences(Diagram currentDiagram, Diagram newDiagram) {
         if (currentDiagram == null || newDiagram == null) {
-            return markAllNodesAsSuggested(newDiagram);
+            throw new IllegalStateException("Both currentDiagram and newDiagram must be non-null.");
         }
 
-        // Build trees and node maps in a single pass over the nodes
+        // Build trees and node maps
         Map<String, FlowNode> currentNodeMap = new HashMap<>();
-        Set<String> currentSignatures = new HashSet<>();
-        TreeNode currentTree = buildTreeFromDiagram(currentDiagram, currentNodeMap, currentSignatures);
+        TreeNode currentTree = buildTreeFromDiagram(currentDiagram, currentNodeMap);
         Map<String, FlowNode> newNodeMap = new HashMap<>();
-        Set<String> addedNodeIds = new HashSet<>();
-        TreeNode newTree = buildTreeFromDiagram(newDiagram, newNodeMap, currentSignatures, addedNodeIds);
+        TreeNode newTree = buildTreeFromDiagram(newDiagram, newNodeMap);
 
         // Calculate tree edit distance using Zhang-Shasha algorithm
         ZhangShashaResult result = calculateZhangShashaEditDistance(currentTree, newTree);
-        Set<String> changedNodeIds = result.changedNodes;
-
-        // Combine changed and added nodes for suggested marking
-        Set<String> suggestedNodeIds = new HashSet<>(changedNodeIds);
-        suggestedNodeIds.addAll(addedNodeIds);
+        Set<String> suggestedNodeIds = result.suggestedNodes;
 
         // Mark suggested nodes
         List<FlowNode> updatedNodes = markSuggestedNodes(newDiagram.nodes(), suggestedNodeIds);
@@ -82,11 +76,11 @@ public class DiagramDifferenceCalculator {
     private static class ZhangShashaResult {
 
         final double editDistance;
-        final Set<String> changedNodes;
+        final Set<String> suggestedNodes;
 
-        ZhangShashaResult(double editDistance, Set<String> changedNodes) {
+        ZhangShashaResult(double editDistance, Set<String> suggestedNodes) {
             this.editDistance = editDistance;
-            this.changedNodes = changedNodes;
+            this.suggestedNodes = suggestedNodes;
         }
     }
 
@@ -135,52 +129,22 @@ public class DiagramDifferenceCalculator {
     }
 
     /**
-     * Builds a tree representation from a diagram for Zhang-Shasha tree edit distance calculation. Excludes EVENT_START
-     * nodes from the comparison. Properties are not included in the difference calculation.
-     * Overloaded to support single-pass added node detection using node signature.
+     * Builds a tree representation from a diagram for Zhang-Shasha tree edit distance calculation.
      */
-    private static TreeNode buildTreeFromDiagram(Diagram diagram, Map<String, FlowNode> nodeMap, Set<String> currentSignatures, Set<String> addedNodeIds) {
-        TreeNode root = new TreeNode("root", "root", false);
-        if (diagram.nodes() != null) {
-            for (FlowNode node : diagram.nodes()) {
-                if (node.codedata() != null && node.codedata().node() == NodeKind.EVENT_START) {
-                    continue;
-                }
-                nodeMap.put(node.id(), node);
-                String signature = getNodeSignature(node);
-                if (currentSignatures != null && !currentSignatures.contains(signature)) {
-                    addedNodeIds.add(node.id());
-                }
-                TreeNode nodeTree = new TreeNode(node.id(), signature, true);
-                root.addChild(nodeTree);
-            }
-        }
-        return root;
-    }
-
-    // Overload for the original usage (current diagram) - also builds signature set
-    private static TreeNode buildTreeFromDiagram(Diagram diagram, Map<String, FlowNode> nodeMap, Set<String> signatureSet) {
-        TreeNode root = new TreeNode("root", "root", false);
-        if (diagram.nodes() != null) {
-            for (FlowNode node : diagram.nodes()) {
-                if (node.codedata() != null && node.codedata().node() == NodeKind.EVENT_START) {
-                    continue;
-                }
-                nodeMap.put(node.id(), node);
-                String signature = getNodeSignature(node);
-                if (signatureSet != null) {
-                    signatureSet.add(signature);
-                }
-                TreeNode nodeTree = new TreeNode(node.id(), signature, true);
-                root.addChild(nodeTree);
-            }
-        }
-        return root;
-    }
-
-    // Overload for legacy usage (no signature set, no added node detection)
     private static TreeNode buildTreeFromDiagram(Diagram diagram, Map<String, FlowNode> nodeMap) {
-        return buildTreeFromDiagram(diagram, nodeMap, null, null);
+        TreeNode root = new TreeNode("root", "root", false);
+        if (diagram.nodes() != null) {
+            for (FlowNode node : diagram.nodes()) {
+                if (node.codedata() != null && node.codedata().node() == NodeKind.EVENT_START) {
+                    continue;
+                }
+                nodeMap.put(node.id(), node);
+                String signature = getNodeSignature(node);
+                TreeNode nodeTree = new TreeNode(node.id(), signature, true);
+                root.addChild(nodeTree);
+            }
+        }
+        return root;
     }
 
     /**
@@ -199,7 +163,7 @@ public class DiagramDifferenceCalculator {
 
     /**
      * Calculates tree edit distance using the Zhang-Shasha algorithm. This implementation follows the original
-     * Zhang-Shasha algorithm for computing minimum edit distance.
+     * Zhang-Shasha algorithm for computing minimum edit distance and determines suggested nodes (both changed and added).
      */
     private static ZhangShashaResult calculateZhangShashaEditDistance(TreeNode tree1, TreeNode tree2) {
         // Preprocess trees: assign postorder numbers and compute leftmost leaf descendants
@@ -218,11 +182,25 @@ public class DiagramDifferenceCalculator {
         // Initialize the forest distance matrix
         double[][] forestDist = new double[size1 + 1][size2 + 1];
 
-        // Zhang-Shasha algorithm main computation
-        Set<String> changedNodes = new HashSet<>();
-        double editDistance = computeEditDistance(tree1, tree2, postorder1, postorder2, forestDist, changedNodes);
+        // Create signature sets for determining added nodes
+        Set<String> tree1Signatures = new HashSet<>();
+        for (TreeNode node : postorder1) {
+            if (node.isFlowNode) {
+                tree1Signatures.add(node.signature);
+            }
+        }
 
-        return new ZhangShashaResult(editDistance, changedNodes);
+        Set<String> suggestedNodes = new HashSet<>();
+        for (TreeNode node : postorder2) {
+            if (node.isFlowNode && !tree1Signatures.contains(node.signature)) {
+                suggestedNodes.add(node.id);
+            }
+        }
+
+        // Zhang-Shasha algorithm main computation
+        double editDistance = computeEditDistance(postorder1, postorder2, forestDist, suggestedNodes);
+
+        return new ZhangShashaResult(editDistance, suggestedNodes);
     }
 
     /**
@@ -262,9 +240,8 @@ public class DiagramDifferenceCalculator {
     /**
      * Core Zhang-Shasha edit distance computation.
      */
-    private static double computeEditDistance(TreeNode tree1, TreeNode tree2,
-                                              List<TreeNode> postorder1, List<TreeNode> postorder2,
-                                              double[][] forestDist, Set<String> changedNodes) {
+    private static double computeEditDistance(List<TreeNode> postorder1, List<TreeNode> postorder2,
+                                              double[][] forestDist, Set<String> suggestedNodes) {
         int size1 = postorder1.size();
         int size2 = postorder2.size();
 
@@ -284,7 +261,7 @@ public class DiagramDifferenceCalculator {
 
                 if (node1.leftmostLeafDescendant == i - 1 && node2.leftmostLeafDescendant == j - 1) {
                     // Both nodes are leftmost leaf descendants - compute tree distance
-                    double cost = computeTreeDistance(node1, node2, changedNodes);
+                    double cost = computeTreeDistance(node1, node2, suggestedNodes);
                     forestDist[i][j] = Math.min(
                             Math.min(
                                     forestDist[i - 1][j] + 1, // Delete from tree1
@@ -312,18 +289,14 @@ public class DiagramDifferenceCalculator {
     /**
      * Computes the cost of transforming one tree node to another. Uses only sourceCode comparison for node identity.
      */
-    private static double computeTreeDistance(TreeNode node1, TreeNode node2, Set<String> changedNodes) {
-        // Cost function for Zhang-Shasha algorithm
-        // For nodes, the signature is the sourceCode (from getNodeSignature method)
+    private static double computeTreeDistance(TreeNode node1, TreeNode node2, Set<String> suggestedNodes) {
         if (Objects.equals(node1.signature, node2.signature)) {
-            return 0.0; // No cost if nodes have identical sourceCode
+            return 0.0;
         } else {
-            // Mark flow nodes as changed if they have different sourceCode
             if (node1.isFlowNode && node2.isFlowNode) {
-                changedNodes.add(node1.id);
-                changedNodes.add(node2.id);
+                suggestedNodes.add(node2.id);
             }
-            return 1.0; // Cost of substitution
+            return 1.0;
         }
     }
 
@@ -350,28 +323,4 @@ public class DiagramDifferenceCalculator {
         }).toList();
     }
 
-    /**
-     * Marks all nodes in a diagram as suggested (used when current diagram is null).
-     */
-    private static Diagram markAllNodesAsSuggested(Diagram diagram) {
-        if (diagram == null || diagram.nodes() == null) {
-            return diagram;
-        }
-
-        List<FlowNode> allSuggestedNodes = diagram.nodes().stream().map(node ->
-                new FlowNode(
-                        node.id(),
-                        node.metadata(),
-                        node.codedata(),
-                        node.returning(),
-                        node.branches(),
-                        node.properties(),
-                        node.diagnostics(),
-                        node.flags(),
-                        true // Mark as suggested
-                )
-        ).toList();
-
-        return new Diagram(diagram.fileName(), allSuggestedNodes, diagram.connections());
-    }
 }
