@@ -44,15 +44,20 @@ public class FlowModelDifferenceTest extends AbstractLSTest {
     public void test(Path config) throws IOException {
         Path configJsonPath = configDir.resolve(config);
         TestConfig testConfig = gson.fromJson(Files.newBufferedReader(configJsonPath), TestConfig.class);
+        String flowModelFilePath = testConfig.projectPath().endsWith(".bal") ?
+                getSourcePath(testConfig.projectPath()) :
+                getSourcePath(String.valueOf(Path.of(testConfig.projectPath()).resolve(testConfig.fileName())));
 
+        // Get the flow model for the original source file
         FlowModelGeneratorRequest flowModelRequest = new FlowModelGeneratorRequest(
-                getSourcePath(testConfig.projectPath()),
+                flowModelFilePath,
                 testConfig.start(),
                 testConfig.end()
         );
         JsonObject flowModelResponse =
                 getResponse(flowModelRequest, "flowDesignService/getFlowModel").getAsJsonObject("flowModel");
 
+        // Create a request to get the flow model difference with the modified file content
         FlowModelDifferenceRequest request = new FlowModelDifferenceRequest(
                 getSourcePath(testConfig.projectPath()),
                 testConfig.fileContentMap(),
@@ -114,14 +119,6 @@ public class FlowModelDifferenceTest extends AbstractLSTest {
 
         public String description() {
             return description == null ? "" : description;
-        }
-
-        public String fileName() {
-            return fileName == null ? "" : fileName;
-        }
-
-        public String functionName() {
-            return functionName == null ? "" : functionName;
         }
     }
 }
