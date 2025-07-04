@@ -40,7 +40,7 @@ import java.util.Set;
  *
  * @since 1.1.0
  */
-public class DiagramDifferenceCalculator {
+public class FlowModelEditDistance {
 
     /**
      * Compares two diagrams and returns a new diagram with suggested changes marked. Uses the Zhang-Shasha tree edit
@@ -211,8 +211,7 @@ public class DiagramDifferenceCalculator {
             return node.codedata().sourceCode().trim();
         }
 
-        // Fallback to id if sourceCode is not available
-        return node.id();
+        throw new IllegalStateException("Node sourceCode is required for signature comparison");
     }
 
     /**

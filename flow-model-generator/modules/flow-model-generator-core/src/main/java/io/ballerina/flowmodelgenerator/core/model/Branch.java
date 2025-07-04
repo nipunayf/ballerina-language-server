@@ -38,10 +38,11 @@ import java.util.Set;
  * @param repeatable the repeatable pattern of the branch
  * @param properties properties of the branch
  * @param children   children of the branch
+ * @param suggested  whether this branch is suggested
  * @since 1.0.0
  */
 public record Branch(String label, BranchKind kind, Codedata codedata, Repeatable repeatable,
-                     Map<String, Property> properties, List<FlowNode> children) {
+                     Map<String, Property> properties, List<FlowNode> children, boolean suggested) {
 
     public static final String BODY_LABEL = "Body";
     public static final String ON_FAILURE_LABEL = "On Failure";
@@ -121,6 +122,7 @@ public record Branch(String label, BranchKind kind, Codedata codedata, Repeatabl
         private Branch.BranchKind kind;
         private final List<FlowNode> children;
         private Repeatable repeatable;
+        private boolean suggested = false;
 
         protected Codedata.Builder<Builder> codedataBuilder;
         protected FormBuilder<Builder> formBuilder;
@@ -172,6 +174,11 @@ public record Branch(String label, BranchKind kind, Codedata codedata, Repeatabl
             return this;
         }
 
+        public Builder suggested(boolean suggested) {
+            this.suggested = suggested;
+            return this;
+        }
+
         public FormBuilder<Builder> properties() {
             if (this.formBuilder == null) {
                 this.formBuilder =
@@ -189,7 +196,7 @@ public record Branch(String label, BranchKind kind, Codedata codedata, Repeatabl
 
         public Branch build() {
             return new Branch(label, kind, codedataBuilder == null ? null : codedataBuilder.build(),
-                    repeatable, formBuilder == null ? null : formBuilder.build(), children);
+                    repeatable, formBuilder == null ? null : formBuilder.build(), children, suggested);
         }
     }
 }

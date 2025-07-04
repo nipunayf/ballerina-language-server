@@ -155,7 +155,7 @@ public class DifferenceRequest implements Callable<JsonElement> {
             Diagram newDiagram = GSON.fromJson(newDiagramJson, Diagram.class);
             
             // Calculate differences and mark suggested changes
-            Diagram resultDiagram = DiagramDifferenceCalculator.computeDifferences(currentFlowDiagram, newDiagram);
+            Diagram resultDiagram = FlowModelEditDistance.computeDifferences(currentFlowDiagram, newDiagram);
             
             // Convert back to JsonElement for return
             return GSON.toJsonTree(resultDiagram);
