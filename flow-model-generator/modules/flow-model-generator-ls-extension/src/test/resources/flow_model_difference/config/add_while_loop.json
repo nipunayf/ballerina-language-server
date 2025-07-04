@@ -38,6 +38,7 @@
           "sourceCode": "public function main() {\n    string message = \"Hello, World!\";\n    int i = 0;\n    while i < 3 {\n        io:println(message);\n        i = i + 1;\n    }\n}"
         },
         "returning": false,
+        "branches": [],
         "flags": 0,
         "suggested": false
       },
@@ -63,6 +64,7 @@
           "sourceCode": "string message = \"Hello, World!\";"
         },
         "returning": false,
+        "branches": [],
         "properties": {
           "expression": {
             "metadata": {
@@ -141,6 +143,7 @@
           "sourceCode": "int i = 0;"
         },
         "returning": false,
+        "branches": [],
         "properties": {
           "expression": {
             "metadata": {
@@ -268,6 +271,7 @@
                   "sourceCode": "io:println(message);"
                 },
                 "returning": false,
+                "branches": [],
                 "properties": {
                   "values": {
                     "metadata": {
@@ -300,7 +304,7 @@
                   }
                 },
                 "flags": 0,
-                "suggested": true
+                "suggested": false
               },
               {
                 "id": "38954",
@@ -324,6 +328,7 @@
                   "sourceCode": "i = i + 1;"
                 },
                 "returning": false,
+                "branches": [],
                 "properties": {
                   "expression": {
                     "metadata": {

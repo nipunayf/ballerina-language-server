@@ -43,6 +43,7 @@
           "sourceCode": "public function main(string user) {\n    string message = \"Hello, World!\";\n    io:println(message + user);\n}"
         },
         "returning": false,
+        "branches": [],
         "flags": 0,
         "suggested": false
       },
@@ -68,6 +69,7 @@
           "sourceCode": "string message = \"Hello, World!\";"
         },
         "returning": false,
+        "branches": [],
         "properties": {
           "expression": {
             "metadata": {
@@ -152,6 +154,7 @@
           "sourceCode": "io:println(message + user);"
         },
         "returning": false,
+        "branches": [],
         "properties": {
           "values": {
             "metadata": {

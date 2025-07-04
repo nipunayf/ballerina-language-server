@@ -25,11 +25,9 @@ import io.ballerina.flowmodelgenerator.core.model.NodeKind;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * Utility class for calculating differences between two diagrams using the Zhang-Shasha tree edit distance algorithm.
@@ -61,31 +59,90 @@ public class FlowModelEditDistance {
         Map<String, FlowNode> newNodeMap = new HashMap<>();
         TreeNode newTree = buildTreeFromDiagram(newDiagram, newNodeMap);
 
-        // Calculate tree edit distance using Zhang-Shasha algorithm
-        ZhangShashaResult result = calculateZhangShashaEditDistance(currentTree, newTree);
-        Set<String> addedNodeIds = result.addedNodes;
-        Set<String> modifiedNodeIds = result.modifiedNodes;
+        // Post-order traversal and keyroots
+        List<TreeNode> currentPostorder = postOrderTraversal(currentTree);
+        List<TreeNode> newPostorder = postOrderTraversal(newTree);
 
-        // Mark suggested nodes
-        List<FlowNode> updatedNodes = markSuggestedNodes(newDiagram.nodes(), addedNodeIds, modifiedNodeIds);
+        calculateLeftmostLeafDescendants(currentPostorder);
+        calculateLeftmostLeafDescendants(newPostorder);
 
-        return new Diagram(newDiagram.fileName(), updatedNodes, newDiagram.connections());
-    }
+        int m = currentPostorder.size();
+        int n = newPostorder.size();
 
-    /**
-     * Result of Zhang-Shasha tree edit distance calculation.
-     */
-    private static class ZhangShashaResult {
+        int[][] dist = new int[m + 1][n + 1];
+        int[][] backtrack = new int[m + 1][n + 1];
 
-        final double editDistance;
-        final Set<String> addedNodes;
-        final Set<String> modifiedNodes;
+        final int DELETE = 1;
+        final int INSERT = 2;
+        final int UPDATE = 3;
 
-        ZhangShashaResult(double editDistance, Set<String> addedNodes, Set<String> modifiedNodes) {
-            this.editDistance = editDistance;
-            this.addedNodes = addedNodes;
-            this.modifiedNodes = modifiedNodes;
+        for (int i = 0; i <= m; i++) {
+            dist[i][0] = i;
+            if (i > 0) {
+                backtrack[i][0] = DELETE;
+            }
         }
+        for (int j = 0; j <= n; j++) {
+            dist[0][j] = j;
+            if (j > 0) {
+                backtrack[0][j] = INSERT;
+            }
+        }
+
+        for (int i = 1; i <= m; i++) {
+            for (int j = 1; j <= n; j++) {
+                TreeNode node1 = currentPostorder.get(i - 1);
+                TreeNode node2 = newPostorder.get(j - 1);
+
+                int cost = node1.equals(node2) ? 0 : 1;
+
+                int deletionCost = dist[i - 1][j] + 1;
+                int insertionCost = dist[i][j - 1] + 1;
+                int updateCost = dist[i - 1][j - 1] + cost;
+
+                if (deletionCost <= insertionCost && deletionCost <= updateCost) {
+                    dist[i][j] = deletionCost;
+                    backtrack[i][j] = DELETE;
+                } else if (insertionCost <= updateCost) {
+                    dist[i][j] = insertionCost;
+                    backtrack[i][j] = INSERT;
+                } else {
+                    dist[i][j] = updateCost;
+                    backtrack[i][j] = UPDATE;
+                }
+            }
+        }
+
+        // Backtracking to find changed nodes
+        Map<String, FlowNode> updatedNodes = new HashMap<>();
+        Map<String, FlowNode> insertedNodes = new HashMap<>();
+
+        int i = m;
+        int j = n;
+        while (i > 0 || j > 0) {
+            if (i > 0 && j > 0 && backtrack[i][j] == UPDATE) {
+                if (dist[i][j] > dist[i - 1][j - 1]) {
+                    TreeNode updatedNode = newPostorder.get(j - 1);
+                    if (updatedNode.isFlowNode) {
+                        updatedNodes.put(updatedNode.id, newNodeMap.get(updatedNode.id));
+                    }
+                }
+                i--;
+                j--;
+            } else if (j > 0 && (i == 0 || backtrack[i][j] == INSERT)) {
+                TreeNode insertedNode = newPostorder.get(j - 1);
+                if (insertedNode.isFlowNode) {
+                    insertedNodes.put(insertedNode.id, newNodeMap.get(insertedNode.id));
+                }
+                j--;
+            } else if (i > 0) {
+                i--;
+            } else {
+                break;
+            }
+        }
+
+        return rebuildDiagram(newDiagram, updatedNodes, insertedNodes);
     }
 
     /**
@@ -130,6 +187,85 @@ public class FlowModelEditDistance {
         public String toString() {
             return id + ":" + signature;
         }
+    }
+
+    private static List<TreeNode> postOrderTraversal(TreeNode root) {
+        List<TreeNode> postorderNodes = new ArrayList<>();
+        calculatePostOrder(root, postorderNodes);
+        return postorderNodes;
+    }
+
+    private static void calculatePostOrder(TreeNode node, List<TreeNode> postorderNodes) {
+        for (TreeNode child : node.children) {
+            calculatePostOrder(child, postorderNodes);
+        }
+        node.postorderNumber = postorderNodes.size();
+        postorderNodes.add(node);
+    }
+
+    private static void calculateLeftmostLeafDescendants(List<TreeNode> postorderNodes) {
+        for (TreeNode node : postorderNodes) {
+            if (node.children.isEmpty()) {
+                node.leftmostLeafDescendant = node.postorderNumber;
+            } else {
+                node.leftmostLeafDescendant = node.children.get(0).leftmostLeafDescendant;
+            }
+        }
+    }
+
+    private static Diagram rebuildDiagram(Diagram diagram, Map<String, FlowNode> updatedNodes,
+                                          Map<String, FlowNode> insertedNodes) {
+        List<FlowNode> newNodes = new ArrayList<>();
+        if (diagram.nodes() != null) {
+            for (FlowNode node : diagram.nodes()) {
+                newNodes.add(rebuildNode(node, updatedNodes, insertedNodes));
+            }
+        }
+        return new Diagram(diagram.fileName(), newNodes, diagram.connections());
+    }
+
+    private static FlowNode rebuildNode(FlowNode node, Map<String, FlowNode> updatedNodes,
+                                        Map<String, FlowNode> insertedNodes) {
+        boolean suggested = updatedNodes.containsKey(node.id()) || insertedNodes.containsKey(node.id());
+
+        List<Branch> newBranches = new ArrayList<>();
+        if (node.branches() != null) {
+            for (Branch branch : node.branches()) {
+                newBranches.add(rebuildBranch(branch, updatedNodes, insertedNodes));
+            }
+        }
+
+        return new FlowNode(
+                node.id(),
+                node.metadata(),
+                node.codedata(),
+                node.returning(),
+                newBranches,
+                node.properties(),
+                node.diagnostics(),
+                node.flags(),
+                suggested
+        );
+    }
+
+    private static Branch rebuildBranch(Branch branch, Map<String, FlowNode> updatedNodes,
+                                        Map<String, FlowNode> insertedNodes) {
+        List<FlowNode> newChildren = new ArrayList<>();
+        if (branch.children() != null) {
+            for (FlowNode child : branch.children()) {
+                newChildren.add(rebuildNode(child, updatedNodes, insertedNodes));
+            }
+        }
+        boolean childSuggested = newChildren.stream().anyMatch(FlowNode::suggested);
+        return new Branch(
+                branch.label(),
+                branch.kind(),
+                branch.codedata(),
+                branch.repeatable(),
+                branch.properties(),
+                newChildren,
+                childSuggested
+        );
     }
 
     /**
@@ -222,211 +358,6 @@ public class FlowModelEditDistance {
         }
 
         throw new IllegalStateException("Node sourceCode is required for signature comparison");
-    }
-
-    /**
-     * Calculates tree edit distance using the Zhang-Shasha algorithm. This implementation follows the original
-     * Zhang-Shasha algorithm for computing minimum edit distance and determines suggested nodes (both changed and
-     * added).
-     */
-    private static ZhangShashaResult calculateZhangShashaEditDistance(TreeNode tree1, TreeNode tree2) {
-        // Preprocess trees: assign postorder numbers and compute leftmost leaf descendants
-        List<TreeNode> postorder1 = new ArrayList<>();
-        List<TreeNode> postorder2 = new ArrayList<>();
-
-        assignPostorderNumbers(tree1, postorder1);
-        assignPostorderNumbers(tree2, postorder2);
-
-        computeLeftmostLeafDescendants(tree1);
-        computeLeftmostLeafDescendants(tree2);
-
-        int size1 = postorder1.size();
-        int size2 = postorder2.size();
-
-        // Initialize the forest distance matrix
-        double[][] forestDist = new double[size1 + 1][size2 + 1];
-
-        // Create signature sets for determining added nodes
-        Set<String> tree1Signatures = new HashSet<>();
-        for (TreeNode node : postorder1) {
-            if (node.isFlowNode) {
-                tree1Signatures.add(node.signature);
-            }
-        }
-
-        Set<String> addedNodes = new HashSet<>();
-        for (TreeNode node : postorder2) {
-            if (node.isFlowNode && !tree1Signatures.contains(node.signature)) {
-                addedNodes.add(node.id);
-            }
-        }
-
-        Set<String> modifiedNodes = new HashSet<>();
-        // Zhang-Shasha algorithm main computation
-        double editDistance = computeEditDistance(postorder1, postorder2, forestDist, modifiedNodes);
-
-        return new ZhangShashaResult(editDistance, addedNodes, modifiedNodes);
-    }
-
-    /**
-     * Assigns postorder numbers to tree nodes (Zhang-Shasha preprocessing step).
-     */
-    private static int assignPostorderNumbers(TreeNode node, List<TreeNode> postorderList) {
-        int maxNumber = 0;
-
-        for (TreeNode child : node.children) {
-            maxNumber = Math.max(maxNumber, assignPostorderNumbers(child, postorderList));
-        }
-
-        node.postorderNumber = maxNumber;
-        postorderList.add(node);
-
-        return maxNumber + 1;
-    }
-
-    /**
-     * Computes leftmost leaf descendants for each node (Zhang-Shasha preprocessing step).
-     */
-    private static int computeLeftmostLeafDescendants(TreeNode node) {
-        if (node.children.isEmpty()) {
-            node.leftmostLeafDescendant = node.postorderNumber;
-            return node.postorderNumber;
-        }
-
-        int leftmost = Integer.MAX_VALUE;
-        for (TreeNode child : node.children) {
-            leftmost = Math.min(leftmost, computeLeftmostLeafDescendants(child));
-        }
-
-        node.leftmostLeafDescendant = leftmost;
-        return leftmost;
-    }
-
-    /**
-     * Core Zhang-Shasha edit distance computation.
-     */
-    private static double computeEditDistance(List<TreeNode> postorder1, List<TreeNode> postorder2,
-                                              double[][] forestDist, Set<String> modifiedNodes) {
-        int size1 = postorder1.size();
-        int size2 = postorder2.size();
-
-        // Initialize base cases
-        for (int i = 0; i <= size1; i++) {
-            forestDist[i][0] = i; // Cost of deleting i nodes
-        }
-        for (int j = 0; j <= size2; j++) {
-            forestDist[0][j] = j; // Cost of inserting j nodes
-        }
-
-        // Main Zhang-Shasha computation
-        for (int i = 1; i <= size1; i++) {
-            for (int j = 1; j <= size2; j++) {
-                TreeNode node1 = postorder1.get(i - 1);
-                TreeNode node2 = postorder2.get(j - 1);
-
-                if (node1.leftmostLeafDescendant == i - 1 && node2.leftmostLeafDescendant == j - 1) {
-                    // Both nodes are leftmost leaf descendants - compute tree distance
-                    double cost = computeTreeDistance(node1, node2, modifiedNodes);
-                    forestDist[i][j] = Math.min(
-                            Math.min(
-                                    forestDist[i - 1][j] + 1, // Delete from tree1
-                                    forestDist[i][j - 1] + 1  // Insert to tree1
-                            ),
-                            forestDist[i - 1][j - 1] + cost // Substitute
-                    );
-                } else {
-                    // Forest distance computation
-                    forestDist[i][j] = Math.min(
-                            Math.min(
-                                    forestDist[i - 1][j] + 1,
-                                    forestDist[i][j - 1] + 1
-                            ),
-                            forestDist[node1.leftmostLeafDescendant][node2.leftmostLeafDescendant] +
-                                    forestDist[i][j]
-                    );
-                }
-            }
-        }
-
-        return forestDist[size1][size2];
-    }
-
-    /**
-     * Computes the cost of transforming one tree node to another. Uses only sourceCode comparison for node identity.
-     */
-    private static double computeTreeDistance(TreeNode node1, TreeNode node2, Set<String> modifiedNodes) {
-        if (Objects.equals(node1.signature, node2.signature)) {
-            return 0.0;
-        } else {
-            if (node1.isFlowNode && node2.isFlowNode) {
-                modifiedNodes.add(node2.id);
-            }
-            return 1.0;
-        }
-    }
-
-    /**
-     * Marks nodes as suggested based on the difference analysis. Propagates suggested flag to all descendants including
-     * branches and their children.
-     */
-    private static List<FlowNode> markSuggestedNodes(List<FlowNode> nodes, Set<String> addedNodeIds,
-                                                     Set<String> modifiedNodeIds) {
-        Set<String> suggestedNodeIds = new HashSet<>(modifiedNodeIds);
-        return nodes.stream().map(node -> markNodeAndDescendants(node, addedNodeIds, suggestedNodeIds, false))
-                .toList();
-    }
-
-    /**
-     * Recursively marks a node and all its descendants as suggested if the parent is suggested.
-     */
-    private static FlowNode markNodeAndDescendants(FlowNode node, Set<String> addedNodeIds,
-                                                   Set<String> suggestedNodeIds, boolean isParentAdded) {
-        boolean isNodeAdded = isParentAdded || addedNodeIds.contains(node.id());
-        boolean isNodeSuggested = isNodeAdded || suggestedNodeIds.contains(node.id());
-
-        // Mark branches and their children
-        List<Branch> updatedBranches = null;
-        if (node.branches() != null) {
-            updatedBranches = node.branches().stream()
-                    .map(branch -> markBranchAndDescendants(branch, addedNodeIds, suggestedNodeIds, isNodeAdded))
-                    .toList();
-        }
-
-        return new FlowNode(
-                node.id(),
-                node.metadata(),
-                node.codedata(),
-                node.returning(),
-                updatedBranches,
-                node.properties(),
-                node.diagnostics(),
-                node.flags(),
-                isNodeSuggested
-        );
-    }
-
-    /**
-     * Recursively marks a branch and all its children as suggested if the parent is suggested.
-     */
-    private static Branch markBranchAndDescendants(Branch branch, Set<String> addedNodeIds,
-                                                   Set<String> suggestedNodeIds, boolean isParentAdded) {
-        // Mark branch children
-        List<FlowNode> updatedChildren = null;
-        if (branch.children() != null) {
-            updatedChildren = branch.children().stream()
-                    .map(child -> markNodeAndDescendants(child, addedNodeIds, suggestedNodeIds, isParentAdded))
-                    .toList();
-        }
-
-        return new Branch(
-                branch.label(),
-                branch.kind(),
-                branch.codedata(),
-                branch.repeatable(),
-                branch.properties(),
-                updatedChildren,
-                isParentAdded
-        );
     }
 
 }

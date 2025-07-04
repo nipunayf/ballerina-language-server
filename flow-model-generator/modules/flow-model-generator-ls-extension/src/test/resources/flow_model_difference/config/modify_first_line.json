@@ -38,6 +38,7 @@
           "sourceCode": "public function main() {\n    string message = \"Hello, Ballerina!\";\n    io:println(message);\n}"
         },
         "returning": false,
+        "branches": [],
         "flags": 0,
         "suggested": false
       },
@@ -63,6 +64,7 @@
           "sourceCode": "string message = \"Hello, Ballerina!\";"
         },
         "returning": false,
+        "branches": [],
         "properties": {
           "expression": {
             "metadata": {
@@ -147,6 +149,7 @@
           "sourceCode": "io:println(message);"
         },
         "returning": false,
+        "branches": [],
         "properties": {
           "values": {
             "metadata": {

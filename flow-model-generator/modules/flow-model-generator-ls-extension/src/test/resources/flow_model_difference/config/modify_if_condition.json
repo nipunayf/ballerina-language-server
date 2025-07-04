@@ -1,6 +1,6 @@
 {
   "fileContentMap": {
-    "branch_source.bal": "import ballerina/io;\n\npublic function checkNumber(int num) {\n    if num > 0 {\n        io:println(\"Number is positive.\");\n    } else if num == 0 { \n        io:println(\"Number is zero.\");\n    } else {\n        io::println(\"Number is non-positive.\");\n    }\n}"
+    "branch_source.bal": "import ballerina/io;\n\npublic function checkNumber(int num) {\n    if num >= 0 { \n        io:println(\"Number is positive or zero.\");\n    } else {\n        io:println(\"Number is non-positive.\");\n    }\n}"
   },
   "projectPath": "branch_source.bal",
   "fileName": "branch_source.bal",
@@ -13,12 +13,12 @@
     "line": 8,
     "offset": 1
   },
-  "description": "Test diff when an else if branch is added to an existing if-else statement.",
+  "description": "Test diff when the condition of an existing if statement is modified.",
   "diagram": {
     "fileName": "branch_source.bal",
     "nodes": [
       {
-        "id": "35124",
+        "id": "35062",
         "metadata": {
           "label": "Start",
           "data": {
@@ -36,22 +36,19 @@
               "offset": 37
             },
             "endLine": {
-              "line": 10,
+              "line": 8,
               "offset": 1
             }
           },
-          "sourceCode": "public function checkNumber(int num) {\n    if num > 0 {\n        io:println(\"Number is positive.\");\n    } else if num == 0 { \n        io:println(\"Number is zero.\");\n    } else {\n        io::println(\"Number is non-positive.\");\n    }\n}"
+          "sourceCode": "public function checkNumber(int num) {\n    if num >= 0 { \n        io:println(\"Number is positive or zero.\");\n    } else {\n        io:println(\"Number is non-positive.\");\n    }\n}"
         },
         "returning": false,
         "branches": [],
-        "diagnostics": {
-          "hasDiagnostics": true
-        },
         "flags": 0,
         "suggested": false
       },
       {
-        "id": "35035",
+        "id": "34973",
         "metadata": {
           "label": "If",
           "description": "Add conditional branch to the integration flow."
@@ -65,11 +62,11 @@
               "offset": 4
             },
             "endLine": {
-              "line": 9,
+              "line": 7,
               "offset": 5
             }
           },
-          "sourceCode": "if num > 0 {\n        io:println(\"Number is positive.\");\n    } else if num == 0 { \n        io:println(\"Number is zero.\");\n    } else {\n        io::println(\"Number is non-positive.\");\n    }"
+          "sourceCode": "if num >= 0 { \n        io:println(\"Number is positive or zero.\");\n    } else {\n        io:println(\"Number is non-positive.\");\n    }"
         },
         "returning": false,
         "branches": [
@@ -82,14 +79,14 @@
                 "fileName": "branch_source.bal",
                 "startLine": {
                   "line": 3,
-                  "offset": 15
+                  "offset": 16
                 },
                 "endLine": {
                   "line": 5,
                   "offset": 5
                 }
               },
-              "sourceCode": "{\n        io:println(\"Number is positive.\");\n    }"
+              "sourceCode": "{ \n        io:println(\"Number is positive or zero.\");\n    }"
             },
             "repeatable": "ONE_OR_MORE",
             "properties": {
@@ -99,7 +96,7 @@
                   "description": "Boolean Condition"
                 },
                 "valueType": "EXPRESSION",
-                "value": "num > 0 ",
+                "value": "num >= 0 ",
                 "placeholder": "true",
                 "optional": false,
                 "editable": true,
@@ -109,7 +106,7 @@
             },
             "children": [
               {
-                "id": "36002",
+                "id": "36010",
                 "metadata": {
                   "label": "println",
                   "description": "Prints `any`, `error` or string templates(such as `The respective int value is ${val}`) value(s) to the STDOUT\nfollowed by a new line.\n```ballerina\nio:println(\"Start processing the CSV file from \", srcFileName);\n```\n",
@@ -130,10 +127,10 @@
                     },
                     "endLine": {
                       "line": 4,
-                      "offset": 42
+                      "offset": 50
                     }
                   },
-                  "sourceCode": "io:println(\"Number is positive.\");"
+                  "sourceCode": "io:println(\"Number is positive or zero.\");"
                 },
                 "returning": false,
                 "branches": [],
@@ -146,108 +143,7 @@
                     "valueType": "EXPRESSION_SET",
                     "valueTypeConstraint": "io:Printable",
                     "value": [
-                      "\"Number is positive.\""
-                    ],
-                    "placeholder": "()",
-                    "optional": false,
-                    "editable": true,
-                    "advanced": false,
-                    "hidden": false,
-                    "codedata": {
-                      "kind": "REST_PARAMETER",
-                      "originalName": "values"
-                    },
-                    "typeMembers": [
-                      {
-                        "type": "Printable",
-                        "packageInfo": "ballerina:io:1.8.0",
-                        "packageName": "io",
-                        "kind": "ARRAY_TYPE",
-                        "selected": false
-                      }
-                    ]
-                  }
-                },
-                "flags": 0,
-                "suggested": false
-              }
-            ],
-            "suggested": false
-          },
-          {
-            "label": "num == 0",
-            "kind": "BLOCK",
-            "codedata": {
-              "node": "CONDITIONAL",
-              "lineRange": {
-                "fileName": "branch_source.bal",
-                "startLine": {
-                  "line": 5,
-                  "offset": 23
-                },
-                "endLine": {
-                  "line": 7,
-                  "offset": 5
-                }
-              },
-              "sourceCode": "{ \n        io:println(\"Number is zero.\");\n    }"
-            },
-            "repeatable": "ONE_OR_MORE",
-            "properties": {
-              "condition": {
-                "metadata": {
-                  "label": "Condition",
-                  "description": "Boolean Condition"
-                },
-                "valueType": "EXPRESSION",
-                "value": "num == 0 ",
-                "placeholder": "true",
-                "optional": false,
-                "editable": true,
-                "advanced": false,
-                "hidden": false
-              }
-            },
-            "children": [
-              {
-                "id": "37982",
-                "metadata": {
-                  "label": "println",
-                  "description": "Prints `any`, `error` or string templates(such as `The respective int value is ${val}`) value(s) to the STDOUT\nfollowed by a new line.\n```ballerina\nio:println(\"Start processing the CSV file from \", srcFileName);\n```\n",
-                  "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_io_1.8.0.png"
-                },
-                "codedata": {
-                  "node": "FUNCTION_CALL",
-                  "org": "ballerina",
-                  "module": "io",
-                  "packageName": "io",
-                  "symbol": "println",
-                  "version": "1.8.0",
-                  "lineRange": {
-                    "fileName": "branch_source.bal",
-                    "startLine": {
-                      "line": 6,
-                      "offset": 8
-                    },
-                    "endLine": {
-                      "line": 6,
-                      "offset": 38
-                    }
-                  },
-                  "sourceCode": "io:println(\"Number is zero.\");"
-                },
-                "returning": false,
-                "branches": [],
-                "properties": {
-                  "values": {
-                    "metadata": {
-                      "label": "values",
-                      "description": "The value(s) to be printed"
-                    },
-                    "valueType": "EXPRESSION_SET",
-                    "valueTypeConstraint": "io:Printable",
-                    "value": [
-                      "\"Number is zero.\""
+                      "\"Number is positive or zero.\""
                     ],
                     "placeholder": "()",
                     "optional": false,
@@ -283,20 +179,20 @@
               "lineRange": {
                 "fileName": "branch_source.bal",
                 "startLine": {
-                  "line": 7,
+                  "line": 5,
                   "offset": 11
                 },
                 "endLine": {
-                  "line": 9,
+                  "line": 7,
                   "offset": 5
                 }
               },
-              "sourceCode": "{\n        io::println(\"Number is non-positive.\");\n    }"
+              "sourceCode": "{\n        io:println(\"Number is non-positive.\");\n    }"
             },
             "repeatable": "ZERO_OR_ONE",
             "children": [
               {
-                "id": "39975",
+                "id": "37990",
                 "metadata": {
                   "label": "println",
                   "description": "Prints `any`, `error` or string templates(such as `The respective int value is ${val}`) value(s) to the STDOUT\nfollowed by a new line.\n```ballerina\nio:println(\"Start processing the CSV file from \", srcFileName);\n```\n",
@@ -312,15 +208,15 @@
                   "lineRange": {
                     "fileName": "branch_source.bal",
                     "startLine": {
-                      "line": 8,
+                      "line": 6,
                       "offset": 8
                     },
                     "endLine": {
-                      "line": 8,
-                      "offset": 47
+                      "line": 6,
+                      "offset": 46
                     }
                   },
-                  "sourceCode": "io::println(\"Number is non-positive.\");"
+                  "sourceCode": "io:println(\"Number is non-positive.\");"
                 },
                 "returning": false,
                 "branches": [],
@@ -355,21 +251,15 @@
                     ]
                   }
                 },
-                "diagnostics": {
-                  "hasDiagnostics": true
-                },
                 "flags": 0,
-                "suggested": true
+                "suggested": false
               }
             ],
-            "suggested": true
+            "suggested": false
           }
         ],
-        "diagnostics": {
-          "hasDiagnostics": true
-        },
         "flags": 0,
-        "suggested": false
+        "suggested": true
       }
     ],
     "connections": []

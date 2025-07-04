@@ -38,6 +38,7 @@
           "sourceCode": "public function main() {\n    string message = \"Hello, World!\";\n    string extraMessage = \"Have a nice day!\";\n    io:println(message);\n}"
         },
         "returning": false,
+        "branches": [],
         "flags": 0,
         "suggested": false
       },
@@ -63,6 +64,7 @@
           "sourceCode": "string message = \"Hello, World!\";"
         },
         "returning": false,
+        "branches": [],
         "properties": {
           "expression": {
             "metadata": {
@@ -141,6 +143,7 @@
           "sourceCode": "string extraMessage = \"Have a nice day!\";"
         },
         "returning": false,
+        "branches": [],
         "properties": {
           "expression": {
             "metadata": {
@@ -225,6 +228,7 @@
           "sourceCode": "io:println(message);"
         },
         "returning": false,
+        "branches": [],
         "properties": {
           "values": {
             "metadata": {

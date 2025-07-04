@@ -38,6 +38,7 @@
           "sourceCode": "public function main() {\n    io:println(\"Function started.\");\n    string message = \"Hello, World!\";\n    io:println(message);\n}"
         },
         "returning": false,
+        "branches": [],
         "flags": 0,
         "suggested": false
       },
@@ -69,6 +70,7 @@
           "sourceCode": "io:println(\"Function started.\");"
         },
         "returning": false,
+        "branches": [],
         "properties": {
           "values": {
             "metadata": {
@@ -125,6 +127,7 @@
           "sourceCode": "string message = \"Hello, World!\";"
         },
         "returning": false,
+        "branches": [],
         "properties": {
           "expression": {
             "metadata": {
@@ -209,6 +212,7 @@
           "sourceCode": "io:println(message);"
         },
         "returning": false,
+        "branches": [],
         "properties": {
           "values": {
             "metadata": {

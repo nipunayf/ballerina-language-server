@@ -38,6 +38,7 @@
           "sourceCode": "public function main() {\n    io:println(message);\n}"
         },
         "returning": false,
+        "branches": [],
         "diagnostics": {
           "hasDiagnostics": true
         },
@@ -72,6 +73,7 @@
           "sourceCode": "io:println(message);"
         },
         "returning": false,
+        "branches": [],
         "properties": {
           "values": {
             "metadata": {
@@ -107,7 +109,7 @@
           "hasDiagnostics": true
         },
         "flags": 0,
-        "suggested": true
+        "suggested": false
       }
     ],
     "connections": []
