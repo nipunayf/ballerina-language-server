@@ -59,6 +59,10 @@ import java.util.Objects;
  */
 public class FlowModelEditDistance {
 
+    private static final int DELETE = 1;
+    private static final int INSERT = 2;
+    private static final int UPDATE = 3;
+
     public static Diagram computeDifferences(Diagram currentDiagram, Diagram newDiagram) {
         if (currentDiagram == null || newDiagram == null) {
             throw new IllegalStateException("The current and new diagrams cannot be null");
@@ -77,10 +81,6 @@ public class FlowModelEditDistance {
         int n = newPostorder.size();
         int[][] dist = new int[m + 1][n + 1];
         int[][] backtrack = new int[m + 1][n + 1];
-
-        final int DELETE = 1;
-        final int INSERT = 2;
-        final int UPDATE = 3;
 
         // Initialize the cost matrix and backtrack matrix.
         for (int i = 0; i <= m; i++) {
@@ -192,10 +192,19 @@ public class FlowModelEditDistance {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null || getClass() != obj.getClass()) return false;
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null || getClass() != obj.getClass()) {
+                return false;
+            }
             TreeNode treeNode = (TreeNode) obj;
             return Objects.equals(signature, treeNode.signature);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(signature);
         }
     }
 

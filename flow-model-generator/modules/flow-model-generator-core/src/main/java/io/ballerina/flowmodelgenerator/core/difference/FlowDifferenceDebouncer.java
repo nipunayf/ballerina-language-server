@@ -66,7 +66,7 @@ public class FlowDifferenceDebouncer {
      * @param request the difference request to debounce
      * @return a CompletableFuture that will complete with the result of the difference operation
      */
-    public CompletableFuture<JsonElement> debounce(FlowDifferenceRequest request) {
+    public CompletableFuture<JsonElement> debounce(DebouncedFlowModelDifferenceRequest request) {
         String key = request.getKey();
         CompletableFuture<JsonElement> promise = new CompletableFuture<>();
 

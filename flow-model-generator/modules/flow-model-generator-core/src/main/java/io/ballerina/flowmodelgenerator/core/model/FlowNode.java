@@ -58,7 +58,7 @@ public record FlowNode(
         Diagnostics diagnostics,
         int flags
     ) {
-        this(id, metadata, codedata, returning, branches, properties, diagnostics, flags, false);
+        this(id, metadata, codedata, returning, branches, properties, diagnostics, flags, null);
     }
 
     public Optional<Property> getProperty(String key) {
