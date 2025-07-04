@@ -18,6 +18,7 @@
 
 package io.ballerina.flowmodelgenerator.core.difference;
 
+import io.ballerina.flowmodelgenerator.core.model.Branch;
 import io.ballerina.flowmodelgenerator.core.model.Diagram;
 import io.ballerina.flowmodelgenerator.core.model.FlowNode;
 import io.ballerina.flowmodelgenerator.core.model.NodeKind;
@@ -141,10 +142,63 @@ public class DiagramDifferenceCalculator {
                 nodeMap.put(node.id(), node);
                 String signature = getNodeSignature(node);
                 TreeNode nodeTree = new TreeNode(node.id(), signature, true);
+
+                // Add branches as children of the flow node
+                if (node.branches() != null) {
+                    for (Branch branch : node.branches()) {
+                        TreeNode branchTree = new TreeNode(branch.label(), getBranchSignature(branch), false);
+                        nodeTree.addChild(branchTree);
+
+                        // Add branch children as children of the branch
+                        if (branch.children() != null) {
+                            for (FlowNode childNode : branch.children()) {
+                                addNodeToTree(branchTree, childNode, nodeMap);
+                            }
+                        }
+                    }
+                }
+
                 root.addChild(nodeTree);
             }
         }
         return root;
+    }
+
+    /**
+     * Recursively adds a node and its branches to the tree structure.
+     */
+    private static void addNodeToTree(TreeNode parent, FlowNode node, Map<String, FlowNode> nodeMap) {
+        if (node.codedata() != null && node.codedata().node() == NodeKind.EVENT_START) {
+            return;
+        }
+
+        nodeMap.put(node.id(), node);
+        String signature = getNodeSignature(node);
+        TreeNode nodeTree = new TreeNode(node.id(), signature, true);
+
+        // Add branches as children of the flow node
+        if (node.branches() != null) {
+            for (Branch branch : node.branches()) {
+                TreeNode branchTree = new TreeNode(branch.label(), getBranchSignature(branch), false);
+                nodeTree.addChild(branchTree);
+
+                // Add branch children as children of the branch
+                if (branch.children() != null) {
+                    for (FlowNode childNode : branch.children()) {
+                        addNodeToTree(branchTree, childNode, nodeMap);
+                    }
+                }
+            }
+        }
+
+        parent.addChild(nodeTree);
+    }
+
+    /**
+     * Creates a signature for a branch based on its label and kind.
+     */
+    private static String getBranchSignature(Branch branch) {
+        return branch.label() + ":" + branch.kind();
     }
 
     /**
@@ -163,7 +217,8 @@ public class DiagramDifferenceCalculator {
 
     /**
      * Calculates tree edit distance using the Zhang-Shasha algorithm. This implementation follows the original
-     * Zhang-Shasha algorithm for computing minimum edit distance and determines suggested nodes (both changed and added).
+     * Zhang-Shasha algorithm for computing minimum edit distance and determines suggested nodes (both changed and
+     * added).
      */
     private static ZhangShashaResult calculateZhangShashaEditDistance(TreeNode tree1, TreeNode tree2) {
         // Preprocess trees: assign postorder numbers and compute leftmost leaf descendants
@@ -301,26 +356,63 @@ public class DiagramDifferenceCalculator {
     }
 
     /**
-     * Marks nodes as suggested based on the difference analysis. Only marks nodes as suggested, not individual
-     * properties.
+     * Marks nodes as suggested based on the difference analysis. Propagates suggested flag to all descendants
+     * including branches and their children.
      */
     private static List<FlowNode> markSuggestedNodes(List<FlowNode> nodes, Set<String> suggestedNodeIds) {
-        return nodes.stream().map(node -> {
-            String nodeId = node.id();
-            boolean isNodeSuggested = suggestedNodeIds.contains(nodeId);
+        return nodes.stream().map(node -> markNodeAndDescendants(node, suggestedNodeIds, false)).toList();
+    }
 
-            return new FlowNode(
-                    node.id(),
-                    node.metadata(),
-                    node.codedata(),
-                    node.returning(),
-                    node.branches(),
-                    node.properties(), // Properties remain unchanged
-                    node.diagnostics(),
-                    node.flags(),
-                    isNodeSuggested
-            );
-        }).toList();
+    /**
+     * Recursively marks a node and all its descendants as suggested if the parent is suggested.
+     */
+    private static FlowNode markNodeAndDescendants(FlowNode node, Set<String> suggestedNodeIds, boolean isParentSuggested) {
+        boolean isNodeSuggested = isParentSuggested || suggestedNodeIds.contains(node.id());
+        
+        // Mark branches and their children
+        List<Branch> updatedBranches = null;
+        if (node.branches() != null) {
+            updatedBranches = node.branches().stream()
+                .map(branch -> markBranchAndDescendants(branch, suggestedNodeIds, isNodeSuggested))
+                .toList();
+        }
+
+        return new FlowNode(
+                node.id(),
+                node.metadata(),
+                node.codedata(),
+                node.returning(),
+                updatedBranches,
+                node.properties(),
+                node.diagnostics(),
+                node.flags(),
+                isNodeSuggested
+        );
+    }
+
+    /**
+     * Recursively marks a branch and all its children as suggested if the parent is suggested.
+     */
+    private static Branch markBranchAndDescendants(Branch branch, Set<String> suggestedNodeIds, boolean isParentSuggested) {
+        boolean isBranchSuggested = isParentSuggested;
+        
+        // Mark branch children
+        List<FlowNode> updatedChildren = null;
+        if (branch.children() != null) {
+            updatedChildren = branch.children().stream()
+                .map(child -> markNodeAndDescendants(child, suggestedNodeIds, isBranchSuggested))
+                .toList();
+        }
+
+        return new Branch(
+                branch.label(),
+                branch.kind(),
+                branch.codedata(),
+                branch.repeatable(),
+                branch.properties(),
+                updatedChildren,
+                isBranchSuggested
+        );
     }
 
 }
