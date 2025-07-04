@@ -63,10 +63,11 @@ public class FlowModelEditDistance {
 
         // Calculate tree edit distance using Zhang-Shasha algorithm
         ZhangShashaResult result = calculateZhangShashaEditDistance(currentTree, newTree);
-        Set<String> suggestedNodeIds = result.suggestedNodes;
+        Set<String> addedNodeIds = result.addedNodes;
+        Set<String> modifiedNodeIds = result.modifiedNodes;
 
         // Mark suggested nodes
-        List<FlowNode> updatedNodes = markSuggestedNodes(newDiagram.nodes(), suggestedNodeIds);
+        List<FlowNode> updatedNodes = markSuggestedNodes(newDiagram.nodes(), addedNodeIds, modifiedNodeIds);
 
         return new Diagram(newDiagram.fileName(), updatedNodes, newDiagram.connections());
     }
@@ -77,11 +78,13 @@ public class FlowModelEditDistance {
     private static class ZhangShashaResult {
 
         final double editDistance;
-        final Set<String> suggestedNodes;
+        final Set<String> addedNodes;
+        final Set<String> modifiedNodes;
 
-        ZhangShashaResult(double editDistance, Set<String> suggestedNodes) {
+        ZhangShashaResult(double editDistance, Set<String> addedNodes, Set<String> modifiedNodes) {
             this.editDistance = editDistance;
-            this.suggestedNodes = suggestedNodes;
+            this.addedNodes = addedNodes;
+            this.modifiedNodes = modifiedNodes;
         }
     }
 
@@ -251,17 +254,18 @@ public class FlowModelEditDistance {
             }
         }
 
-        Set<String> suggestedNodes = new HashSet<>();
+        Set<String> addedNodes = new HashSet<>();
         for (TreeNode node : postorder2) {
             if (node.isFlowNode && !tree1Signatures.contains(node.signature)) {
-                suggestedNodes.add(node.id);
+                addedNodes.add(node.id);
             }
         }
 
+        Set<String> modifiedNodes = new HashSet<>();
         // Zhang-Shasha algorithm main computation
-        double editDistance = computeEditDistance(postorder1, postorder2, forestDist, suggestedNodes);
+        double editDistance = computeEditDistance(postorder1, postorder2, forestDist, modifiedNodes);
 
-        return new ZhangShashaResult(editDistance, suggestedNodes);
+        return new ZhangShashaResult(editDistance, addedNodes, modifiedNodes);
     }
 
     /**
@@ -302,7 +306,7 @@ public class FlowModelEditDistance {
      * Core Zhang-Shasha edit distance computation.
      */
     private static double computeEditDistance(List<TreeNode> postorder1, List<TreeNode> postorder2,
-                                              double[][] forestDist, Set<String> suggestedNodes) {
+                                              double[][] forestDist, Set<String> modifiedNodes) {
         int size1 = postorder1.size();
         int size2 = postorder2.size();
 
@@ -322,7 +326,7 @@ public class FlowModelEditDistance {
 
                 if (node1.leftmostLeafDescendant == i - 1 && node2.leftmostLeafDescendant == j - 1) {
                     // Both nodes are leftmost leaf descendants - compute tree distance
-                    double cost = computeTreeDistance(node1, node2, suggestedNodes);
+                    double cost = computeTreeDistance(node1, node2, modifiedNodes);
                     forestDist[i][j] = Math.min(
                             Math.min(
                                     forestDist[i - 1][j] + 1, // Delete from tree1
@@ -350,12 +354,12 @@ public class FlowModelEditDistance {
     /**
      * Computes the cost of transforming one tree node to another. Uses only sourceCode comparison for node identity.
      */
-    private static double computeTreeDistance(TreeNode node1, TreeNode node2, Set<String> suggestedNodes) {
+    private static double computeTreeDistance(TreeNode node1, TreeNode node2, Set<String> modifiedNodes) {
         if (Objects.equals(node1.signature, node2.signature)) {
             return 0.0;
         } else {
             if (node1.isFlowNode && node2.isFlowNode) {
-                suggestedNodes.add(node2.id);
+                modifiedNodes.add(node2.id);
             }
             return 1.0;
         }
@@ -365,22 +369,26 @@ public class FlowModelEditDistance {
      * Marks nodes as suggested based on the difference analysis. Propagates suggested flag to all descendants including
      * branches and their children.
      */
-    private static List<FlowNode> markSuggestedNodes(List<FlowNode> nodes, Set<String> suggestedNodeIds) {
-        return nodes.stream().map(node -> markNodeAndDescendants(node, suggestedNodeIds, false)).toList();
+    private static List<FlowNode> markSuggestedNodes(List<FlowNode> nodes, Set<String> addedNodeIds,
+                                                     Set<String> modifiedNodeIds) {
+        Set<String> suggestedNodeIds = new HashSet<>(modifiedNodeIds);
+        return nodes.stream().map(node -> markNodeAndDescendants(node, addedNodeIds, suggestedNodeIds, false))
+                .toList();
     }
 
     /**
      * Recursively marks a node and all its descendants as suggested if the parent is suggested.
      */
-    private static FlowNode markNodeAndDescendants(FlowNode node, Set<String> suggestedNodeIds,
-                                                   boolean isParentSuggested) {
-        boolean isNodeSuggested = isParentSuggested || suggestedNodeIds.contains(node.id());
+    private static FlowNode markNodeAndDescendants(FlowNode node, Set<String> addedNodeIds,
+                                                   Set<String> suggestedNodeIds, boolean isParentAdded) {
+        boolean isNodeAdded = isParentAdded || addedNodeIds.contains(node.id());
+        boolean isNodeSuggested = isNodeAdded || suggestedNodeIds.contains(node.id());
 
         // Mark branches and their children
         List<Branch> updatedBranches = null;
         if (node.branches() != null) {
             updatedBranches = node.branches().stream()
-                    .map(branch -> markBranchAndDescendants(branch, suggestedNodeIds, isNodeSuggested))
+                    .map(branch -> markBranchAndDescendants(branch, addedNodeIds, suggestedNodeIds, isNodeAdded))
                     .toList();
         }
 
@@ -400,15 +408,13 @@ public class FlowModelEditDistance {
     /**
      * Recursively marks a branch and all its children as suggested if the parent is suggested.
      */
-    private static Branch markBranchAndDescendants(Branch branch, Set<String> suggestedNodeIds,
-                                                   boolean isParentSuggested) {
-        boolean isBranchSuggested = isParentSuggested;
-        
+    private static Branch markBranchAndDescendants(Branch branch, Set<String> addedNodeIds,
+                                                   Set<String> suggestedNodeIds, boolean isParentAdded) {
         // Mark branch children
         List<FlowNode> updatedChildren = null;
         if (branch.children() != null) {
             updatedChildren = branch.children().stream()
-                    .map(child -> markNodeAndDescendants(child, suggestedNodeIds, isBranchSuggested))
+                    .map(child -> markNodeAndDescendants(child, addedNodeIds, suggestedNodeIds, isParentAdded))
                     .toList();
         }
 
@@ -419,7 +425,7 @@ public class FlowModelEditDistance {
                 branch.repeatable(),
                 branch.properties(),
                 updatedChildren,
-                isBranchSuggested
+                isParentAdded
         );
     }
 
