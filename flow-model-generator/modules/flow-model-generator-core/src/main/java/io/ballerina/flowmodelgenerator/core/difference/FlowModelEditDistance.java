@@ -64,21 +64,15 @@ public class FlowModelEditDistance {
             throw new IllegalStateException("The current and new diagrams cannot be null");
         }
 
-        // Build trees and node maps
+        // Build trees, node maps, and post-order lists in a single pass.
         Map<String, FlowNode> currentNodeMap = new HashMap<>();
-        TreeNode currentTree = buildTreeFromDiagram(currentDiagram, currentNodeMap);
+        List<TreeNode> currentPostorder = new ArrayList<>();
+        buildTreeAndPostProcess(currentDiagram, currentNodeMap, currentPostorder);
+
         Map<String, FlowNode> newNodeMap = new HashMap<>();
-        TreeNode newTree = buildTreeFromDiagram(newDiagram, newNodeMap);
+        List<TreeNode> newPostorder = new ArrayList<>();
+        buildTreeAndPostProcess(newDiagram, newNodeMap, newPostorder);
 
-        // Post-order traversal and keyroots
-        List<TreeNode> currentPostorder = postOrderTraversal(currentTree);
-        List<TreeNode> newPostorder = postOrderTraversal(newTree);
-
-        // Calculate the leftmost leaf descendants for both current and new diagrams' postorder traversals.
-        calculateLeftmostLeafDescendants(currentPostorder);
-        calculateLeftmostLeafDescendants(newPostorder);
-
-        
         int m = currentPostorder.size();
         int n = newPostorder.size();
         int[][] dist = new int[m + 1][n + 1];
@@ -104,7 +98,8 @@ public class FlowModelEditDistance {
 
         // Compute the tree edit distance between the current and new diagrams using dynamic programming.
         // For each pair of nodes in the postorder traversals, calculate the minimum cost to transform
-        // the subtree rooted at node1 (from the current diagram) into the subtree rooted at node2 (from the new diagram).
+        // the subtree rooted at node1 (from the current diagram) into the subtree rooted at node2 (from the new
+        // diagram).
         // The cost matrix 'dist' is filled as follows:
         //   - If nodes are equal, the update cost is 0; otherwise, it's 1.
         //   - The minimum cost at each cell is determined by considering deletion, insertion, or update.
@@ -137,9 +132,8 @@ public class FlowModelEditDistance {
         Map<String, FlowNode> updatedNodes = new HashMap<>();
         Map<String, FlowNode> insertedNodes = new HashMap<>();
 
-        
         // Backtrack through the edit distance matrix to determine which nodes were updated or inserted.
-        // 
+        //
         // - Start from the bottom-right of the matrix (i = m, j = n).
         // - If the operation is UPDATE and the cost increased, mark the node as updated.
         // - If the operation is INSERT, mark the node as inserted.
@@ -152,18 +146,14 @@ public class FlowModelEditDistance {
                 // If the cost increased, this is an actual update (not just a match).
                 if (dist[i][j] > dist[i - 1][j - 1]) {
                     TreeNode updatedNode = newPostorder.get(j - 1);
-                    if (updatedNode.isFlowNode) {
-                        updatedNodes.put(updatedNode.id, newNodeMap.get(updatedNode.id));
-                    }
+                    updatedNodes.put(updatedNode.id, newNodeMap.get(updatedNode.id));
                 }
                 i--;
                 j--;
             } else if (j > 0 && (i == 0 || backtrack[i][j] == INSERT)) {
                 // This node was inserted in the new diagram.
                 TreeNode insertedNode = newPostorder.get(j - 1);
-                if (insertedNode.isFlowNode) {
-                    insertedNodes.put(insertedNode.id, newNodeMap.get(insertedNode.id));
-                }
+                insertedNodes.put(insertedNode.id, newNodeMap.get(insertedNode.id));
                 j--;
             } else if (i > 0) {
                 // This node was deleted from the current diagram (not tracked here).
@@ -185,15 +175,13 @@ public class FlowModelEditDistance {
         final String id;
         final String signature;
         final List<TreeNode> children;
-        final boolean isFlowNode;
         int leftmostLeafDescendant;
         int postorderNumber;
 
-        TreeNode(String id, String signature, boolean isFlowNode) {
+        TreeNode(String id, String signature) {
             this.id = id;
             this.signature = signature;
             this.children = new ArrayList<>();
-            this.isFlowNode = isFlowNode;
             this.leftmostLeafDescendant = -1;
             this.postorderNumber = -1;
         }
@@ -209,39 +197,65 @@ public class FlowModelEditDistance {
             TreeNode treeNode = (TreeNode) obj;
             return Objects.equals(signature, treeNode.signature);
         }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(signature);
-        }
-
-        @Override
-        public String toString() {
-            return id + ":" + signature;
-        }
     }
 
-    private static List<TreeNode> postOrderTraversal(TreeNode root) {
-        List<TreeNode> postorderNodes = new ArrayList<>();
-        calculatePostOrder(root, postorderNodes);
-        return postorderNodes;
-    }
-
-    private static void calculatePostOrder(TreeNode node, List<TreeNode> postorderNodes) {
-        for (TreeNode child : node.children) {
-            calculatePostOrder(child, postorderNodes);
-        }
-        node.postorderNumber = postorderNodes.size();
-        postorderNodes.add(node);
-    }
-
-    private static void calculateLeftmostLeafDescendants(List<TreeNode> postorderNodes) {
-        for (TreeNode node : postorderNodes) {
-            if (node.children.isEmpty()) {
-                node.leftmostLeafDescendant = node.postorderNumber;
-            } else {
-                node.leftmostLeafDescendant = node.children.get(0).leftmostLeafDescendant;
+    private static void buildTreeAndPostProcess(Diagram diagram, Map<String, FlowNode> nodeMap,
+                                                List<TreeNode> postorderNodes) {
+        // Build a synthetic root node for the tree structure.
+        TreeNode root = new TreeNode("root", "root");
+        if (diagram.nodes() != null) {
+            for (FlowNode node : diagram.nodes()) {
+                TreeNode nodeTree = processNode(node, nodeMap, postorderNodes);
+                if (nodeTree != null) {
+                    root.addChild(nodeTree);
+                }
             }
+        }
+
+        assignPostorderAndLeftmostLeaf(root, postorderNodes);
+    }
+
+    private static TreeNode processNode(FlowNode node, Map<String, FlowNode> nodeMap, List<TreeNode> postorderNodes) {
+        if (node.codedata() != null && node.codedata().node() == NodeKind.EVENT_START) {
+            return null;
+        }
+
+        nodeMap.put(node.id(), node);
+        String signature = getNodeSignature(node);
+        TreeNode nodeTree = new TreeNode(node.id(), signature);
+
+        // Process each branch of the current node, recursively building the tree structure for branches and their
+        // children.
+        if (node.branches() != null) {
+            for (Branch branch : node.branches()) {
+                TreeNode branchTree = new TreeNode(branch.label(), getBranchSignature(branch));
+                if (branch.children() != null) {
+                    for (FlowNode childNode : branch.children()) {
+                        TreeNode childTree = processNode(childNode, nodeMap, postorderNodes);
+                        if (childTree != null) {
+                            branchTree.addChild(childTree);
+                        }
+                    }
+                }
+                assignPostorderAndLeftmostLeaf(branchTree, postorderNodes);
+                nodeTree.addChild(branchTree);
+            }
+        }
+
+        assignPostorderAndLeftmostLeaf(nodeTree, postorderNodes);
+        return nodeTree;
+    }
+
+    /**
+     * Assigns postorder number and leftmost leaf descendant for a tree node, and adds it to the postorder list.
+     */
+    private static void assignPostorderAndLeftmostLeaf(TreeNode treeNode, List<TreeNode> postorderNodes) {
+        treeNode.postorderNumber = postorderNodes.size();
+        postorderNodes.add(treeNode);
+        if (treeNode.children.isEmpty()) {
+            treeNode.leftmostLeafDescendant = treeNode.postorderNumber;
+        } else {
+            treeNode.leftmostLeafDescendant = treeNode.children.get(0).leftmostLeafDescendant;
         }
     }
 
@@ -300,71 +314,6 @@ public class FlowModelEditDistance {
         );
     }
 
-    /**
-     * Builds a tree representation from a diagram for Zhang-Shasha tree edit distance calculation.
-     */
-    private static TreeNode buildTreeFromDiagram(Diagram diagram, Map<String, FlowNode> nodeMap) {
-        TreeNode root = new TreeNode("root", "root", false);
-        if (diagram.nodes() != null) {
-            for (FlowNode node : diagram.nodes()) {
-                if (node.codedata() != null && node.codedata().node() == NodeKind.EVENT_START) {
-                    continue;
-                }
-                nodeMap.put(node.id(), node);
-                String signature = getNodeSignature(node);
-                TreeNode nodeTree = new TreeNode(node.id(), signature, true);
-
-                // Add branches as children of the flow node
-                if (node.branches() != null) {
-                    for (Branch branch : node.branches()) {
-                        TreeNode branchTree = new TreeNode(branch.label(), getBranchSignature(branch), false);
-                        nodeTree.addChild(branchTree);
-
-                        // Add branch children as children of the branch
-                        if (branch.children() != null) {
-                            for (FlowNode childNode : branch.children()) {
-                                addNodeToTree(branchTree, childNode, nodeMap);
-                            }
-                        }
-                    }
-                }
-
-                root.addChild(nodeTree);
-            }
-        }
-        return root;
-    }
-
-    /**
-     * Recursively adds a node and its branches to the tree structure.
-     */
-    private static void addNodeToTree(TreeNode parent, FlowNode node, Map<String, FlowNode> nodeMap) {
-        if (node.codedata() != null && node.codedata().node() == NodeKind.EVENT_START) {
-            return;
-        }
-
-        nodeMap.put(node.id(), node);
-        String signature = getNodeSignature(node);
-        TreeNode nodeTree = new TreeNode(node.id(), signature, true);
-
-        // Add branches as children of the flow node
-        if (node.branches() != null) {
-            for (Branch branch : node.branches()) {
-                TreeNode branchTree = new TreeNode(branch.label(), getBranchSignature(branch), false);
-                nodeTree.addChild(branchTree);
-
-                // Add branch children as children of the branch
-                if (branch.children() != null) {
-                    for (FlowNode childNode : branch.children()) {
-                        addNodeToTree(branchTree, childNode, nodeMap);
-                    }
-                }
-            }
-        }
-
-        parent.addChild(nodeTree);
-    }
-    
     private static String getBranchSignature(Branch branch) {
         // TODO: Add the source code to the branch
         return branch.label() + ":" + branch.kind();
@@ -374,8 +323,8 @@ public class FlowModelEditDistance {
         if (node.codedata() != null && node.codedata().sourceCode() != null) {
             String sourceCode = node.codedata().sourceCode().trim();
 
-            // If the node has children, we only consider the portion of the source code that appears before the body block.
-            // TODO: Update the source code so that it only contains this portion 
+            // If the node has children, we only consider the portion of the source code that appears before the body.
+            // TODO: Update the source code so that it only contains this portion
             if (node.branches() != null && !node.branches().isEmpty()) {
                 int braceIndex = sourceCode.indexOf('{');
                 if (braceIndex != -1) {
