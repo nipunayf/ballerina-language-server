@@ -208,7 +208,14 @@ public class FlowModelEditDistance {
     private static String getNodeSignature(FlowNode node) {
         // Use sourceCode as the primary identifier for node comparison
         if (node.codedata() != null && node.codedata().sourceCode() != null) {
-            return node.codedata().sourceCode().trim();
+            String sourceCode = node.codedata().sourceCode().trim();
+            if (node.branches() != null && !node.branches().isEmpty()) {
+                int braceIndex = sourceCode.indexOf('{');
+                if (braceIndex != -1) {
+                    return sourceCode.substring(0, braceIndex).trim();
+                }
+            }
+            return sourceCode;
         }
 
         throw new IllegalStateException("Node sourceCode is required for signature comparison");
@@ -355,8 +362,8 @@ public class FlowModelEditDistance {
     }
 
     /**
-     * Marks nodes as suggested based on the difference analysis. Propagates suggested flag to all descendants
-     * including branches and their children.
+     * Marks nodes as suggested based on the difference analysis. Propagates suggested flag to all descendants including
+     * branches and their children.
      */
     private static List<FlowNode> markSuggestedNodes(List<FlowNode> nodes, Set<String> suggestedNodeIds) {
         return nodes.stream().map(node -> markNodeAndDescendants(node, suggestedNodeIds, false)).toList();
@@ -365,15 +372,16 @@ public class FlowModelEditDistance {
     /**
      * Recursively marks a node and all its descendants as suggested if the parent is suggested.
      */
-    private static FlowNode markNodeAndDescendants(FlowNode node, Set<String> suggestedNodeIds, boolean isParentSuggested) {
+    private static FlowNode markNodeAndDescendants(FlowNode node, Set<String> suggestedNodeIds,
+                                                   boolean isParentSuggested) {
         boolean isNodeSuggested = isParentSuggested || suggestedNodeIds.contains(node.id());
-        
+
         // Mark branches and their children
         List<Branch> updatedBranches = null;
         if (node.branches() != null) {
             updatedBranches = node.branches().stream()
-                .map(branch -> markBranchAndDescendants(branch, suggestedNodeIds, isNodeSuggested))
-                .toList();
+                    .map(branch -> markBranchAndDescendants(branch, suggestedNodeIds, isNodeSuggested))
+                    .toList();
         }
 
         return new FlowNode(
@@ -392,15 +400,16 @@ public class FlowModelEditDistance {
     /**
      * Recursively marks a branch and all its children as suggested if the parent is suggested.
      */
-    private static Branch markBranchAndDescendants(Branch branch, Set<String> suggestedNodeIds, boolean isParentSuggested) {
+    private static Branch markBranchAndDescendants(Branch branch, Set<String> suggestedNodeIds,
+                                                   boolean isParentSuggested) {
         boolean isBranchSuggested = isParentSuggested;
         
         // Mark branch children
         List<FlowNode> updatedChildren = null;
         if (branch.children() != null) {
             updatedChildren = branch.children().stream()
-                .map(child -> markNodeAndDescendants(child, suggestedNodeIds, isBranchSuggested))
-                .toList();
+                    .map(child -> markNodeAndDescendants(child, suggestedNodeIds, isBranchSuggested))
+                    .toList();
         }
 
         return new Branch(
