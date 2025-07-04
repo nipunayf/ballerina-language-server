@@ -45,7 +45,7 @@ public record FlowNode(
         Map<String, Property> properties,
         Diagnostics diagnostics,
         int flags,
-        boolean suggested
+        Boolean suggested
 ) {
 
     public FlowNode(

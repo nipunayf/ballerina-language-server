@@ -42,7 +42,7 @@ import java.util.Set;
  * @since 1.0.0
  */
 public record Branch(String label, BranchKind kind, Codedata codedata, Repeatable repeatable,
-                     Map<String, Property> properties, List<FlowNode> children, boolean suggested) {
+                     Map<String, Property> properties, List<FlowNode> children, Boolean suggested) {
 
     public static final String BODY_LABEL = "Body";
     public static final String ON_FAILURE_LABEL = "On Failure";
@@ -122,7 +122,7 @@ public record Branch(String label, BranchKind kind, Codedata codedata, Repeatabl
         private Branch.BranchKind kind;
         private final List<FlowNode> children;
         private Repeatable repeatable;
-        private boolean suggested = false;
+        private Boolean suggested;
 
         protected Codedata.Builder<Builder> codedataBuilder;
         protected FormBuilder<Builder> formBuilder;
