@@ -37,8 +37,8 @@ import io.ballerina.flowmodelgenerator.core.SuggestedModelGenerator;
 import io.ballerina.flowmodelgenerator.core.analyzers.function.ModuleNodeAnalyzer;
 import io.ballerina.flowmodelgenerator.core.diagnostics.DiagnosticRequest;
 import io.ballerina.flowmodelgenerator.core.diagnostics.DiagnosticsDebouncer;
-import io.ballerina.flowmodelgenerator.core.difference.DifferenceDebouncer;
-import io.ballerina.flowmodelgenerator.core.difference.DifferenceRequest;
+import io.ballerina.flowmodelgenerator.core.difference.FlowDifferenceDebouncer;
+import io.ballerina.flowmodelgenerator.core.difference.FlowDifferenceRequest;
 import io.ballerina.flowmodelgenerator.core.search.SearchCommand;
 import io.ballerina.flowmodelgenerator.core.utils.FileSystemUtils;
 import io.ballerina.flowmodelgenerator.extension.request.ComponentDeleteRequest;
@@ -275,7 +275,7 @@ public class FlowModelGeneratorService implements ExtendedLanguageServerService 
                 WorkspaceManager workspaceManager = this.workspaceManagerProxy.get();
 
                 // Create a difference request
-                DifferenceRequest differenceRequest = new DifferenceRequest(
+                FlowDifferenceRequest differenceRequest = new FlowDifferenceRequest(
                         request.projectPath(),
                         request.fileContentMap(),
                         request.fileName(),
@@ -284,7 +284,7 @@ public class FlowModelGeneratorService implements ExtendedLanguageServerService 
                         workspaceManager);
 
                 // Use the debouncer to handle the request
-                JsonElement result = DifferenceDebouncer.getInstance()
+                JsonElement result = FlowDifferenceDebouncer.getInstance()
                         .debounce(differenceRequest)
                         .get(); // This will block until the debounced task completes
 

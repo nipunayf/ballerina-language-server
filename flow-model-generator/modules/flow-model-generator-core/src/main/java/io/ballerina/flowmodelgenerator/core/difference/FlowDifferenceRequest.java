@@ -49,7 +49,7 @@ import java.util.concurrent.Callable;
  *
  * @since 1.1.0
  */
-public class DifferenceRequest implements Callable<JsonElement> {
+public class FlowDifferenceRequest implements Callable<JsonElement> {
 
     private static final Gson GSON = new Gson();
 
@@ -61,9 +61,9 @@ public class DifferenceRequest implements Callable<JsonElement> {
     private final Map<Path, TextDocument> originalDocuments;
     private final Diagram currentFlowDiagram;
 
-    public DifferenceRequest(String projectPath, Map<String, String> fileContentMap,
-                             String fileName, String functionName, JsonObject currentFlowDiagram,
-                             WorkspaceManager workspaceManager) {
+    public FlowDifferenceRequest(String projectPath, Map<String, String> fileContentMap,
+                                 String fileName, String functionName, JsonObject currentFlowDiagram,
+                                 WorkspaceManager workspaceManager) {
         this.projectPath = projectPath;
         this.fileContentMap = fileContentMap;
         this.fileName = fileName;
@@ -122,7 +122,6 @@ public class DifferenceRequest implements Callable<JsonElement> {
             }
             Optional<SemanticModel> semanticModel = workspaceManager.semanticModel(targetFilePath);
             Optional<Document> document = workspaceManager.document(targetFilePath);
-
             if (semanticModel.isEmpty() || document.isEmpty()) {
                 return null;
             }

@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @since 1.0.0
  */
-public class DifferenceDebouncer {
+public class FlowDifferenceDebouncer {
 
     // Time unit for the delay
     private static final TimeUnit TIME_UNIT = TimeUnit.MILLISECONDS;
@@ -50,7 +50,7 @@ public class DifferenceDebouncer {
     // Single-thread scheduler to debounce difference tasks.
     private final ScheduledExecutorService scheduler;
 
-    private DifferenceDebouncer() {
+    private FlowDifferenceDebouncer() {
         scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread t = new Thread(r, "DifferenceDebouncer");
             t.setDaemon(true);
@@ -66,7 +66,7 @@ public class DifferenceDebouncer {
      * @param request the difference request to debounce
      * @return a CompletableFuture that will complete with the result of the difference operation
      */
-    public CompletableFuture<JsonElement> debounce(DifferenceRequest request) {
+    public CompletableFuture<JsonElement> debounce(FlowDifferenceRequest request) {
         String key = request.getKey();
         CompletableFuture<JsonElement> promise = new CompletableFuture<>();
 
@@ -100,13 +100,13 @@ public class DifferenceDebouncer {
      *
      * @return the DifferenceDebouncer instance
      */
-    public static DifferenceDebouncer getInstance() {
+    public static FlowDifferenceDebouncer getInstance() {
         return Holder.INSTANCE;
     }
 
     private static class Holder {
 
-        private static final DifferenceDebouncer INSTANCE = new DifferenceDebouncer();
+        private static final FlowDifferenceDebouncer INSTANCE = new FlowDifferenceDebouncer();
     }
 
     /**

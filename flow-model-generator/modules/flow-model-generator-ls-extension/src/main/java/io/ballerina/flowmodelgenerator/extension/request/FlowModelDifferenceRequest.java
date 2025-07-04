@@ -30,7 +30,7 @@ import java.util.Map;
  * @param fileName           the name of the file to identify the relevant flow
  * @param functionName       the name of the function to identify the relevant flow
  * @param currentFlowDiagram the current flow diagram
- * @since 1.0.0
+ * @since 1.1.0
  */
 public record FlowModelDifferenceRequest(String projectPath, Map<String, String> fileContentMap,
                                          String fileName, String functionName, JsonObject currentFlowDiagram) {
