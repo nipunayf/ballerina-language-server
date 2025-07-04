@@ -30,27 +30,38 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Utility class for calculating differences between two diagrams using the Zhang-Shasha tree edit distance algorithm.
- * This implementation follows the Zhang-Shasha algorithm principles for computing tree edit distance and marks nodes as
- * suggested based on detected changes. Only marks nodes as suggested, not individual properties. Properties are not
- * considered in the difference calculation. EVENT_START nodes are excluded from the comparison. Node comparison is
- * based solely on sourceCode.
+ * Utility class for computing differences between two diagrams using the Zhang-Shasha tree edit distance algorithm.
+ *
+ * <p>This implementation applies the Zhang-Shasha algorithm to compare two tree-structured flow models.
+ * <p>
+ * 1. Tree Representation – Both the current and new diagrams are converted into trees. Each node is assigned a
+ * signature based on its source code.
+ * <p>
+ * 2. Post-Order Traversal – Nodes are traversed in post-order to generate a sequence suitable for dynamic programming.
+ * <p>
+ * 3. Leftmost Leaf Descendants – Each node's leftmost leaf is identified to optimize subtree comparisons.
+ * <p>
+ * 4. Edit Distance Calculation – A dynamic programming matrix computes the minimum cost of transforming one tree into
+ * another using insert, delete, and update operations.
+ * <p>
+ * 5. Backtracking – The matrix is used to trace the exact operations that yield the minimum edit distance.
+ * <p>
+ * 6. Diagram Reconstruction – A new diagram is created based on the updated structure, with modified or inserted nodes
+ * marked as 'suggested'.
+ *
+ * <p>Note:
+ * <p> * This implementation only flags entire nodes as suggested.
+ * <p> * It does not track individual property-level changes.
+ * <p> * EVENT_START nodes are excluded from the comparison.
+ * <p> * Node identity is determined solely by source code.
  *
  * @since 1.1.0
  */
 public class FlowModelEditDistance {
 
-    /**
-     * Compares two diagrams and returns a new diagram with suggested changes marked. Uses the Zhang-Shasha tree edit
-     * distance algorithm to detect structural changes.
-     *
-     * @param currentDiagram the current (original) diagram
-     * @param newDiagram     the new (modified) diagram
-     * @return a new diagram with suggested flags set for changed nodes
-     */
     public static Diagram computeDifferences(Diagram currentDiagram, Diagram newDiagram) {
         if (currentDiagram == null || newDiagram == null) {
-            throw new IllegalStateException("Both currentDiagram and newDiagram must be non-null.");
+            throw new IllegalStateException("The current and new diagrams cannot be null");
         }
 
         // Build trees and node maps
@@ -63,12 +74,13 @@ public class FlowModelEditDistance {
         List<TreeNode> currentPostorder = postOrderTraversal(currentTree);
         List<TreeNode> newPostorder = postOrderTraversal(newTree);
 
+        // Calculate the leftmost leaf descendants for both current and new diagrams' postorder traversals.
         calculateLeftmostLeafDescendants(currentPostorder);
         calculateLeftmostLeafDescendants(newPostorder);
 
+        
         int m = currentPostorder.size();
         int n = newPostorder.size();
-
         int[][] dist = new int[m + 1][n + 1];
         int[][] backtrack = new int[m + 1][n + 1];
 
@@ -76,6 +88,7 @@ public class FlowModelEditDistance {
         final int INSERT = 2;
         final int UPDATE = 3;
 
+        // Initialize the cost matrix and backtrack matrix.
         for (int i = 0; i <= m; i++) {
             dist[i][0] = i;
             if (i > 0) {
@@ -89,6 +102,13 @@ public class FlowModelEditDistance {
             }
         }
 
+        // Compute the tree edit distance between the current and new diagrams using dynamic programming.
+        // For each pair of nodes in the postorder traversals, calculate the minimum cost to transform
+        // the subtree rooted at node1 (from the current diagram) into the subtree rooted at node2 (from the new diagram).
+        // The cost matrix 'dist' is filled as follows:
+        //   - If nodes are equal, the update cost is 0; otherwise, it's 1.
+        //   - The minimum cost at each cell is determined by considering deletion, insertion, or update.
+        //   - The 'backtrack' matrix records the operation taken at each step for later reconstruction.
         for (int i = 1; i <= m; i++) {
             for (int j = 1; j <= n; j++) {
                 TreeNode node1 = currentPostorder.get(i - 1);
@@ -117,10 +137,19 @@ public class FlowModelEditDistance {
         Map<String, FlowNode> updatedNodes = new HashMap<>();
         Map<String, FlowNode> insertedNodes = new HashMap<>();
 
+        
+        // Backtrack through the edit distance matrix to determine which nodes were updated or inserted.
+        // 
+        // - Start from the bottom-right of the matrix (i = m, j = n).
+        // - If the operation is UPDATE and the cost increased, mark the node as updated.
+        // - If the operation is INSERT, mark the node as inserted.
+        // - If the operation is DELETE, just move up (i--), as deletions are not tracked for new/updated nodes.
+        // - Continue until both i and j reach 0.
         int i = m;
         int j = n;
         while (i > 0 || j > 0) {
             if (i > 0 && j > 0 && backtrack[i][j] == UPDATE) {
+                // If the cost increased, this is an actual update (not just a match).
                 if (dist[i][j] > dist[i - 1][j - 1]) {
                     TreeNode updatedNode = newPostorder.get(j - 1);
                     if (updatedNode.isFlowNode) {
@@ -130,14 +159,17 @@ public class FlowModelEditDistance {
                 i--;
                 j--;
             } else if (j > 0 && (i == 0 || backtrack[i][j] == INSERT)) {
+                // This node was inserted in the new diagram.
                 TreeNode insertedNode = newPostorder.get(j - 1);
                 if (insertedNode.isFlowNode) {
                     insertedNodes.put(insertedNode.id, newNodeMap.get(insertedNode.id));
                 }
                 j--;
             } else if (i > 0) {
+                // This node was deleted from the current diagram (not tracked here).
                 i--;
             } else {
+                // Should not reach here, but break to avoid infinite loop.
                 break;
             }
         }
@@ -332,32 +364,29 @@ public class FlowModelEditDistance {
 
         parent.addChild(nodeTree);
     }
-
-    /**
-     * Creates a signature for a branch based on its label and kind.
-     */
+    
     private static String getBranchSignature(Branch branch) {
+        // TODO: Add the source code to the branch
         return branch.label() + ":" + branch.kind();
     }
 
-    /**
-     * Creates a signature for a node based on its source code. Node identity is determined by node.codedata.sourceCode
-     * for comparison purposes.
-     */
     private static String getNodeSignature(FlowNode node) {
-        // Use sourceCode as the primary identifier for node comparison
         if (node.codedata() != null && node.codedata().sourceCode() != null) {
             String sourceCode = node.codedata().sourceCode().trim();
+
+            // If the node has children, we only consider the portion of the source code that appears before the body block.
+            // TODO: Update the source code so that it only contains this portion 
             if (node.branches() != null && !node.branches().isEmpty()) {
                 int braceIndex = sourceCode.indexOf('{');
                 if (braceIndex != -1) {
                     return sourceCode.substring(0, braceIndex).trim();
                 }
             }
+
             return sourceCode;
         }
 
-        throw new IllegalStateException("Node sourceCode is required for signature comparison");
+        throw new IllegalStateException("Source code of the node is required for signature comparison");
     }
 
 }
