@@ -164,15 +164,12 @@ public class DebouncedFlowModelDifferenceRequest implements Callable<JsonElement
     }
 
     /**
-     * Generates a unique key for this difference request based on project path, file content map, fileName, and
-     * functionName.
+     * Generates a unique key for this request based only on the project path.
      *
-     * @return a unique key for this request
+     * @return the key for this request
      */
     public String getKey() {
-        return projectPath + ":" + fileContentMap.hashCode() + ":" +
-                (fileName != null ? fileName : "") + ":" +
-                (functionName != null ? functionName : "");
+        return projectPath;
     }
 
     /**
