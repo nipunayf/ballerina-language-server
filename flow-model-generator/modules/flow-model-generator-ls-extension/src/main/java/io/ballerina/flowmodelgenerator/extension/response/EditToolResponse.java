@@ -21,36 +21,19 @@ package io.ballerina.flowmodelgenerator.extension.response;
 import com.google.gson.JsonElement;
 
 /**
- * Represents the response to get tool.
+ * Represents the response to edit tool.
  *
  * @since 2.0.0
  */
-public class GetToolResponse extends AbstractFlowModelResponse {
-    private String toolName;
-    private JsonElement flowNode;
-    private JsonElement methodCallFlowNode;
+public class EditToolResponse extends AbstractFlowModelResponse {
 
-    public void setToolName(String toolName) {
-        this.toolName = toolName;
+    private JsonElement textEdits;
+
+    public void setTextEdits(JsonElement textEdits) {
+        this.textEdits = textEdits;
     }
 
-    public String toolName() {
-        return toolName;
-    }
-
-    public void setFlowNode(JsonElement flowNode) {
-        this.flowNode = flowNode;
-    }
-
-    public JsonElement flowNode() {
-        return flowNode;
-    }
-
-    public void setMethodCallFlowNode(JsonElement methodCallFlowNode) {
-        this.methodCallFlowNode = methodCallFlowNode;
-    }
-
-    public JsonElement methodCallFlowNode() {
-        return methodCallFlowNode;
+    public JsonElement textEdits() {
+        return textEdits;
     }
 }

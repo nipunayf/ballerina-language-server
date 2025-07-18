@@ -335,9 +335,11 @@ public class ModuleNodeAnalyzer extends NodeVisitor {
         Map<String, String> params = new HashMap<>();
         String returnDescription = "";
         for (Node documentationLine : docNode.documentationLines()) {
-            if (isMarkdownDocumentationLine(documentationLine)) {
+            if (documentationLine.kind() == SyntaxKind.MARKDOWN_DOCUMENTATION_LINE) {
                 NodeList<Node> nodes = ((MarkdownDocumentationLineNode) documentationLine).documentElements();
-                nodes.stream().forEach(node -> description.append(node.toSourceCode()));
+                if (nodes.size() == 1) {
+                    description.append(nodes.get(0).toSourceCode());
+                }
             } else if (documentationLine.kind() == SyntaxKind.MARKDOWN_PARAMETER_DOCUMENTATION_LINE) {
                 MarkdownParameterDocumentationLineNode docLine =
                         (MarkdownParameterDocumentationLineNode) documentationLine;
@@ -356,13 +358,6 @@ public class ModuleNodeAnalyzer extends NodeVisitor {
             }
         }
         return new FunctionDocumentation(description.toString(), params, returnDescription);
-    }
-
-    private boolean isMarkdownDocumentationLine(Node node) {
-        SyntaxKind nodeKind = node.kind();
-        return nodeKind == SyntaxKind.MARKDOWN_DOCUMENTATION_LINE ||
-                nodeKind == SyntaxKind.MARKDOWN_REFERENCE_DOCUMENTATION_LINE ||
-                nodeKind == SyntaxKind.MARKDOWN_DEPRECATION_DOCUMENTATION_LINE;
     }
 
     private record FunctionDocumentation(String description, Map<String, String> parameterDescriptions,

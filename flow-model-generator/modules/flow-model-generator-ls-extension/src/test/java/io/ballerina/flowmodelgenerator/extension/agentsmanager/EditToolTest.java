@@ -18,10 +18,9 @@
 
 package io.ballerina.flowmodelgenerator.extension.agentsmanager;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import io.ballerina.flowmodelgenerator.extension.request.GenToolRequest;
+import io.ballerina.flowmodelgenerator.extension.request.EditToolRequest;
 import io.ballerina.modelgenerator.commons.AbstractLSTest;
 import org.eclipse.lsp4j.TextEdit;
 import org.testng.Assert;
@@ -38,11 +37,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Tests for generate tools.
+ * Tests for the agent editing.
  *
- * @since 1.0.0
+ * @since 2.0.0
  */
-public class GenToolsTest extends AbstractLSTest {
+public class EditToolTest extends AbstractLSTest {
 
     private static final Type textEditListType = new TypeToken<Map<String, List<TextEdit>>>() {
     }.getType();
@@ -51,13 +50,7 @@ public class GenToolsTest extends AbstractLSTest {
     @Override
     protected Object[] getConfigsList() {
         return new Object[][]{
-                {Path.of("function_tool.json")},
-                {Path.of("remote_action_tool.json")},
-                {Path.of("remote_action_tool2.json")},
-                {Path.of("remote_action_tool3.json")},
-                {Path.of("remote_action_tool4.json")},
-                {Path.of("remote_action_tool5.json")},
-                {Path.of("remote_action_tool6.json")},
+                {Path.of("edit_tool.json")}
         };
     }
 
@@ -67,10 +60,9 @@ public class GenToolsTest extends AbstractLSTest {
         Path configJsonPath = configDir.resolve(config);
         TestConfig testConfig = gson.fromJson(Files.newBufferedReader(configJsonPath), TestConfig.class);
 
-        String filePath =
-                testConfig.source() == null ? "" : sourceDir.resolve(testConfig.source()).toAbsolutePath().toString();
-        GenToolRequest request = new GenToolRequest(filePath, testConfig.diagram(), testConfig.name(),
-                testConfig.toolDescription(), testConfig.connection());
+        EditToolRequest request =
+                new EditToolRequest(testConfig.toolName(), testConfig.description(),
+                        sourceDir.resolve(testConfig.source()).toAbsolutePath().toString());
         JsonObject jsonMap = getResponse(request).getAsJsonObject("textEdits");
 
         Map<String, List<TextEdit>> actualTextEdits = gson.fromJson(jsonMap, textEditListType);
@@ -100,8 +92,7 @@ public class GenToolsTest extends AbstractLSTest {
 
         if (assertFailure) {
             TestConfig updatedConfig =
-                    new TestConfig(testConfig.source(), testConfig.name(), testConfig.connection(),
-                            testConfig.description(), testConfig.toolDescription(), testConfig.diagram(), newMap);
+                    new TestConfig(testConfig.source(), testConfig.toolName(), testConfig.description(), newMap);
 //            updateConfig(configJsonPath, updatedConfig);
             Assert.fail(String.format("Failed test: '%s' (%s)", testConfig.description(), configJsonPath));
         }
@@ -114,12 +105,12 @@ public class GenToolsTest extends AbstractLSTest {
 
     @Override
     protected Class<? extends AbstractLSTest> clazz() {
-        return GenToolsTest.class;
+        return EditToolTest.class;
     }
 
     @Override
     protected String getApiName() {
-        return "genTool";
+        return "editTool";
     }
 
     @Override
@@ -128,18 +119,15 @@ public class GenToolsTest extends AbstractLSTest {
     }
 
     /**
-     * Represents the test configuration for the flow model getNodeTemplate API.
+     * Represents the test configuration for the source generator test.
      *
-     * @param source          The source file path
-     * @param name            The name of the tool
-     * @param connection      The name of the connection
-     * @param description     The description of the test
-     * @param toolDescription The description of the tool
-     * @param diagram         The flow node diagram
-     * @param output          The expected output
+     * @param source      The source file name
+     * @param description The description of the test
+     * @param toolName     The tool name to edit the description
+     * @param output      The expected output source code
      */
-    private record TestConfig(String source, String name, String connection, String description, String toolDescription,
-                              JsonElement diagram, Map<String, List<TextEdit>> output) {
+    private record TestConfig(String source, String toolName, String description,
+                              Map<String, List<TextEdit>> output) {
 
         public String description() {
             return description == null ? "" : description;
