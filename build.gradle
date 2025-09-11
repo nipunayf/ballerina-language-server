@@ -154,6 +154,20 @@ version = "${value}"
         // Write the updated Ballerina.toml
         ballerinaTomlFile.text = ballerinaTomlContent
         
+        // Display the updated Ballerina.toml content
+        println "Updated Ballerina.toml content:"
+        def catResult = exec {
+            ignoreExitValue = true
+            workingDir targetDir
+            
+            if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
+                commandLine 'cmd', '/c', 'type Ballerina.toml'
+            } else {
+                commandLine '/bin/sh', '-c', 'cat Ballerina.toml'
+            }
+            standardOutput = System.out
+        }
+        
         // Execute bal build in the copied directory
         def errOutput = new ByteArrayOutputStream()
         def result = exec {
