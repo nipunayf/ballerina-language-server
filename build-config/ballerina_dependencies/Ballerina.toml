@@ -106,10 +106,11 @@ org = "ballerinax"
 name = "ai.deepseek"
 version = "1.0.1"
 
-[[dependency]]
-org = "ballerinax"
-name = "ai.mistral"
-version = "1.0.1"
+# Tracked with https://github.com/wso2/product-ballerina-integrator/issues/1249
+#[[dependency]]
+#org = "ballerinax"
+#name = "ai.mistral"
+#version = "1.0.1"
 
 [[dependency]]
 org = "ballerina"
@@ -120,4 +121,3 @@ version = "1.5.0"
 org = "ballerinax"
 name = "ai"
 version = "1.0.1"
-

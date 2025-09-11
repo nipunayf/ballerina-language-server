@@ -45,7 +45,8 @@ public class GetNodeTemplateTest extends AbstractLSTest {
                 {Path.of("get_wso2_model_provider_template.json")},
                 {Path.of("get_openai_model_provider_template.json")},
                 {Path.of("get_azure_model_provider_template.json")},
-                {Path.of("get_mistral_model_provider_template.json")},
+                // Tracked with https://github.com/wso2/product-ballerina-integrator/issues/1249
+//                {Path.of("get_mistral_model_provider_template.json")},
                 {Path.of("get_deepseek_model_provider_template.json")},
                 {Path.of("get_ollama_model_provider_template.json")},
                 {Path.of("get_anthropic_model_provider_template.json")},

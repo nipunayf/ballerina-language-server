@@ -12,6 +12,7 @@ import ballerinax/docusign.dsadmin as _;
 import ballerinax/mysql as _;
 import ballerinax/wso2.controlplane as _;
 import ballerinax/ai as _;
+import ballerina/ai as _;
 import ballerinax/ai.pinecone as _;
 import ballerinax/ai.devant as _;
 import ballerinax/ai.openai as _;
@@ -19,5 +20,5 @@ import ballerinax/ai.ollama as _;
 import ballerinax/ai.azure as _;
 import ballerinax/ai.anthropic as _;
 import ballerinax/ai.deepseek as _;
-import ballerinax/ai.mistral as _;
-import ballerina/ai as _;
+// Tracked with https://github.com/wso2/product-ballerina-integrator/issues/1249
+// import ballerinax/ai.mistral as _;

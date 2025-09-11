@@ -48,7 +48,8 @@ public class CodeGenerationTest extends AbstractLSTest {
                 {Path.of("code_generation_with_wso2_model_provider.json")},
                 {Path.of("code_generation_with_openai_model_provider.json")},
                 {Path.of("code_generation_with_azure_model_provider.json")},
-                {Path.of("code_generation_with_mistral_model_provider.json")},
+                // Tracked with https://github.com/wso2/product-ballerina-integrator/issues/1249
+//                {Path.of("code_generation_with_mistral_model_provider.json")},
                 {Path.of("code_generation_with_deepseek_model_provider.json")},
                 {Path.of("code_generation_with_ollama_model_provider.json")},
                 {Path.of("code_generation_with_anthropic_model_provider.json")},
