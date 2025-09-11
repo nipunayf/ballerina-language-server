@@ -1,0 +1,123 @@
+[package]
+org = "wso2"
+name = "ballerina_dependencies"
+version = "0.1.0"
+
+[build-options]
+sticky = true
+
+[[dependency]]
+org = "ballerinax"
+name = "kafka"
+version = "4.5.0"
+
+[[dependency]]
+org = "ballerinax"
+name = "rabbitmq"
+version = "3.2.0"
+
+[[dependency]]
+org = "ballerinax"
+name = "trigger.github"
+version = "0.10.0"
+
+[[dependency]]
+org = "ballerinax"
+name = "np"
+version = "0.8.1"
+
+[[dependency]]
+org = "ballerinax"
+name = "redis"
+version = "3.1.0"
+
+[[dependency]]
+org = "ballerinax"
+name = "postgresql"
+version = "1.15.0"
+
+[[dependency]]
+org = "ballerinax"
+name = "postgresql.driver"
+version = "1.6.1"
+
+[[dependency]]
+org = "ballerinax"
+name = "trigger.salesforce"
+version = "0.10.0"
+
+[[dependency]]
+org = "ballerinax"
+name = "github"
+version = "5.1.0"
+
+[[dependency]]
+org = "ballerinax"
+name = "snowflake"
+version = "2.2.0"
+
+[[dependency]]
+org = "ballerinax"
+name = "docusign.dsadmin"
+version = "2.0.0"
+
+[[dependency]]
+org = "ballerinax"
+name = "mysql"
+version = "1.16.1"
+
+[[dependency]]
+org = "ballerinax"
+name = "wso2.controlplane"
+version = "1.0.0"
+
+[[dependency]]
+org = "ballerinax"
+name = "ai.pinecone"
+version = "1.1.0"
+
+[[dependency]]
+org = "ballerinax"
+name = "ai.devant"
+version = "1.0.0"
+
+[[dependency]]
+org = "ballerinax"
+name = "ai.openai"
+version = "1.1.0"
+
+[[dependency]]
+org = "ballerinax"
+name = "ai.ollama"
+version = "1.0.1"
+
+[[dependency]]
+org = "ballerinax"
+name = "ai.azure"
+version = "1.0.1"
+
+[[dependency]]
+org = "ballerinax"
+name = "ai.anthropic"
+version = "1.0.1"
+
+[[dependency]]
+org = "ballerinax"
+name = "ai.deepseek"
+version = "1.0.1"
+
+[[dependency]]
+org = "ballerinax"
+name = "ai.mistral"
+version = "1.0.1"
+
+[[dependency]]
+org = "ballerina"
+name = "ai"
+version = "1.5.0"
+
+[[dependency]]
+org = "ballerinax"
+name = "ai"
+version = "1.0.1"
+

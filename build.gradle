@@ -83,8 +83,8 @@ subprojects {
         ballerinaStdLibs "io.ballerina.stdlib:os-ballerina:${stdlibOsVersion}"
         ballerinaStdLibs "io.ballerina.stdlib:uuid-ballerina:${stdlibUuidVersion}"
         ballerinaStdLibs "io.ballerina.stdlib:auth-ballerina:${stdlibAuthVersion}"
-        ballerinaStdLibs "io.ballerina.stdlib:oauth2-ballerina:${stdlibOAuth2Version}"
-        ballerinaStdLibs "io.ballerina.lib:data.jsondata-ballerina:${stdlibJsonDataVersion}"
+        ballerinaStdLibs "io.ballerina.stdlib:oauth2-ballerina:${stdlibOauth2Version}"
+        ballerinaStdLibs "io.ballerina.lib:data.jsondata-ballerina:${stdlibJsondataVersion}"
         ballerinaStdLibs "io.ballerina.stdlib:http-ballerina:${stdlibHttpVersion}"
         ballerinaStdLibs "io.ballerina.stdlib:graphql-ballerina:${stdlibGraphqlVersion}"
         ballerinaStdLibs "io.ballerina.stdlib:sql-ballerina:${stdLibSqlVersion}"
@@ -103,46 +103,75 @@ if (moduleVersion.indexOf('-') != -1) {
     moduleVersion = moduleVersion.substring(0, moduleVersion.indexOf('-'))
 }
 
-// TODO: Remove this once the workspace manager is refactored to import modules where necessary.
-def pullBallerinaModule(String packageName, String version = null, String orgName = "ballerinax") {
-    tasks.register("pull${orgName.capitalize()}Module_${packageName.replace('/', '_')}") {
-        doLast {
-            def errOutput = new ByteArrayOutputStream()
-            def result = exec {
-                ignoreExitValue = true
+task resolveBallerinaDependencies {
+    description 'Resolves ballerina_dependencies by copying to build, adding stdlib dependencies, and executing bal build'
+    group 'build'
+    
+    def sourceDir = file("build-config/ballerina_dependencies")
+    def targetDir = file("$buildDir/ballerina_dependencies")
+    
+    inputs.dir sourceDir
+    inputs.file 'gradle.properties'
+    outputs.dir targetDir
+    
+    doLast {
+        // Copy the directory to build location
+        copy {
+            from sourceDir
+            into targetDir
+        }
+        
+        // Read gradle.properties and extract stdlib versions
+        def gradleProps = new Properties()
+        gradleProps.load(file('gradle.properties').newInputStream())
+        
+        def ballerinaTomlFile = file("$targetDir/Ballerina.toml")
+        def ballerinaTomlContent = ballerinaTomlFile.text
+        
+        // Extract stdlib dependencies and add them to Ballerina.toml
+        gradleProps.each { key, value ->
+            if (key.toString().startsWith('stdlib') && key.toString().endsWith('Version')) {
+                // Extract module name: stdlibHttpVersion -> http
+                def moduleName = key.toString().replaceFirst('stdlib', '').replaceFirst('Version', '')
+                // Convert first character to lowercase: Http -> http
+                moduleName = moduleName[0].toLowerCase() + moduleName.substring(1)
+                
+                // Check if dependency already exists
+                def dependencyPattern = ~/(?s).*\[\[dependency\]\]\s*org\s*=\s*"ballerina"\s*name\s*=\s*"${moduleName}".*/
+                if (!ballerinaTomlContent.matches(dependencyPattern)) {
+                    // Add the dependency
+                    ballerinaTomlContent += """
+[[dependency]]
+org = "ballerina"
+name = "${moduleName}"
+version = "${value}"
 
-                // Check if the package exists in the ballerina user home
-                def centralRepoDir = new File(System.getProperty("user.home"), ".ballerina/repositories/central.ballerina.io/bala/${orgName}")
-                if (centralRepoDir.exists()) {
-                    def pkgDir = new File(centralRepoDir, packageName)
-                    if (pkgDir.exists()) {
-                        if (version != null) {
-                            // Check if the specific version exists
-                            def versionDir = new File(pkgDir, version)
-                            if (versionDir.exists()) {
-                                commandLine 'echo', "Package ${packageName} version ${version} exists"
-                                return
-                            }
-                        } else {
-                            // If no version is specified, check for any version
-                            commandLine 'echo', "Package ${packageName} exists"
-                            return
-                        }
-                    }
+"""
                 }
-
-                def balPullCommand = "bal pull ${orgName}/${packageName}${version ? ':' + version : ''} --sticky=false"
-                if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
-                    commandLine 'cmd', '/c', balPullCommand
-                } else {
-                    commandLine '/bin/sh', '-c', balPullCommand
-                }
-                errorOutput = errOutput
             }
-            if (result.exitValue != 0) {
-                println errOutput
-                throw new GradleException("Failed to pull Ballerina module: ${packageName}")
+        }
+        
+        // Write the updated Ballerina.toml
+        ballerinaTomlFile.text = ballerinaTomlContent
+        
+        // Execute bal build in the copied directory
+        def errOutput = new ByteArrayOutputStream()
+        def result = exec {
+            ignoreExitValue = true
+            workingDir targetDir
+            
+            def balBuildCommand = "bal build"
+            if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
+                commandLine 'cmd', '/c', balBuildCommand
+            } else {
+                commandLine '/bin/sh', '-c', balBuildCommand
             }
+            errorOutput = errOutput
+        }
+        
+        if (result.exitValue != 0) {
+            println errOutput
+            throw new GradleException("Failed to build Ballerina dependencies")
         }
     }
 }
@@ -332,16 +361,8 @@ task pack(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
     }
 }
 
-task pullBallerinaModules {
-    dependsOn pullBallerinaModule('ai', ballerinaxAiAgent)
-    dependsOn pullBallerinaModule('kafka', ballerinaxKafkaVersion)
-    dependsOn pullBallerinaModule('rabbitmq', ballerinaxRabbitmqVersion)
-    dependsOn pullBallerinaModule('trigger.github', ballerinaxGithubTriggerVersion)
-    dependsOn pullBallerinaModule('np', ballerinaxNp)
-}
-
 test {
-    dependsOn pullBallerinaModules
+    dependsOn resolveBallerinaDependencies
 }
 
 task buildFlow {
