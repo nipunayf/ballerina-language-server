@@ -141,7 +141,7 @@ public class DebouncedFlowModelDifferenceRequest implements Callable<JsonElement
                 }
             }
 
-            // Generate an error message o if the respective function definition node is not found
+            // Generate an error message if the respective function definition node is not found
             if (targetFunctionNode == null) {
                 throw new IllegalArgumentException("Function '" + functionName + "' not found in file '" +
                         fileName + "'.");
