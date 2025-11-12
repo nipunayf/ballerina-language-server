@@ -59,6 +59,7 @@ import org.ballerinalang.langserver.commons.DocumentServiceContext;
 import org.ballerinalang.langserver.commons.completion.LSCompletionItem;
 import org.ballerinalang.langserver.completions.SymbolCompletionItem;
 import org.ballerinalang.langserver.completions.util.ItemResolverConstants;
+import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
@@ -516,6 +517,39 @@ public final class CommonUtil {
                 symbol.kind() == SymbolKind.CLASS || symbol.kind() == SymbolKind.ENUM
                 || symbol.kind() == SymbolKind.ENUM_MEMBER || symbol.kind() == SymbolKind.CONSTANT)
                 && !Names.ERROR.getValue().equals(symbol.getName().orElse(""));
+    }
+
+    /**
+     * Filters completion items to include only anydata subtypes and module completions.
+     * This is used for configurable variable declarations which only accept anydata subtypes.
+     *
+     * @param context the completion context
+     * @param completionItems the list of completion items to filter
+     * @return filtered list containing only anydata subtypes and module completions
+     */
+    public static List<LSCompletionItem> filterAnydataSubtypes(BallerinaCompletionContext context,
+                                                               List<LSCompletionItem> completionItems) {
+        TypeSymbol anydataType = context.currentSemanticModel().get().types().ANYDATA;
+        return completionItems.stream()
+                .filter(item -> {
+                    // Keep module completions so users can access types from other modules
+                    if (item.getCompletionItem().getKind() == CompletionItemKind.Module) {
+                        return true;
+                    }
+                    // For symbol completions, check if the type is a subtype of anydata
+                    if (item.getType() == LSCompletionItem.CompletionItemType.SYMBOL) {
+                        Optional<Symbol> symbol = ((SymbolCompletionItem) item).getSymbol();
+                        if (symbol.isPresent() && symbol.get() instanceof TypeSymbol) {
+                            return ((TypeSymbol) symbol.get()).subtypeOf(anydataType);
+                        }
+                        // If it's a symbol but not a TypeSymbol, filter it out
+                        return false;
+                    }
+                    // Keep snippets and keywords (they allow defining inline types like records, tables)
+                    return item.getType() == LSCompletionItem.CompletionItemType.SNIPPET ||
+                           item.getType() == LSCompletionItem.CompletionItemType.KEYWORD;
+                })
+                .collect(Collectors.toList());
     }
 
     /**
