@@ -24,6 +24,7 @@ import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.api.symbols.TypeDefinitionSymbol;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
+import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.syntax.tree.FunctionArgumentNode;
 import io.ballerina.compiler.syntax.tree.ImplicitNewExpressionNode;
 import io.ballerina.compiler.syntax.tree.Node;
@@ -138,6 +139,17 @@ public class ImplicitNewExpressionNodeContext extends InvocationNodeContextProvi
             return completionItems;
         }
         TypeSymbol typeSymbol = CommonUtil.getRawType(type.get());
+        // Handle union types by extracting the object/class type from union members
+        if (typeSymbol.typeKind() == TypeDescKind.UNION) {
+            Optional<TypeSymbol> classSymbol = ((UnionTypeSymbol) typeSymbol).memberTypeDescriptors().stream()
+                    .filter(member -> CommonUtil.getRawType(member).typeKind() == TypeDescKind.OBJECT)
+                    .map(CommonUtil::getRawType)
+                    .findFirst();
+            if (classSymbol.isEmpty()) {
+                return completionItems;
+            }
+            typeSymbol = classSymbol.get();
+        }
         if (typeSymbol.kind() != SymbolKind.CLASS) {
             return completionItems;
         }
