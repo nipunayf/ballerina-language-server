@@ -26,9 +26,9 @@ import io.ballerina.projects.Package;
 import io.ballerina.projects.Project;
 import org.ballerinalang.langserver.commons.HoverContext;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Resolves a hover symbol.
@@ -37,8 +37,7 @@ import java.util.Optional;
  */
 public class HoverSymbolResolver extends NodeTransformer<Optional<Symbol>> {
 
-    //Todo: use a set instead
-    private final List<Node> visitedNodes = new ArrayList<>();
+    private final Set<Node> visitedNodes = new HashSet<>();
 
     private final SemanticModel semanticModel;
     private final HoverContext context;
