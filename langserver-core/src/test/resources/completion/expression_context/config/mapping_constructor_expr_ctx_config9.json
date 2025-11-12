@@ -1,10 +1,10 @@
 {
   "position": {
-    "line": 18,
-    "character": 28
+    "line": 10,
+    "character": 21
   },
-  "source": "expression_context/source/mapping_constructor_expr_ctx_source8.bal",
-  "description": "",
+  "source": "expression_context/source/mapping_constructor_expr_ctx_source9.bal",
+  "description": "Test completions for union record type with underscore binding - Issue #43706",
   "items": [
     {
       "label": "readonly",
@@ -16,21 +16,16 @@
       "insertTextFormat": "Snippet"
     },
     {
-      "label": "Fill Foo Required Fields",
-      "kind": "Property",
-      "detail": "Foo",
-      "sortText": "R",
-      "filterText": "fill",
-      "insertText": "id: ${1:0}",
-      "insertTextFormat": "Snippet"
+      "label": "val",
+      "kind": "Field"
     },
     {
-      "label": "id",
-      "kind": "Field",
-      "detail": "Foo.id",
-      "sortText": "K",
-      "insertText": "id: ${1:0}",
-      "insertTextFormat": "Snippet"
+      "label": "a",
+      "kind": "Field"
+    },
+    {
+      "label": "b",
+      "kind": "Field"
     }
   ]
 }

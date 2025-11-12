@@ -1,10 +1,10 @@
 {
   "position": {
-    "line": 20,
-    "character": 28
+    "line": 6,
+    "character": 15
   },
-  "source": "expression_context/source/mapping_constructor_expr_ctx_source8.bal",
-  "description": "",
+  "source": "expression_context/source/mapping_constructor_expr_ctx_source10.bal",
+  "description": "Test completions for normal record type with underscore binding - Issue #43706",
   "items": [
     {
       "label": "readonly",
@@ -16,21 +16,12 @@
       "insertTextFormat": "Snippet"
     },
     {
-      "label": "Fill Bar Required Fields",
-      "kind": "Property",
-      "detail": "Bar",
-      "sortText": "R",
-      "filterText": "fill",
-      "insertText": "id: ${1:0}",
-      "insertTextFormat": "Snippet"
+      "label": "name",
+      "kind": "Field"
     },
     {
-      "label": "id",
-      "kind": "Field",
-      "detail": "Bar.id",
-      "sortText": "K",
-      "insertText": "id: ${1:0}",
-      "insertTextFormat": "Snippet"
+      "label": "age",
+      "kind": "Field"
     }
   ]
 }

@@ -44,6 +44,7 @@ import org.ballerinalang.langserver.completions.SnippetCompletionItem;
 import org.ballerinalang.langserver.completions.SpreadCompletionItem;
 import org.ballerinalang.langserver.completions.builder.SpreadCompletionItemBuilder;
 import org.ballerinalang.langserver.completions.providers.AbstractCompletionProvider;
+import org.ballerinalang.langserver.completions.util.ContextTypeResolver;
 import org.ballerinalang.langserver.completions.util.QNameRefCompletionUtil;
 import org.ballerinalang.langserver.completions.util.Snippet;
 import org.ballerinalang.langserver.completions.util.SortingUtil;
@@ -105,10 +106,18 @@ public abstract class MappingContextProvider<T extends Node> extends AbstractCom
     protected List<RawTypeSymbolWrapper<RecordTypeSymbol>> getRecordTypeDescs(BallerinaCompletionContext context,
                                                                               Node node) {
         Optional<TypeSymbol> resolvedType = Optional.empty();
-        if (context.currentSemanticModel().isPresent() && context.currentDocument().isPresent()) {
-            LinePosition linePosition = node.location().lineRange().endLine();
-            resolvedType = context.currentSemanticModel().get()
-                    .expectedType(context.currentDocument().get(), linePosition);
+        if (context.currentSemanticModel().isPresent()) {
+            // Try to resolve the type using ContextTypeResolver which handles fallback to parent nodes
+            // This is especially important for underscore bindings like: First|Second _ = {};
+            ContextTypeResolver resolver = new ContextTypeResolver(context);
+            resolvedType = node.apply(resolver);
+
+            // If ContextTypeResolver didn't find a type, fall back to the original method
+            if (resolvedType.isEmpty() && context.currentDocument().isPresent()) {
+                LinePosition linePosition = node.location().lineRange().endLine();
+                resolvedType = context.currentSemanticModel().get()
+                        .expectedType(context.currentDocument().get(), linePosition);
+            }
         }
 
         if (resolvedType.isEmpty()) {
