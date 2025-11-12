@@ -16,6 +16,7 @@
 package org.ballerinalang.langserver.completions.providers.context;
 
 import io.ballerina.compiler.api.symbols.Symbol;
+import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.syntax.tree.ModuleVariableDeclarationNode;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.QualifiedNameReferenceNode;
@@ -29,12 +30,14 @@ import org.ballerinalang.langserver.commons.completion.LSCompletionException;
 import org.ballerinalang.langserver.commons.completion.LSCompletionItem;
 import org.ballerinalang.langserver.completions.CompleteExpressionValidator;
 import org.ballerinalang.langserver.completions.SnippetCompletionItem;
+import org.ballerinalang.langserver.completions.SymbolCompletionItem;
 import org.ballerinalang.langserver.completions.builder.FunctionCompletionItemBuilder;
 import org.ballerinalang.langserver.completions.providers.context.util.ModulePartNodeContextUtil;
 import org.ballerinalang.langserver.completions.util.CompletionUtil;
 import org.ballerinalang.langserver.completions.util.QNameRefCompletionUtil;
 import org.ballerinalang.langserver.completions.util.Snippet;
 import org.ballerinalang.langserver.completions.util.SortingUtil;
+import org.eclipse.lsp4j.CompletionItemKind;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -205,7 +208,7 @@ public class ModuleVariableDeclarationNodeContext extends
                 completionItems.add(new SnippetCompletionItem(context, Snippet.DEF_EXPRESSION_BODIED_FUNCTION.get()));
                 break;
             case CONFIGURABLE_KEYWORD:
-                completionItems.addAll(this.getTypeDescContextItems(context));
+                completionItems.addAll(filterAnydataSubtypes(context, this.getTypeDescContextItems(context)));
                 break;
             case FINAL_KEYWORD:
                 completionItems.addAll(this.getTypeDescContextItems(context));
@@ -256,6 +259,39 @@ public class ModuleVariableDeclarationNodeContext extends
     private boolean hasConfigurableQualifier(BallerinaCompletionContext context, ModuleVariableDeclarationNode node) {
         Optional<Token> lastQualifier = CommonUtil.getLastQualifier(context, node);
         return lastQualifier.isPresent() && lastQualifier.get().kind().equals(SyntaxKind.CONFIGURABLE_KEYWORD);
+    }
+
+    /**
+     * Filters completion items to include only anydata subtypes and module completions.
+     * This is used for configurable variable declarations which only accept anydata subtypes.
+     *
+     * @param context the completion context
+     * @param completionItems the list of completion items to filter
+     * @return filtered list containing only anydata subtypes and module completions
+     */
+    private List<LSCompletionItem> filterAnydataSubtypes(BallerinaCompletionContext context,
+                                                         List<LSCompletionItem> completionItems) {
+        TypeSymbol anydataType = context.currentSemanticModel().get().types().ANYDATA;
+        return completionItems.stream()
+                .filter(item -> {
+                    // Keep module completions so users can access types from other modules
+                    if (item.getCompletionItem().getKind() == CompletionItemKind.Module) {
+                        return true;
+                    }
+                    // For symbol completions, check if the type is a subtype of anydata
+                    if (item.getType() == LSCompletionItem.CompletionItemType.SYMBOL) {
+                        Optional<Symbol> symbol = ((SymbolCompletionItem) item).getSymbol();
+                        if (symbol.isPresent() && symbol.get() instanceof TypeSymbol) {
+                            return ((TypeSymbol) symbol.get()).subtypeOf(anydataType);
+                        }
+                        // If it's a symbol but not a TypeSymbol, filter it out
+                        return false;
+                    }
+                    // Keep snippets and keywords (they allow defining inline types like records, tables)
+                    return item.getType() == LSCompletionItem.CompletionItemType.SNIPPET ||
+                           item.getType() == LSCompletionItem.CompletionItemType.KEYWORD;
+                })
+                .collect(Collectors.toList());
     }
 
     enum ResolvedContext {
