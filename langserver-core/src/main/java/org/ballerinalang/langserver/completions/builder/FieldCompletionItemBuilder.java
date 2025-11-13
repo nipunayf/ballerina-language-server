@@ -17,10 +17,14 @@
  */
 package org.ballerinalang.langserver.completions.builder;
 
+import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.ObjectFieldSymbol;
+import io.ballerina.compiler.api.symbols.Qualifier;
 import io.ballerina.compiler.api.symbols.RecordFieldSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
+import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
+import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.syntax.tree.FieldAccessExpressionNode;
 import io.ballerina.compiler.syntax.tree.MethodCallExpressionNode;
@@ -32,6 +36,7 @@ import org.ballerinalang.langserver.common.utils.CommonUtil;
 import org.ballerinalang.langserver.commons.BallerinaCompletionContext;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionItemKind;
+import org.eclipse.lsp4j.CompletionItemLabelDetails;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
@@ -45,6 +50,10 @@ import java.util.Optional;
  * @since 1.0.0
  */
 public final class FieldCompletionItemBuilder {
+
+    private static final String LISTENER_CATEGORY = "Listener";
+    private static final String CLIENT_CATEGORY = "Client";
+    private static final String RECORD_CATEGORY = "Record";
 
     private FieldCompletionItemBuilder() {
     }
@@ -92,6 +101,9 @@ public final class FieldCompletionItemBuilder {
 
         completionItem.setInsertText(CommonUtil.escapeSpecialCharsInInsertText(insertText));
 
+        // Add label details with category
+        addLabelDetails(completionItem, symbol.typeDescriptor());
+
         return completionItem;
     }
 
@@ -113,6 +125,9 @@ public final class FieldCompletionItemBuilder {
             item.setInsertText(insertText);
             item.setKind(CompletionItemKind.Field);
 
+            // Add label details with category
+            addLabelDetails(item, objectFieldSymbol.typeDescriptor());
+
             return item;
         }
 
@@ -126,7 +141,40 @@ public final class FieldCompletionItemBuilder {
      * @return {@link CompletionItem} generated completion item
      */
     private static CompletionItem build(ObjectFieldSymbol symbol) {
-        return getCompletionItem(symbol);
+        CompletionItem item = getCompletionItem(symbol);
+        // Add label details with category
+        addLabelDetails(item, symbol.typeDescriptor());
+        return item;
+    }
+
+    /**
+     * Add label details with category information to the completion item.
+     *
+     * @param item        Completion item
+     * @param typeSymbol  Type descriptor of the field
+     */
+    private static void addLabelDetails(CompletionItem item, TypeSymbol typeSymbol) {
+        CompletionItemLabelDetails labelDetails = new CompletionItemLabelDetails();
+
+        if (typeSymbol instanceof TypeReferenceTypeSymbol typeReferenceTypeSymbol) {
+            TypeSymbol unwrappedType = typeReferenceTypeSymbol.typeDescriptor();
+            if (unwrappedType instanceof ClassSymbol classSymbol) {
+                if (classSymbol.qualifiers().contains(Qualifier.LISTENER)) {
+                    labelDetails.setDescription(LISTENER_CATEGORY);
+                } else if (classSymbol.qualifiers().contains(Qualifier.CLIENT)) {
+                    labelDetails.setDescription(CLIENT_CATEGORY);
+                }
+            } else if (unwrappedType.typeKind() == TypeDescKind.RECORD) {
+                labelDetails.setDescription(RECORD_CATEGORY);
+            }
+        } else if (CommonUtil.getRawType(typeSymbol).typeKind() == TypeDescKind.RECORD) {
+            labelDetails.setDescription(RECORD_CATEGORY);
+        }
+
+        // Only set label details if a category was identified
+        if (labelDetails.getDescription() != null) {
+            item.setLabelDetails(labelDetails);
+        }
     }
 
     private static Optional<TextEdit> getRecordFieldAdditionalTextEdit(RecordFieldSymbol recordFieldSymbol,
