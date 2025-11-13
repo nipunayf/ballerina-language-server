@@ -19,6 +19,8 @@ package org.ballerinalang.langserver.completions.builder;
 
 import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.Qualifier;
+import io.ballerina.compiler.api.symbols.RecordTypeSymbol;
+import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.VariableSymbol;
@@ -38,6 +40,7 @@ public final class VariableCompletionItemBuilder {
     private static final String CONFIGURABLE_CATEGORY = "Configurable";
     private static final String LISTENER_CATEGORY = "Listener";
     private static final String CLIENT_CATEGORY = "Client";
+    private static final String RECORD_CATEGORY = "Record";
 
     private VariableCompletionItemBuilder() {
     }
@@ -70,7 +73,11 @@ public final class VariableCompletionItemBuilder {
                 if (typeSymbol instanceof ClassSymbol classSymbol
                         && classSymbol.qualifiers().contains(Qualifier.CLIENT)) {
                     labelDetails.setDescription(CLIENT_CATEGORY);
+                } else if (typeSymbol.typeKind() == TypeDescKind.RECORD) {
+                    labelDetails.setDescription(RECORD_CATEGORY);
                 }
+            } else if (CommonUtil.getRawType(varSymbol.typeDescriptor()).typeKind() == TypeDescKind.RECORD) {
+                labelDetails.setDescription(RECORD_CATEGORY);
             }
         }
         item.setLabelDetails(labelDetails);
