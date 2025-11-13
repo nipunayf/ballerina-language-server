@@ -479,11 +479,13 @@ public class ConfigEditorV2Service implements ExtendedLanguageServerService {
             Package rootPackage, Toml configTomlValues) {
         Map<String, List<FlowNode>> moduleConfigVarMap = new HashMap<>();
         String pkgName = rootPackage.packageOrg().value() + FORWARD_SLASH + rootPackage.packageName().value();
+        String version = rootPackage.descriptor().version().toString();
 
         for (Module module : rootPackage.modules()) {
             String modName = module.moduleName().moduleNamePart() != null ?
                     module.moduleName().moduleNamePart() : EMPTY_STRING;
-            List<FlowNode> variables = extractModuleConfigVariables(module, configTomlValues, pkgName, modName, true);
+            List<FlowNode> variables = extractModuleConfigVariables(module, configTomlValues, pkgName, modName, true,
+                    version);
             moduleConfigVarMap.put(modName, variables);
         }
 
@@ -530,7 +532,8 @@ public class ConfigEditorV2Service implements ExtendedLanguageServerService {
      * Extracts configuration variables from the given module.
      */
     private List<FlowNode> extractModuleConfigVariables(Module module, Toml configTomlValues,
-                                                        String packageName, String moduleName, boolean isRootProject) {
+                                                        String packageName, String moduleName, boolean isRootProject,
+                                                        String version) {
         List<FlowNode> configVariables = new LinkedList<>();
         Optional<SemanticModel> semanticModel = getSemanticModel(module);
 
@@ -546,7 +549,7 @@ public class ConfigEditorV2Service implements ExtendedLanguageServerService {
                     ModuleVariableDeclarationNode varDeclarationNode = (ModuleVariableDeclarationNode) node;
                     if (hasConfigurableQualifier(varDeclarationNode)) {
                         FlowNode configVarNode = constructConfigVarNode(varDeclarationNode, semanticModel.orElse(null),
-                                configTomlValues, packageName, moduleName, isRootProject);
+                                configTomlValues, packageName, moduleName, isRootProject, version);
                         configVariables.add(configVarNode);
                     }
                 }
@@ -631,12 +634,13 @@ public class ConfigEditorV2Service implements ExtendedLanguageServerService {
         Map<String, List<FlowNode>> moduleConfigs = new HashMap<>();
         String packageName = dependency.packageInstance().packageOrg().value() + FORWARD_SLASH +
                 dependency.packageInstance().packageName().value();
+        String version = dependency.packageInstance().descriptor().version().toString();
 
         for (Module module : dependency.packageInstance().modules()) {
             String moduleName = module.moduleName().moduleNamePart() != null ?
                     module.moduleName().moduleNamePart() : EMPTY_STRING;
             List<FlowNode> variables = extractModuleConfigVariables(module, configTomlValues, packageName, moduleName,
-                    false);
+                    false, version);
             if (!variables.isEmpty()) {
                 moduleConfigs.put(moduleName, variables);
             }
@@ -704,7 +708,8 @@ public class ConfigEditorV2Service implements ExtendedLanguageServerService {
      */
     private FlowNode constructConfigVarNode(ModuleVariableDeclarationNode variableNode,
                                             SemanticModel semanticModel, Toml configTomlValues,
-                                            String packageName, String moduleName, boolean isRootProject) {
+                                            String packageName, String moduleName, boolean isRootProject,
+                                            String version) {
 
         NodeBuilder nodeBuilder = NodeBuilder.getNodeFromKind(NodeKind.CONFIG_VARIABLE)
                 .semanticModel(semanticModel)
@@ -731,12 +736,21 @@ public class ConfigEditorV2Service implements ExtendedLanguageServerService {
             }
         }
 
+        // Extract org and package name from the combined packageName (format: org/packageName)
+        String[] pkgParts = packageName.split(FORWARD_SLASH);
+        String org = pkgParts.length > 0 ? pkgParts[0] : EMPTY_STRING;
+        String pkgName = pkgParts.length > 1 ? pkgParts[1] : EMPTY_STRING;
+
         return nodeBuilder
                 .metadata()
                 .stepOut()
                 .codedata()
                 .node(NodeKind.CONFIG_VARIABLE)
                 .lineRange(variableNode.lineRange())
+                .org(org)
+                .module(moduleName)
+                .packageName(pkgName)
+                .version(version)
                 .stepOut()
                 .properties()
                 .variableName(variableName, isRootProject)
