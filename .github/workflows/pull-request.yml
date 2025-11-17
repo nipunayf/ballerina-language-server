@@ -42,6 +42,18 @@ jobs:
           packagePAT: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew build
 
+      - name: Generate Jacoco report
+        if: github.event_name == 'pull_request'
+        run: ./gradlew createCodeCoverageReport
+
+      - name: Upload coverage to Codecov
+        if: github.event_name == 'pull_request'
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./.jacoco/reports/jacoco/report.xml
+          fail_ci_if_error: false
+          verbose: true
+
   windows-build:
     runs-on: windows-latest
     timeout-minutes: 60

@@ -418,6 +418,33 @@ cyclonedxBom {
     includeBomSerialNumber = true
 }
 
+task createCodeCoverageReport(type: JacocoReport) {
+    dependsOn subprojects*.test
+
+    // Collect execution data from all subprojects
+    executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+
+    // Collect source files from all subprojects
+    subprojects.each {
+        sourceSets it.sourceSets.main
+    }
+
+    // Configure reports
+    reports {
+        xml.required = true
+        xml.destination file("${rootDir}/.jacoco/reports/jacoco/report.xml")
+        html.required = true
+        html.destination file("${rootDir}/.jacoco/reports/jacoco/html")
+    }
+
+    // Collect class files from all subprojects
+    classDirectories.setFrom(files(subprojects.collect {
+        it.fileTree(dir: "${it.buildDir}/classes/java/main", exclude: [
+            '**/module-info.class'
+        ])
+    }))
+}
+
 build.dependsOn test
 build.doNotTrackState("build needs to run every time")
 publishToMavenLocal.dependsOn build
