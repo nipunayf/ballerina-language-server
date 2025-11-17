@@ -17,10 +17,13 @@
  */
 package org.ballerinalang.langserver.completions.builder;
 
+import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.ObjectFieldSymbol;
+import io.ballerina.compiler.api.symbols.Qualifier;
 import io.ballerina.compiler.api.symbols.RecordFieldSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
+import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.compiler.syntax.tree.FieldAccessExpressionNode;
 import io.ballerina.compiler.syntax.tree.MethodCallExpressionNode;
@@ -32,11 +35,13 @@ import org.ballerinalang.langserver.common.utils.CommonUtil;
 import org.ballerinalang.langserver.commons.BallerinaCompletionContext;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionItemKind;
+import org.eclipse.lsp4j.CompletionItemLabelDetails;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -46,7 +51,46 @@ import java.util.Optional;
  */
 public final class FieldCompletionItemBuilder {
 
+    private static final String CONFIGURABLE_CATEGORY = "Configurable";
+    private static final String LISTENER_CATEGORY = "Listener";
+    private static final String CLIENT_CATEGORY = "Client";
+    private static final String RECORD_CATEGORY = "Record";
+
     private FieldCompletionItemBuilder() {
+    }
+
+    /**
+     * Get the category description for a symbol based on its type and qualifiers.
+     * This method is shared between field and variable completion items.
+     *
+     * @param typeDescriptor type descriptor of the symbol
+     * @param qualifiers     qualifiers of the symbol
+     * @return {@link Optional} containing the category description if applicable
+     */
+    public static Optional<String> getCategoryDescription(TypeSymbol typeDescriptor, List<Qualifier> qualifiers) {
+        // Check qualifiers first
+        if (qualifiers.contains(Qualifier.CONFIGURABLE)) {
+            return Optional.of(CONFIGURABLE_CATEGORY);
+        }
+        if (qualifiers.contains(Qualifier.LISTENER)) {
+            return Optional.of(LISTENER_CATEGORY);
+        }
+
+        // Check type using getRawType to unwrap references and intersections
+        TypeSymbol rawType = CommonUtil.getRawType(typeDescriptor);
+
+        // Check for Client class
+        if (rawType instanceof ClassSymbol classSymbol
+                && classSymbol.qualifiers().contains(Qualifier.CLIENT)) {
+            return Optional.of(CLIENT_CATEGORY);
+        }
+
+        // Check for Record type
+        if (rawType.typeKind() == TypeDescKind.RECORD) {
+            return Optional.of(RECORD_CATEGORY);
+        }
+
+        return Optional.empty();
     }
 
     /**
