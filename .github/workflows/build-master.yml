@@ -2,7 +2,7 @@ name: Build master
 on:
   push:
     branches:
-      - main
+      - master
   workflow_dispatch:
 
 jobs:
@@ -12,6 +12,9 @@ jobs:
     concurrency:
       group: ${{ github.ref_name }}-ubuntu
       cancel-in-progress: true
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -52,6 +55,7 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           files: ./.jacoco/reports/jacoco/report.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
           verbose: true
 
