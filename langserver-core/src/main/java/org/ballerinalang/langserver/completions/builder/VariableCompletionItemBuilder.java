@@ -17,10 +17,9 @@
  */
 package org.ballerinalang.langserver.completions.builder;
 
-import io.ballerina.compiler.api.symbols.Qualifier;
-import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.VariableSymbol;
 import org.ballerinalang.langserver.common.utils.CommonUtil;
+import org.ballerinalang.langserver.completions.util.CompletionItemUtil;
 import org.ballerinalang.langserver.completions.util.ItemResolverConstants;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionItemKind;
@@ -55,7 +54,7 @@ public final class VariableCompletionItemBuilder {
         CompletionItemLabelDetails labelDetails = new CompletionItemLabelDetails();
         labelDetails.setDetail(" " + detail);
         if (varSymbol != null) {
-            FieldCompletionItemBuilder.getCategoryDescription(varSymbol.typeDescriptor(), varSymbol.qualifiers())
+            CompletionItemUtil.getCategoryDescription(varSymbol.typeDescriptor(), varSymbol.qualifiers())
                     .ifPresent(labelDetails::setDescription);
         }
         item.setLabelDetails(labelDetails);
