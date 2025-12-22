@@ -18,6 +18,7 @@
 
 package io.ballerina.designmodelgenerator.extension;
 
+import io.ballerina.artifactsgenerator.Artifact;
 import io.ballerina.artifactsgenerator.ArtifactGenerationDebouncer;
 import io.ballerina.artifactsgenerator.ArtifactsGenerator;
 import io.ballerina.compiler.api.SemanticModel;
@@ -35,6 +36,7 @@ import org.ballerinalang.langserver.commons.eventsync.spi.EventSubscriber;
 import org.ballerinalang.langserver.commons.workspace.WorkspaceDocumentException;
 
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -71,6 +73,11 @@ public class PublishArtifactsSubscriber implements EventSubscriber {
         Path projectPath = context.workspace().projectRoot(context.filePath());
         String projectKey = projectPath.toUri().toString();
 
+        // Derive the project and module name
+        Optional<Module> currentModule = context.currentModule();
+        String projectName = currentModule.map(m -> m.packageInstance().packageName().value()).orElse(null);
+        String moduleName = currentModule.map(m -> m.moduleName().moduleNamePart()).orElse(null);
+
         // Handle reloadProject operation
         if (RELOAD_PROJECT.equals(operationName)) {
             Project project;
@@ -82,11 +89,8 @@ public class PublishArtifactsSubscriber implements EventSubscriber {
 
             // Use the debouncer to schedule the full project artifact generation
             ArtifactGenerationDebouncer.getInstance().debounceProject(projectKey, () -> {
-                ArtifactsParams artifactsParams = new ArtifactsParams();
-                artifactsParams.setUri(projectKey);
-                artifactsParams.setProjectAndModuleName(project.currentPackage().packageName().value(),
-                        project.currentPackage().getDefaultModule().moduleName().moduleNamePart());
-                artifactsParams.setArtifacts(ArtifactsGenerator.projectArtifactChanges(project));
+                var artifacts = ArtifactsGenerator.projectArtifactChanges(project);
+                ArtifactsParams artifactsParams = createArtifactsParams(projectKey, projectName, moduleName, artifacts);
                 client.publishArtifacts(artifactsParams);
             });
             return;
@@ -99,20 +103,22 @@ public class PublishArtifactsSubscriber implements EventSubscriber {
             return;
         }
 
-        Optional<Module> currentModule = context.currentModule();
-        String projectName = currentModule.map(m -> m.packageInstance().packageName().value()).orElse(null);
-        String moduleName = currentModule.map(m -> m.moduleName().moduleNamePart()).orElse(null);
-
         // Use the debouncer to schedule the artifact generation
         ArtifactGenerationDebouncer.getInstance().debounceFile(context.fileUri(), projectKey, () -> {
-            ArtifactsParams artifactsParams = new ArtifactsParams();
-            artifactsParams.setUri(projectKey);
-            artifactsParams.setProjectAndModuleName(projectName, moduleName);
-            artifactsParams.setArtifacts(
-                    ArtifactsGenerator.artifactChanges(projectPath.toString(), syntaxTree.get(),
-                            semanticModel.get()));
+            var artifacts = ArtifactsGenerator.artifactChanges(projectPath.toString(), syntaxTree.get(),
+                    semanticModel.get());
+            ArtifactsParams artifactsParams = createArtifactsParams(projectKey, projectName, moduleName, artifacts);
             client.publishArtifacts(artifactsParams);
         });
+    }
+
+    private ArtifactsParams createArtifactsParams(String uri, String projectName, String moduleName,
+                                                  Map<String, Map<String, Map<String, Artifact>>> artifacts) {
+        ArtifactsParams artifactsParams = new ArtifactsParams();
+        artifactsParams.setUri(uri);
+        artifactsParams.setProjectAndModuleName(projectName, moduleName);
+        artifactsParams.setArtifacts(artifacts);
+        return artifactsParams;
     }
 
     @Override
