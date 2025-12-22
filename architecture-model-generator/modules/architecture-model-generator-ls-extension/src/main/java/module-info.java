@@ -27,4 +27,5 @@ module io.ballerina.LSExtensions.ProjectDesignService {
     requires io.ballerina.parser;
     requires io.ballerina.toml;
     requires io.ballerina.language.server.core;
+    requires io.ballerina.model.generator.commons;
 }

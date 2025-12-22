@@ -19,6 +19,7 @@
 package io.ballerina.designmodelgenerator.extension.response;
 
 import io.ballerina.artifactsgenerator.Artifact;
+import io.ballerina.modelgenerator.commons.CommonUtils;
 
 import java.util.Map;
 
@@ -58,10 +59,8 @@ public class ArtifactResponse extends AbstractResponse {
         return moduleName;
     }
 
-    public void setProjectAndModuleName(String projectName, String moduleName) {
-        this.packageName = projectName;
-        if (projectName == null || !projectName.equals(moduleName)) {
-            this.moduleName = moduleName;
-        }
+    public void setProjectAndModuleName(String packageName, String moduleName) {
+        this.packageName = packageName;
+        this.moduleName = CommonUtils.getModuleName(packageName, moduleName);
     }
 }

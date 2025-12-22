@@ -241,6 +241,17 @@ public class CommonUtils {
     }
 
     /**
+     * Returns the module name if it is not the default module.
+     *
+     * @param projectName the project name
+     * @param moduleName  the module name
+     * @return the module name if it is not the default module, null otherwise
+     */
+    public static String getModuleName(String projectName, String moduleName) {
+        return (projectName == null || !projectName.equals(moduleName)) ? moduleName : null;
+    }
+
+    /**
      * Returns the organization name of the given symbol.
      *
      * @param symbol the symbol to get the organization name
