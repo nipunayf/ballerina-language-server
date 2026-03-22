@@ -17,7 +17,6 @@
  */
 package org.ballerinalang.langserver.workspace;
 
-import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.projects.Document;
 import io.ballerina.projects.DocumentId;
 import io.ballerina.projects.Module;
@@ -34,7 +33,6 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
@@ -181,6 +179,99 @@ public class WorkspaceProjectTest {
         Assert.assertNotEquals(workspaceManager.projectRoot(fileInPkgA),
                 workspaceManager.projectRoot(fileInPkgB),
                 "Different packages should have different project roots");
+    }
+
+    // ==================== WKSP-02: Path Resolution Tests ====================
+
+    /**
+     * Test: Opening a file in pkgB resolves to pkgB's package, not sibling pkgA or workspace root.
+     * 
+     * <p>WKSP-02: "Opening a file inside a workspace project resolves to the Package that contains 
+     * that file's source root — it does not resolve to a sibling package or the workspace root itself"
+     */
+    @Test(description = "Test file in pkgB resolves to pkgB's package, not sibling pkgA or workspace root")
+    public void testPathResolution() throws Exception {
+        // Arrange: Create workspace with 2 packages
+        Path workspaceRoot = RESOURCE_DIRECTORY.resolve("workspace-projects")
+                .resolve("simple-workspace").toAbsolutePath();
+        
+        Path fileInPkgA = workspaceRoot.resolve("package-a").resolve("main.bal").toAbsolutePath();
+        Path fileInPkgB = workspaceRoot.resolve("package-b").resolve("main.bal").toAbsolutePath();
+        
+        // Open files in both packages
+        openFile(fileInPkgA, "import pkg_b; public function testA() {}");
+        openFile(fileInPkgB, "import pkg_a; public function testB() {}");
+        
+        // Act: Get module for file in pkgB
+        Optional<Module> moduleOptB = workspaceManager.module(fileInPkgB);
+        
+        // Assert: Module should be present and resolve to pkgB
+        Assert.assertTrue(moduleOptB.isPresent(), "Module should be present for file in pkgB");
+        
+        Module moduleB = moduleOptB.get();
+        ModuleId moduleIdB = moduleB.moduleId();
+        
+        // The module should be from pkgB
+        String pkgBModuleStr = moduleIdB.toString();
+        Assert.assertTrue(pkgBModuleStr.contains("package_b") || 
+                          pkgBModuleStr.contains("pkg_b"),
+                "Module should resolve to pkgB for file in pkgB, got: " + pkgBModuleStr);
+        
+        // Also verify pkgA's module is different
+        Optional<Module> moduleOptA = workspaceManager.module(fileInPkgA);
+        Assert.assertTrue(moduleOptA.isPresent(), "Module should be present for file in pkgA");
+        
+        ModuleId moduleIdA = moduleOptA.get().moduleId();
+        Assert.assertNotEquals(moduleIdA, moduleIdB,
+                "pkgA and pkgB should have different module IDs");
+    }
+
+    // ==================== WKSP-03: Reload Isolation Tests ====================
+
+    /**
+     * Test: A file change in pkgA does not cause pkgB to reload (same object reference).
+     * 
+     * <p>WKSP-03: "A file system event (create, delete, or change a .bal file) inside package A 
+     * of a workspace project does not cause package B to reload — diagnostic events and compilation 
+     * triggers are scoped to the affected package only"
+     */
+    @Test(description = "Test changing file in pkgA does not cause pkgB to reload - same object reference")
+    public void testReloadIsolation() throws Exception {
+        // Arrange: Create workspace with 2 packages
+        Path workspaceRoot = RESOURCE_DIRECTORY.resolve("workspace-projects")
+                .resolve("simple-workspace").toAbsolutePath();
+        
+        Path fileInPkgA = workspaceRoot.resolve("package-a").resolve("main.bal").toAbsolutePath();
+        Path fileInPkgB = workspaceRoot.resolve("package-b").resolve("main.bal").toAbsolutePath();
+        
+        // Open files in both packages
+        openFile(fileInPkgA, "import pkg_b; public function testA() {}");
+        openFile(fileInPkgB, "import pkg_a; public function testB() {}");
+        
+        // Get initial ProjectContext for pkgB
+        Path projectRootB = workspaceManager.projectRoot(fileInPkgB);
+        Optional<BallerinaWorkspaceManager.ProjectContext> ctxBeforeOpt = 
+                workspaceManager.projectContext(projectRootB);
+        Assert.assertTrue(ctxBeforeOpt.isPresent(), "ProjectContext should be present for pkgB before change");
+        BallerinaWorkspaceManager.ProjectContext ctxBefore = ctxBeforeOpt.get();
+        Project projectBefore = ctxBefore.project();
+        
+        // Act: Change a .bal file in pkgA (NOT pkgB)
+        changeFile(fileInPkgA);
+        
+        // Assert: pkgB's ProjectContext is the SAME object reference
+        Optional<BallerinaWorkspaceManager.ProjectContext> ctxAfterOpt = 
+                workspaceManager.projectContext(projectRootB);
+        Assert.assertTrue(ctxAfterOpt.isPresent(), "ProjectContext should be present for pkgB after change");
+        BallerinaWorkspaceManager.ProjectContext ctxAfter = ctxAfterOpt.get();
+        
+        // D-30: Same ProjectContext object = no reload occurred
+        Assert.assertSame(ctxBefore, ctxAfter, 
+                "Changing file in pkgA should NOT cause pkgB to reload - same ProjectContext object");
+        
+        // Also verify the internal project is the same object too
+        Assert.assertSame(projectBefore, ctxAfter.project(),
+                "pkgB's Project should be the same object reference");
     }
 
     // ==================== Helper Methods ====================
