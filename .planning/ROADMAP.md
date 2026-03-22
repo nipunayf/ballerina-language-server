@@ -71,7 +71,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Success Criteria** (what must be TRUE):
   1. There is one `updateToml()` method with a dispatch table keyed by TOML file name — adding a new TOML file type requires changing only the dispatch table, not adding a new handler method
   2. Editing a TOML file in a way that only changes configuration (not dependency graph) does not trigger a project reload — the workspace state is unchanged and no compilation is re-queued
-**Plans**: TBD
+**Plans**: 2 plans
+  - [ ] 04-01-PLAN.md — Handler hierarchy + registry (Strategy pattern infrastructure)
+  - [ ] 04-02-PLAN.md — Wire into BWM + delete old methods + tests (TOML-01, TOML-02)
 
 ### Phase 5: Workspace Project Correctness
 **Goal**: Workspace projects expose a clean hierarchical model and file events in one package do not trigger reloads in other packages within the same workspace
@@ -112,8 +114,8 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 |-------|----------------|--------|-----------|
 | 1. Characterization Tests | 3/3 | Completed | 2026-03-22 |
 | 2. Concurrency Foundations | 3/3 | Complete   | 2026-03-22 |
-| 3. Cache Invalidation | 2/3 | In Progress | - |
-| 4. TOML Consolidation | 0/TBD | Not started | - |
+| 3. Cache Invalidation | 3/3 | Complete | 2026-03-23 |
+| 4. TOML Consolidation | 0/2 | Planned | - |
 | 5. Workspace Project Correctness | 0/TBD | Not started | - |
 | 6. Compilation Gate | 0/TBD | Not started | - |
 | 7. God Class Decomposition | 0/TBD | Not planned yet | - |
