@@ -163,6 +163,16 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                 .build();
     }
 
+    /**
+     * Invalidate all cache entries for paths under the given source root.
+     * Uses prefix-match eviction so unrelated cache entries survive project mutations.
+     *
+     * @param root the source root whose cache entries should be invalidated
+     */
+    private void invalidateCacheFor(Path root) {
+        pathToSourceRootCache.keySet().removeIf(path -> path.startsWith(root));
+    }
+
     @Override
     public Optional<String> relativePath(Path path) {
         Optional<Document> document = this.document(path);
