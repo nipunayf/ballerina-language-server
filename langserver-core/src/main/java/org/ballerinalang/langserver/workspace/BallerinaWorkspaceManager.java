@@ -297,7 +297,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
             }
             loadResultRef.set(loadResult.get());
             invalidateCacheFor(root);
-            return ProjectContext.from(loadResult.get().targetProject());
+            return createProjectContext(loadResult.get().targetProject(), loadResult.get().workspaceRootProject());
         });
         if (projectContext == null) {
             throw new WorkspaceDocumentException("Cannot find the project of uri: " + filePath);
@@ -1467,13 +1467,15 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                     }
 
                     Project reloadedProject = reloadedProjectOpt.get();
-                    sourceRootToProject.put(reloadedProject.sourceRoot(), ProjectContext.from(reloadedProject));
+                    sourceRootToProject.put(reloadedProject.sourceRoot(),
+                            ProjectContext.from(reloadedProject, false, null));
                     invalidateCacheFor(reloadedProject.sourceRoot());
 
                     List<Project> workspacePackages = compilerApi.getWorkspaceProjectsInOrder(reloadedProject);
                     for (Project workspacePackage : workspacePackages) {
                         Path packageRoot = workspacePackage.sourceRoot();
-                        sourceRootToProject.put(packageRoot, ProjectContext.from(workspacePackage));
+                        sourceRootToProject.put(packageRoot,
+                                ProjectContext.from(workspacePackage, true, reloadedProject.sourceRoot()));
                         invalidateCacheFor(packageRoot);
                     }
 
@@ -1608,9 +1610,17 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
             return Optional.empty();
         }
         Path projectRoot = computeProjectRoot(filePath);
-        ProjectContext projectContext = ProjectContext.from(loadResult.get().targetProject());
+        ProjectContext projectContext = createProjectContext(loadResult.get().targetProject(),
+                loadResult.get().workspaceRootProject());
         cacheLoadedProjects(projectRoot, projectContext, loadResult.get());
         return Optional.of(projectContext);
+    }
+
+    private ProjectContext createProjectContext(Project project, @Nullable Project workspaceRootProject) {
+        if (workspaceRootProject == null || workspaceRootProject.sourceRoot().equals(project.sourceRoot())) {
+            return ProjectContext.from(project, false, null);
+        }
+        return ProjectContext.from(project, true, workspaceRootProject.sourceRoot());
     }
 
     private Optional<ProjectLoadResult> loadProjectResult(Path filePath, String operationName) {
@@ -1674,7 +1684,8 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
             if (workspaceRootProject.sourceRoot().equals(primaryRoot) && primaryContext != null) {
                 sourceRootToProject.put(primaryRoot, primaryContext);
             } else {
-                sourceRootToProject.put(workspaceRootProject.sourceRoot(), ProjectContext.from(workspaceRootProject));
+                sourceRootToProject.put(workspaceRootProject.sourceRoot(),
+                        ProjectContext.from(workspaceRootProject, false, null));
             }
             invalidateCacheFor(workspaceRootProject.sourceRoot());
         }
@@ -1683,7 +1694,10 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
             if (workspacePackage.sourceRoot().equals(primaryRoot) && primaryContext != null) {
                 sourceRootToProject.put(primaryRoot, primaryContext);
             } else {
-                sourceRootToProject.put(workspacePackage.sourceRoot(), ProjectContext.from(workspacePackage));
+                Project workspaceRoot = loadResult.workspaceRootProject();
+                sourceRootToProject.put(workspacePackage.sourceRoot(),
+                        ProjectContext.from(workspacePackage, true,
+                                workspaceRoot != null ? workspaceRoot.sourceRoot() : null));
             }
             invalidateCacheFor(workspacePackage.sourceRoot());
         }
@@ -1752,7 +1766,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
             }
             loadResultRef.set(loadResult.get());
             invalidateCacheFor(projectRoot);
-            return ProjectContext.from(loadResult.get().targetProject());
+            return createProjectContext(loadResult.get().targetProject(), loadResult.get().workspaceRootProject());
         });
         ProjectContext replaced = replacedRef.get();
         if (replaced != null) {
