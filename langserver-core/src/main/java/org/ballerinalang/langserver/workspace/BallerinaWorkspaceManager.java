@@ -175,27 +175,16 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                             return;
                         }
 
-                        for (Path openDoc : openedDocuments) {
-                            if (openDoc.startsWith(root)) {
-                                projectCache.put(root, ctx);
-                                return;
-                            }
+                        if (hasOpenDocuments(root)) {
+                            projectCache.put(root, ctx);
+                            return;
                         }
 
                         ctx.close();
                         invalidateCacheFor(root);
 
                         if (!ctx.isWorkspaceChild() && ctx.workspaceRoot() == null) {
-                            sourceRootToProject.entrySet().removeIf(entry -> {
-                                ProjectContext child = entry.getValue();
-                                if (child != null && child.isWorkspaceChild()
-                                        && root.equals(child.workspaceRoot())) {
-                                    child.close();
-                                    invalidateCacheFor(entry.getKey());
-                                    return true;
-                                }
-                                return false;
-                            });
+                            cascadeEvictWorkspaceChildren(root);
                         }
                     }
                 })
@@ -223,6 +212,27 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
      */
     private void invalidateCacheFor(Path root) {
         pathToSourceRootCache.keySet().removeIf(path -> path.startsWith(root));
+    }
+
+    private boolean hasOpenDocuments(Path root) {
+        for (Path openDoc : openedDocuments) {
+            if (openDoc.startsWith(root)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void cascadeEvictWorkspaceChildren(Path workspaceRoot) {
+        sourceRootToProject.entrySet().removeIf(entry -> {
+            ProjectContext ctx = entry.getValue();
+            if (ctx != null && ctx.isWorkspaceChild() && workspaceRoot.equals(ctx.workspaceRoot())) {
+                ctx.close();
+                invalidateCacheFor(entry.getKey());
+                return true;
+            }
+            return false;
+        });
     }
 
     @Override
