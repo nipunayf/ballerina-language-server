@@ -1046,6 +1046,42 @@ public class CharacterizationTest {
         }
     }
 
+    @Test(description = "Test concurrent loadProject calls for the same project return the same instance")
+    public void testConcurrentLoadSameProject() throws Exception {
+        Path filePath = RESOURCE_DIRECTORY.resolve("myproject").resolve("main.bal").toAbsolutePath();
+        closeQuietly(filePath);
+
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        CyclicBarrier barrier = new CyclicBarrier(2);
+        try {
+            Future<Project> firstLoad = executor.submit(() -> {
+                await(barrier);
+                return workspaceManager.loadProject(filePath);
+            });
+            Future<Project> secondLoad = executor.submit(() -> {
+                await(barrier);
+                return workspaceManager.loadProject(filePath);
+            });
+
+            Project firstProject = waitFor(firstLoad);
+            Project secondProject = waitFor(secondLoad);
+
+            Assert.assertNotNull(firstProject, "First concurrent load should return a project");
+            Assert.assertNotNull(secondProject, "Second concurrent load should return a project");
+            Assert.assertSame(firstProject, secondProject,
+                    "Concurrent loads for the same root should return the same Project instance");
+
+            Path projectRoot = workspaceManager.projectRoot(filePath);
+            BallerinaWorkspaceManager.ProjectContext projectContext =
+                    workspaceManager.projectContext(projectRoot).orElseThrow();
+            Assert.assertSame(projectContext.project(), firstProject,
+                    "Cached project context should retain the shared project instance");
+        } finally {
+            shutdownExecutor(executor);
+            closeQuietly(filePath);
+        }
+    }
+
     @Test(description = "Test compilation crash flag visibility across threads")
     public void testCrashFlagVisibility() throws Exception {
         Path filePath = RESOURCE_DIRECTORY.resolve("myproject").resolve("main.bal").toAbsolutePath();
