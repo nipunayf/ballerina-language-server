@@ -1623,6 +1623,35 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
         return ProjectContext.from(project, true, workspaceRootProject.sourceRoot());
     }
 
+    /**
+     * Get or create a ProjectContext atomically using the project cache loader.
+     * Failed loads are not cached, so the next caller retries the load.
+     *
+     * @param projectRoot cache key for the project
+     * @param filePath file path used for project detection
+     * @param operationName operation name for logging
+     * @return cached or newly created project context
+     * @throws WorkspaceDocumentException if the project cannot be created
+     */
+    private ProjectContext getOrCreateProject(Path projectRoot, Path filePath, String operationName)
+            throws WorkspaceDocumentException {
+        try {
+            return projectCache.get(projectRoot, () -> {
+                Optional<ProjectContext> projectContext = createProjectContext(filePath, operationName);
+                if (projectContext.isEmpty()) {
+                    throw new WorkspaceDocumentException("Cannot find the project of uri: " + filePath);
+                }
+                return projectContext.get();
+            });
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof WorkspaceDocumentException workspaceDocumentException) {
+                throw workspaceDocumentException;
+            }
+            throw new WorkspaceDocumentException("Failed to create project: " + projectRoot, cause);
+        }
+    }
+
     private Optional<ProjectLoadResult> loadProjectResult(Path filePath, String operationName) {
         Path projectRoot = computeProjectRoot(filePath);
         BallerinaCompilerApi compilerApi = BallerinaCompilerApi.getInstance();
