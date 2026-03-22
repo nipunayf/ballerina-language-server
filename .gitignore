@@ -47,3 +47,9 @@ build/
 # macOS metadata files
 .DS_Store
 .claude
+.opencode
+.gemini
+.codex
+
+# Planning files (local-only)
+.planning/
