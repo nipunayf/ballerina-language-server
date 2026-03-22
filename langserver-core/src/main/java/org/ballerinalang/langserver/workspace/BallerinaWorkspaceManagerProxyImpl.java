@@ -144,12 +144,12 @@ public class BallerinaWorkspaceManagerProxyImpl implements BallerinaWorkspaceMan
                 List<Project> workspacePackages = compilerApi.getWorkspaceProjectsInOrder(workspaceProjectDuplicate);
                 for (Project workspacePackage : workspacePackages) {
                     Path packageRoot = workspacePackage.sourceRoot();
-                    sourceRootToProject.put(packageRoot, ProjectContext.from(workspacePackage));
+                    cacheProjectContext(packageRoot, ProjectContext.from(workspacePackage));
                 }
                 return;
             }
 
-            this.sourceRootToProject.put(project.sourceRoot(), ProjectContext.from(project.duplicate()));
+            cacheProjectContext(project.sourceRoot(), ProjectContext.from(project.duplicate()));
         }
 
         @Override
@@ -159,7 +159,7 @@ public class BallerinaWorkspaceManagerProxyImpl implements BallerinaWorkspaceMan
                 return;
             }
             Path projectRoot = project.get().sourceRoot();
-            sourceRootToProject.remove(projectRoot);
+            removeProjectContext(projectRoot);
             this.clientLogger.logTrace("Operation '" + LSContextOperation.TXT_DID_CLOSE.getName() +
                     "' {project: '" + projectRoot.toUri().toString() +
                     "' kind: '" + project.get().kind().name().toLowerCase(Locale.getDefault()) +

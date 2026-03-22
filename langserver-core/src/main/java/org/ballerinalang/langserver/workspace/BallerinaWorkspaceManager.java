@@ -129,7 +129,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
     /**
      * Mapping of source root to project instance.
      */
-    protected final Map<Path, ProjectContext> sourceRootToProject;
+    private final Map<Path, ProjectContext> sourceRootToProject = new ConcurrentHashMap<>();
     /**
      * TODO: This should be combined with the project context lock. The current implementation of the project context
      *  lock does not consider the first compilation (before creating the project context).
@@ -153,7 +153,6 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                 .maximumSize(1000)
                 .build();
         this.pathToSourceRootCache = cache.asMap();
-        this.sourceRootToProject = new SourceRootToProjectMap<>(pathToSourceRootCache);
         this.projectLockMap = new ConcurrentHashMap<>();
 
         // We are only doing a best effort cleanup here. If we held a strong reference to the map
@@ -895,6 +894,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                     // Thus, loading a new build-project here
                     optProject = createProjectContext(filePath, LSContextOperation.WS_WF_CHANGED.getName());
                     sourceRootToProject.put(optProject.get().project().sourceRoot(), optProject.get());
+                    pathToSourceRootCache.clear();
 
                 }
                 return optProject;
@@ -941,6 +941,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                     // If it is a single-file-project, remove project from mapping
                     Path projectRoot = project.sourceRoot();
                     sourceRootToProject.remove(projectRoot);
+                    pathToSourceRootCache.clear();
                     clientLogger.logTrace(String.format("Operation '%s' {project: '%s' kind: '%s'} removed",
                             LSContextOperation.WS_WF_CHANGED.getName(),
                             projectRoot.toUri().toString(),
@@ -1010,6 +1011,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                     try {
                         Path projectRoot = project.sourceRoot();
                         sourceRootToProject.remove(projectRoot);
+                        pathToSourceRootCache.clear();
                         clientLogger.logTrace(
                                 String.format("Operation '%s' {project: '%s', kind: '%s'} removed",
                                         LSContextOperation.WS_WF_CHANGED.getName(),
@@ -1218,6 +1220,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                         // When changing project type; need to remove key as well
                         // First, remove single-file-project key
                         sourceRootToProject.remove(projectContext.project().sourceRoot());
+                        pathToSourceRootCache.clear();
                         // Then, add the project as a build-project
                         Path ballerinaTomlFilePath = projectContext.project().sourceRoot().getParent()
                                 .resolve(ProjectConstants.BALLERINA_TOML);
@@ -1228,6 +1231,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                         }
                         projectContext = newProjectContext.get();
                         sourceRootToProject.put(projectContext.project().sourceRoot(), projectContext);
+                        pathToSourceRootCache.clear();
                         return;
                     } else {
                         throw new WorkspaceDocumentException("Invalid operation, cannot create Ballerina.toml!");
@@ -1255,6 +1259,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
             if (dependenciesToml.isEmpty()) {
                 if (createIfNotExists) {
                     sourceRootToProject.remove(projectContext.project().sourceRoot());
+                    pathToSourceRootCache.clear();
                     Path dependenciesTomlFilePath = projectContext.project().sourceRoot()
                             .resolve(ProjectConstants.DEPENDENCIES_TOML);
                     Optional<ProjectContext> newProjectContext = createProjectContext(dependenciesTomlFilePath,
@@ -1264,6 +1269,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                     }
                     ProjectContext updatedProjectContext = newProjectContext.get();
                     sourceRootToProject.put(updatedProjectContext.project().sourceRoot(), updatedProjectContext);
+                    pathToSourceRootCache.clear();
                     return;
                 }
                 throw new WorkspaceDocumentException(ProjectConstants.DEPENDENCIES_TOML + " does not exist!");
@@ -1414,12 +1420,14 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
             // Update the cache with the reloaded workspace
             sourceRootToProject.put(reloadedProject.sourceRoot(),
                     ProjectContext.from(reloadedProject));
+            pathToSourceRootCache.clear();
 
             // Update all workspace packages in the cache
             List<Project> workspacePackages = compilerApi.getWorkspaceProjectsInOrder(reloadedProject);
             for (Project workspacePackage : workspacePackages) {
                 Path packageRoot = workspacePackage.sourceRoot();
                 sourceRootToProject.put(packageRoot, ProjectContext.from(workspacePackage));
+                pathToSourceRootCache.clear();
             }
 
             // Update the current project context
@@ -1493,6 +1501,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
         if (project.get().kind() == ProjectKind.SINGLE_FILE_PROJECT) {
             Path projectRoot = project.get().sourceRoot();
             sourceRootToProject.remove(projectRoot);
+            pathToSourceRootCache.clear();
             clientLogger.logTrace("Operation '" + LSContextOperation.TXT_DID_CLOSE.getName() +
                     "' {project: '" + projectRoot.toUri().toString() +
                     "' kind: '" + project.get().kind().name().toLowerCase(Locale.getDefault()) +
@@ -1523,8 +1532,18 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
         return ProjectPaths.packageRoot(path);
     }
 
-    private Optional<ProjectContext> projectContext(Path projectRoot) {
+    Optional<ProjectContext> projectContext(Path projectRoot) {
         return Optional.ofNullable(sourceRootToProject.get(projectRoot));
+    }
+
+    protected void cacheProjectContext(Path projectRoot, ProjectContext projectContext) {
+        sourceRootToProject.put(projectRoot, projectContext);
+        pathToSourceRootCache.clear();
+    }
+
+    protected void removeProjectContext(Path projectRoot) {
+        sourceRootToProject.remove(projectRoot);
+        pathToSourceRootCache.clear();
     }
 
     private Optional<ProjectContext> createProjectContext(Path filePath, String operationName) {
@@ -1566,6 +1585,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
             if (compilerApi.isWorkspaceProject(project)) {
                 // Update the workspace package in the cache
                 sourceRootToProject.put(project.sourceRoot(), ProjectContext.from(project));
+                pathToSourceRootCache.clear();
 
                 // Get all workspace packages in topological order
                 List<Project> workspacePackages = compilerApi.getWorkspaceProjectsInOrder(project);
@@ -1575,6 +1595,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                 for (Project workspacePackage : workspacePackages) {
                     Path packageRoot = workspacePackage.sourceRoot();
                     sourceRootToProject.put(packageRoot, ProjectContext.from(workspacePackage));
+                    pathToSourceRootCache.clear();
                     if (packageRoot.equals(projectRoot)) {
                         targetProject = workspacePackage;
                     }
@@ -1672,6 +1693,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
         if (projectContext == null) {
             projectContext = newProjectContext.get();
             sourceRootToProject.put(projectRoot, projectContext);
+            pathToSourceRootCache.clear();
             return projectContext;
         }
         projectContext.setProject(newProjectContext.get().project());
@@ -1798,47 +1820,6 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
          */
         public void removeProcess() {
             this.process = null;
-        }
-    }
-
-    /**
-     * Represents a map of Path to ProjectContext.
-     *
-     * @param <K> cache key
-     * @param <V> cache value Clear out front-faced cache implementation whenever a modification operation triggered for
-     *            this map.
-     */
-    private static class SourceRootToProjectMap<K, V> extends HashMap<K, V> {
-
-        private static final long serialVersionUID = 19900410L;
-        private final transient Map<Path, Path> cache;
-
-        public SourceRootToProjectMap(Map<Path, Path> pathToSourceRootCache) {
-            super();
-            this.cache = pathToSourceRootCache;
-        }
-
-        @Override
-        public V put(K key, V value) {
-            V old = super.put(key, value);
-            // Clear dependent cache
-            cache.clear();
-            return old;
-        }
-
-        @Override
-        public V remove(Object key) {
-            V result = super.remove(key);
-            // Clear dependent cache
-            cache.clear();
-            return result;
-        }
-
-        @Override
-        public void clear() {
-            super.clear();
-            // Clear dependent cache
-            cache.clear();
         }
     }
 

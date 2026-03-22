@@ -126,7 +126,7 @@ public class TestWorkspaceManager {
             Assert.assertTrue(e instanceof WorkspaceDocumentException);
             Path projectRoot = workspaceManager.projectRoot(filePath);
             BallerinaWorkspaceManager.ProjectContext projectContext =
-                    workspaceManager.sourceRootToProject.get(projectRoot);
+                    workspaceManager.projectContext(projectRoot).orElse(null);
             Assert.assertTrue(projectContext == null || projectContext.isProjectCrashed());
         }
     }
@@ -140,7 +140,7 @@ public class TestWorkspaceManager {
         openFile(filePath);
         Path projectRoot = workspaceManager.projectRoot(filePath);
         BallerinaWorkspaceManager.ProjectContext projectContext =
-                workspaceManager.sourceRootToProject.get(projectRoot);
+                workspaceManager.projectContext(projectRoot).orElse(null);
         Assert.assertTrue(projectContext != null && !projectContext.isProjectCrashed());
 
         // Create a new file and send CREATED event
