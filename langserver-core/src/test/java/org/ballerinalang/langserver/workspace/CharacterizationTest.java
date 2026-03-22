@@ -38,10 +38,23 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.lang.reflect.Field;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Characterization tests for BallerinaWorkspaceManager document lifecycle operations.
@@ -934,6 +947,215 @@ public class CharacterizationTest {
                 "Both packages should be under the same workspace directory");
     }
 
+    // ==================== Concurrency Characterization Tests ====================
+
+    @Test(description = "Test concurrent didOpen and didClose on different single-file paths")
+    public void testConcurrentDidOpenClose() throws Exception {
+        List<Path> files = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            Path file = RESOURCE_DIRECTORY.resolve("single-file").resolve("concurrent-open-close-" + i + ".bal")
+                    .toAbsolutePath();
+            Files.writeString(file, "");
+            files.add(file);
+        }
+
+        ExecutorService executor = Executors.newFixedThreadPool(files.size());
+        CyclicBarrier barrier = new CyclicBarrier(files.size());
+        List<Future<Void>> futures = new ArrayList<>();
+        try {
+            for (Path file : files) {
+                futures.add(executor.submit(() -> {
+                    await(barrier);
+                    openFile(file, dummyContent);
+                    closeFile(file);
+                    return null;
+                }));
+            }
+            waitForAll(futures);
+
+            for (Path file : files) {
+                Assert.assertTrue(workspaceManager.document(file).isEmpty(),
+                        "Single-file document should be unavailable after concurrent close: " + file);
+                Assert.assertTrue(workspaceManager.project(file).isEmpty(),
+                        "Single-file project should be removed after concurrent close: " + file);
+            }
+            Assert.assertEquals(getOpenedDocuments().size(), 0,
+                    "openedDocuments should be empty after all concurrent didClose operations");
+        } finally {
+            shutdownExecutor(executor);
+            for (Path file : files) {
+                Files.deleteIfExists(file);
+            }
+        }
+    }
+
+    @Test(description = "Test concurrent project creation for different files in the same build project")
+    public void testConcurrentProjectCreationSameRoot() throws Exception {
+        List<Path> files = new ArrayList<>(List.of(
+                RESOURCE_DIRECTORY.resolve("myproject").resolve("main.bal").toAbsolutePath(),
+                RESOURCE_DIRECTORY.resolve("myproject").resolve("utils.bal").toAbsolutePath()
+        ));
+        for (int i = 0; i < 3; i++) {
+            Path file = RESOURCE_DIRECTORY.resolve("myproject").resolve("concurrent-same-root-" + i + ".bal")
+                    .toAbsolutePath();
+            Files.writeString(file, "");
+            files.add(file);
+        }
+
+        ExecutorService executor = Executors.newFixedThreadPool(files.size());
+        CyclicBarrier barrier = new CyclicBarrier(files.size());
+        List<Future<BallerinaWorkspaceManager.ProjectContext>> futures = new ArrayList<>();
+        try {
+            for (Path file : files) {
+                futures.add(executor.submit(() -> {
+                    await(barrier);
+                    openFile(file, dummyContent);
+                    Path projectRoot = workspaceManager.projectRoot(file);
+                    Assert.assertTrue(workspaceManager.project(file).isPresent(),
+                            "Project should be available after concurrent open");
+                    return workspaceManager.projectContext(projectRoot).orElseThrow();
+                }));
+            }
+
+            List<BallerinaWorkspaceManager.ProjectContext> projectContexts = waitForAll(futures);
+            BallerinaWorkspaceManager.ProjectContext first = projectContexts.get(0);
+            for (BallerinaWorkspaceManager.ProjectContext projectContext : projectContexts) {
+                Assert.assertSame(projectContext, first,
+                        "All files under the same root should resolve to the same ProjectContext instance");
+            }
+
+            Path projectRoot = workspaceManager.projectRoot(files.get(0));
+            BallerinaWorkspaceManager.ProjectContext projectContext =
+                    workspaceManager.projectContext(projectRoot).orElseThrow();
+            Assert.assertFalse(projectContext.isClosed(), "Shared project context should remain open");
+            for (Path file : files) {
+                Assert.assertEquals(workspaceManager.projectRoot(file), projectRoot,
+                        "All concurrent files should resolve to the same project root");
+            }
+        } finally {
+            shutdownExecutor(executor);
+            for (int i = 2; i < files.size(); i++) {
+                Path file = files.get(i);
+                closeQuietly(file);
+                Files.deleteIfExists(file);
+            }
+            closeQuietly(files.get(0));
+            closeQuietly(files.get(1));
+        }
+    }
+
+    @Test(description = "Test compilation crash flag visibility across threads")
+    public void testCrashFlagVisibility() throws Exception {
+        Path filePath = RESOURCE_DIRECTORY.resolve("myproject").resolve("main.bal").toAbsolutePath();
+        openFile(filePath, dummyContent);
+
+        Path projectRoot = workspaceManager.projectRoot(filePath);
+        BallerinaWorkspaceManager.ProjectContext projectContext =
+                workspaceManager.projectContext(projectRoot).orElseThrow();
+        CountDownLatch writeDone = new CountDownLatch(1);
+        AtomicInteger observedTrue = new AtomicInteger();
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            Future<Void> writer = executor.submit(() -> {
+                projectContext.withWriteLock(ctx -> ctx.setCompilationCrashed(true));
+                writeDone.countDown();
+                return null;
+            });
+            Future<Boolean> reader = executor.submit(() -> {
+                writeDone.await(5, TimeUnit.SECONDS);
+                boolean crashed = projectContext.compilationCrashed();
+                if (crashed) {
+                    observedTrue.incrementAndGet();
+                }
+                return crashed;
+            });
+
+            waitFor(writer);
+            Assert.assertTrue(waitFor(reader), "Reader thread should observe the crash flag update");
+            Assert.assertEquals(observedTrue.get(), 1, "Exactly one reader should observe the volatile flag");
+        } finally {
+            shutdownExecutor(executor);
+            closeQuietly(filePath);
+        }
+    }
+
+    @Test(description = "Test closing and reopening a single-file project creates a fresh context without stale lock")
+    public void testCloseReopenNoStaleLock() throws Exception {
+        Path filePath = RESOURCE_DIRECTORY.resolve("single-file").resolve("close-reopen-race.bal").toAbsolutePath();
+        Files.writeString(filePath, "");
+        openFile(filePath, dummyContent);
+
+        Path projectRoot = workspaceManager.projectRoot(filePath);
+        BallerinaWorkspaceManager.ProjectContext oldContext =
+                workspaceManager.projectContext(projectRoot).orElseThrow();
+        CountDownLatch closeDone = new CountDownLatch(1);
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            Future<Void> closeFuture = executor.submit(() -> {
+                closeFile(filePath);
+                closeDone.countDown();
+                return null;
+            });
+            Future<BallerinaWorkspaceManager.ProjectContext> reopenFuture = executor.submit(() -> {
+                closeDone.await(5, TimeUnit.SECONDS);
+                openFile(filePath, dummyContent);
+                return workspaceManager.projectContext(projectRoot).orElseThrow();
+            });
+
+            waitFor(closeFuture);
+            BallerinaWorkspaceManager.ProjectContext newContext = waitFor(reopenFuture);
+            Assert.assertTrue(oldContext.isClosed(), "Original context should be closed after didClose");
+            Assert.assertNotSame(newContext, oldContext, "Reopen should allocate a fresh ProjectContext");
+            Assert.assertFalse(newContext.isClosed(), "Reopened context should remain active");
+            Assert.assertTrue(workspaceManager.project(filePath).isPresent(),
+                    "Project should be available after reopen");
+        } finally {
+            shutdownExecutor(executor);
+            closeQuietly(filePath);
+            Files.deleteIfExists(filePath);
+        }
+    }
+
+    @Test(description = "Test concurrent read queries proceed while writes serialize correctly")
+    public void testConcurrentReadsDuringWrite() throws Exception {
+        Path filePath = RESOURCE_DIRECTORY.resolve("myproject").resolve("main.bal").toAbsolutePath();
+        openFile(filePath, dummyContent);
+
+        ExecutorService executor = Executors.newFixedThreadPool(4);
+        CyclicBarrier barrier = new CyclicBarrier(4);
+        AtomicInteger successfulReads = new AtomicInteger();
+        try {
+            List<Future<Boolean>> readers = new ArrayList<>();
+            for (int i = 0; i < 3; i++) {
+                readers.add(executor.submit(() -> {
+                    await(barrier);
+                    boolean valid = workspaceManager.project(filePath).isPresent()
+                            && workspaceManager.syntaxTree(filePath).isPresent();
+                    if (valid) {
+                        successfulReads.incrementAndGet();
+                    }
+                    return valid;
+                }));
+            }
+            Future<Boolean> writer = executor.submit(() -> {
+                await(barrier);
+                changeFile(filePath, dummyDidChangeContent);
+                return workspaceManager.document(filePath)
+                        .map(document -> dummyDidChangeContent.equals(document.syntaxTree().textDocument().toString()))
+                        .orElse(false);
+            });
+
+            for (Future<Boolean> reader : readers) {
+                Assert.assertTrue(waitFor(reader), "Reader should receive a valid project and syntax tree");
+            }
+            Assert.assertTrue(waitFor(writer), "Writer should successfully apply the document change");
+            Assert.assertEquals(successfulReads.get(), 3, "All readers should succeed under concurrent access");
+        } finally {
+            shutdownExecutor(executor);
+            closeQuietly(filePath);
+        }
+    }
+
     // ==================== Helper Methods ====================
 
     private void openFile(Path filePath, String content) throws WorkspaceDocumentException {
@@ -943,5 +1165,64 @@ public class CharacterizationTest {
         textDocumentItem.setText(content);
         params.setTextDocument(textDocumentItem);
         workspaceManager.didOpen(filePath, params);
+    }
+
+    private void changeFile(Path filePath, String content) throws WorkspaceDocumentException {
+        DidChangeTextDocumentParams params = new DidChangeTextDocumentParams();
+        params.setTextDocument(new VersionedTextDocumentIdentifier(filePath.toUri().toString(), 1));
+        params.getContentChanges().add(new TextDocumentContentChangeEvent(content));
+        workspaceManager.didChange(filePath, params);
+    }
+
+    private void closeFile(Path filePath) {
+        DidCloseTextDocumentParams params = new DidCloseTextDocumentParams();
+        params.setTextDocument(new TextDocumentIdentifier(filePath.toUri().toString()));
+        workspaceManager.didClose(filePath, params);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Set<Path> getOpenedDocuments() {
+        try {
+            Field field = BallerinaWorkspaceManager.class.getDeclaredField("openedDocuments");
+            field.setAccessible(true);
+            return (Set<Path>) field.get(workspaceManager);
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError("Failed to inspect openedDocuments", e);
+        }
+    }
+
+    private void closeQuietly(Path filePath) {
+        try {
+            closeFile(filePath);
+        } catch (RuntimeException ignored) {
+            // Best-effort cleanup for concurrent test fixtures.
+        }
+    }
+
+    private void await(CyclicBarrier barrier) {
+        try {
+            barrier.await(5, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            throw new RuntimeException("Timed out waiting for concurrent test barrier", e);
+        }
+    }
+
+    private <T> List<T> waitForAll(List<Future<T>> futures)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        List<T> results = new ArrayList<>();
+        for (Future<T> future : futures) {
+            results.add(waitFor(future));
+        }
+        return results;
+    }
+
+    private <T> T waitFor(Future<T> future) throws InterruptedException, ExecutionException, TimeoutException {
+        return future.get(30, TimeUnit.SECONDS);
+    }
+
+    private void shutdownExecutor(ExecutorService executor) throws InterruptedException {
+        executor.shutdownNow();
+        Assert.assertTrue(executor.awaitTermination(5, TimeUnit.SECONDS),
+                "Executor should terminate promptly after each concurrency test");
     }
 }
