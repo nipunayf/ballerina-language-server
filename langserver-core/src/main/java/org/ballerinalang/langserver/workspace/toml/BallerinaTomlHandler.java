@@ -97,12 +97,15 @@ public class BallerinaTomlHandler extends AbstractTomlHandler {
         if (ballerinaToml.isEmpty()) {
             if (createIfNotExists) {
                 if (ctx.project().kind() == ProjectKind.SINGLE_FILE_PROJECT) {
-                    // For single-file projects, we need to recreate as build project
-                    // This is handled at a higher level - for now, throw to indicate special handling needed
-                    throw new WorkspaceDocumentException(
-                            "Creating Ballerina.toml in single-file project requires project recreation");
+                    Path projectRoot = ctx.project().sourceRoot();
+                    context.projectRegistry().remove(projectRoot);
+                    context.invalidateCacheFor(projectRoot);
+                    Path ballerinaTomlFilePath = projectRoot.getParent().resolve(ProjectConstants.BALLERINA_TOML);
+                    context.getOrCreateProject(projectRoot.getParent(), ballerinaTomlFilePath,
+                            LSContextOperation.WS_WF_CHANGED.getName());
+                    return;
                 }
-                throw new WorkspaceDocumentException(ProjectConstants.BALLERINA_TOML + " does not exist!");
+                throw new WorkspaceDocumentException("Invalid operation, cannot create Ballerina.toml!");
             }
             throw new WorkspaceDocumentException(ProjectConstants.BALLERINA_TOML + " does not exist!");
         }

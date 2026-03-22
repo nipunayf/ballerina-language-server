@@ -1668,6 +1668,27 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                 BallerinaWorkspaceManager.this.invalidateCacheFor(packageRoot);
             }
         }
+
+        @Override
+        public Optional<ProjectContext> getOrCreateProject(Path projectRoot, Path triggerFile, String operation) {
+            try {
+                return Optional.of(BallerinaWorkspaceManager.this.getOrCreateProject(projectRoot, triggerFile, operation));
+            } catch (WorkspaceDocumentException e) {
+                BallerinaWorkspaceManager.this.clientLogger.logError(LSContextOperation.WS_WF_CHANGED,
+                        "Failed to get or create project: " + projectRoot, e, null, (org.eclipse.lsp4j.Position) null);
+                return Optional.empty();
+            }
+        }
+
+        @Override
+        public Optional<ProjectContext> createProjectContext(Path tomlPath, String operation) {
+            return BallerinaWorkspaceManager.this.createProjectContext(tomlPath, operation);
+        }
+
+        @Override
+        public void invalidateCacheFor(Path path) {
+            BallerinaWorkspaceManager.this.invalidateCacheFor(path);
+        }
     }
 
     private static boolean isError(Diagnostic diagnostic) {

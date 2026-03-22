@@ -21,6 +21,7 @@ import org.ballerinalang.langserver.workspace.BallerinaWorkspaceManager.ProjectC
 
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -45,6 +46,37 @@ public interface TomlHandlerContext {
      * @param operation the operation name for logging
      */
     void reloadProject(ProjectContext ctx, Path trigger, String operation);
+
+    /**
+     * Gets or creates a project context for the given project root.
+     * 
+     * <p>Used when upgrading a single-file project to a build project
+     * after Ballerina.toml creation.</p>
+     * 
+     * @param projectRoot the project root directory
+     * @param triggerFile the file that triggered this operation
+     * @param operation the operation name for logging
+     * @return the project context, or empty if creation failed
+     */
+    Optional<ProjectContext> getOrCreateProject(Path projectRoot, Path triggerFile, String operation);
+
+    /**
+     * Creates a new project context for the given TOML file path.
+     * 
+     * <p>Used when recreating a project after config-only TOML deletion.</p>
+     * 
+     * @param tomlPath the path to the TOML file
+     * @param operation the operation name for logging
+     * @return the project context, or empty if creation failed
+     */
+    Optional<ProjectContext> createProjectContext(Path tomlPath, String operation);
+
+    /**
+     * Invalidates cache entries for the given path.
+     * 
+     * @param path the path to invalidate cache for
+     */
+    void invalidateCacheFor(Path path);
 
     /**
      * Returns the project registry mapping source roots to project contexts.

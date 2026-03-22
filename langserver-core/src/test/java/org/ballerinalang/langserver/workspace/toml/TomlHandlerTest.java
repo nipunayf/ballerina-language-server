@@ -46,7 +46,7 @@ public class TomlHandlerTest {
 
     @Test(description = "Registry returns BallerinaTomlHandler for Ballerina.toml in non-workspace")
     public void testRegistryReturnsBallerinaTomlHandler() {
-        Path tomlPath = Path.of("/some/project/Ballerina.toml");
+        Path tomlPath = Path.of("/some/project").resolve(ProjectConstants.BALLERINA_TOML);
         Optional<TomlHandler> handlerOpt = registry.lookup(tomlPath);
         Assert.assertTrue(handlerOpt.isPresent(), "Handler should be present for Ballerina.toml");
         TomlHandler handler = handlerOpt.get();
@@ -57,7 +57,7 @@ public class TomlHandlerTest {
 
     @Test(description = "Registry returns DependenciesTomlHandler for Dependencies.toml")
     public void testRegistryReturnsDependenciesHandler() {
-        Path tomlPath = Path.of("/some/project/Dependencies.toml");
+        Path tomlPath = Path.of("/some/project").resolve(ProjectConstants.DEPENDENCIES_TOML);
         Optional<TomlHandler> handlerOpt = registry.lookup(tomlPath);
         Assert.assertTrue(handlerOpt.isPresent(), "Handler should be present for Dependencies.toml");
         TomlHandler handler = handlerOpt.get();
@@ -68,7 +68,7 @@ public class TomlHandlerTest {
 
     @Test(description = "Registry returns GenericTomlHandler for Cloud.toml (config-only)")
     public void testRegistryReturnsGenericHandlerForCloud() {
-        Path tomlPath = Path.of("/some/project/Cloud.toml");
+        Path tomlPath = Path.of("/some/project").resolve(ProjectConstants.CLOUD_TOML);
         Optional<TomlHandler> handlerOpt = registry.lookup(tomlPath);
         Assert.assertTrue(handlerOpt.isPresent(), "Handler should be present for Cloud.toml");
         TomlHandler handler = handlerOpt.get();
@@ -79,7 +79,7 @@ public class TomlHandlerTest {
 
     @Test(description = "Registry returns GenericTomlHandler for Compiler-plugin.toml (config-only)")
     public void testRegistryReturnsGenericHandlerForCompilerPlugin() {
-        Path tomlPath = Path.of("/some/project/Compiler-plugin.toml");
+        Path tomlPath = Path.of("/some/project").resolve(ProjectConstants.COMPILER_PLUGIN_TOML);
         Optional<TomlHandler> handlerOpt = registry.lookup(tomlPath);
         Assert.assertTrue(handlerOpt.isPresent(), "Handler should be present for Compiler-plugin.toml");
         TomlHandler handler = handlerOpt.get();
@@ -90,7 +90,7 @@ public class TomlHandlerTest {
 
     @Test(description = "Registry returns GenericTomlHandler for BalTool.toml (config-only)")
     public void testRegistryReturnsGenericHandlerForBalTool() {
-        Path tomlPath = Path.of("/some/project/BalTool.toml");
+        Path tomlPath = Path.of("/some/project").resolve(ProjectConstants.BAL_TOOL_TOML);
         Optional<TomlHandler> handlerOpt = registry.lookup(tomlPath);
         Assert.assertTrue(handlerOpt.isPresent(), "Handler should be present for BalTool.toml");
         TomlHandler handler = handlerOpt.get();
@@ -202,6 +202,25 @@ public class TomlHandlerTest {
             @Override
             public void registerWorkspaceChildren(
                     org.ballerinalang.langserver.workspace.BallerinaWorkspaceManager.ProjectContext workspaceCtx) {
+                // Mock implementation
+            }
+
+            @Override
+            public java.util.Optional<org.ballerinalang.langserver.workspace.BallerinaWorkspaceManager.ProjectContext>
+            getOrCreateProject(Path projectRoot, Path triggerFile, String operation) {
+                // Mock implementation
+                return java.util.Optional.empty();
+            }
+
+            @Override
+            public java.util.Optional<org.ballerinalang.langserver.workspace.BallerinaWorkspaceManager.ProjectContext>
+            createProjectContext(Path tomlPath, String operation) {
+                // Mock implementation
+                return java.util.Optional.empty();
+            }
+
+            @Override
+            public void invalidateCacheFor(Path path) {
                 // Mock implementation
             }
         };

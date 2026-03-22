@@ -24,9 +24,11 @@ import io.ballerina.projects.DocumentConfig;
 import io.ballerina.projects.DocumentId;
 import io.ballerina.projects.Package;
 import io.ballerina.projects.util.ProjectConstants;
+import org.ballerinalang.langserver.LSContextOperation;
 import org.ballerinalang.langserver.commons.workspace.WorkspaceDocumentException;
 import org.ballerinalang.langserver.workspace.BallerinaWorkspaceManager.ProjectContext;
 
+import java.nio.file.Path;
 import java.util.Optional;
 
 /**
@@ -52,6 +54,15 @@ class CloudTomlHandler extends AbstractTomlHandler {
     @Override
     public boolean affectsDependencyGraph() {
         return false; // Config-only
+    }
+
+    @Override
+    protected void onDeleted(Path filePath, ProjectContext projectContext) throws WorkspaceDocumentException {
+        projectContext.withWriteLock(ctx -> {
+            Path ballerinaTomlFile = filePath.getParent().resolve(ProjectConstants.BALLERINA_TOML);
+            context.createProjectContext(ballerinaTomlFile, LSContextOperation.WS_WF_CHANGED.getName())
+                    .ifPresent(newProject -> ctx.setProject(newProject.project()));
+        });
     }
 
     @Override
