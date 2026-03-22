@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-03-22T19:33:36.152Z"
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-03-22T19:46:55.763Z"
 progress:
   total_phases: 7
   completed_phases: 2
   total_plans: 9
-  completed_plans: 6
+  completed_plans: 8
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 ## Current Position
 
 Phase: 03 (cache-invalidation) — EXECUTING
-Plan: 1 of 3
+Plan: 2 of 3
 
 ## Performance Metrics
 
@@ -49,6 +49,7 @@ Plan: 1 of 3
 *Updated after each plan completion*
 | Phase 02-concurrency-foundations P02 | 14 min | 2 tasks | 1 files |
 | Phase 02-concurrency-foundations P03 | 10 min | 2 tasks | 2 files |
+| Phase 03-cache-invalidation P02 | 6 min | 6 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,8 @@ Recent decisions affecting current work:
 - [Phase 02-concurrency-foundations]: Used write-lock callbacks for all migrated lockAndGet sites because every existing call site mutates ProjectContext state or project-backed caches.
 - [Phase 02-concurrency-foundations]: Closed replaced ProjectContext instances only after ConcurrentHashMap.compute(...) returns to avoid mixing map-segment locking with the ProjectContext write lock.
 - [Phase 02-concurrency-foundations]: Verified concurrency guarantees against the real workspace manager and on-disk fixtures instead of mocks so the tests exercise actual compiler and reload paths.
+- [Phase 03-cache-invalidation]: Applied workspace relationship metadata across all workspace load and reload paths so cache weighting and eviction stay consistent.
+- [Phase 03-cache-invalidation]: Used temporary copies of the existing myproject fixture to verify real 8-slot LRU eviction and pinning behavior without adding permanent test fixtures.
 
 ### Pending Todos
 
@@ -83,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T19:33:36.148Z
-Stopped at: Completed 03-01-PLAN.md
+Last session: 2026-03-22T19:46:55.760Z
+Stopped at: Completed 03-02-PLAN.md
 Resume file: None

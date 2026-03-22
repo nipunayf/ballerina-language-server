@@ -61,7 +61,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Concurrent startup events (didOpen + file watcher) for the same project root do not load the project twice — the second caller receives the same `ProjectContext` via `computeIfAbsent`
 **Plans**: 3 plans
   - [x] 03-01-PLAN.md — Targeted cache invalidation (CACH-01)
-  - [ ] 03-02-PLAN.md — LRU eviction for project registry (CACH-02)
+  - [x] 03-02-PLAN.md — LRU eviction for project registry (CACH-02)
   - [ ] 03-03-PLAN.md — Duplicate load prevention (CACH-03)
 
 ### Phase 4: TOML Consolidation
@@ -112,7 +112,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 |-------|----------------|--------|-----------|
 | 1. Characterization Tests | 3/3 | Completed | 2026-03-22 |
 | 2. Concurrency Foundations | 3/3 | Complete   | 2026-03-22 |
-| 3. Cache Invalidation | 0/3 | Planned | - |
+| 3. Cache Invalidation | 2/3 | In Progress | - |
 | 4. TOML Consolidation | 0/TBD | Not started | - |
 | 5. Workspace Project Correctness | 0/TBD | Not started | - |
 | 6. Compilation Gate | 0/TBD | Not started | - |

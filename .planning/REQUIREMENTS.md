@@ -25,7 +25,7 @@ Requirements for the initial refactor. Each maps to roadmap phases.
 ### Cache
 
 - [x] **CACH-01**: Path-to-source-root cache uses targeted invalidation (`cache.invalidate(key)`) instead of scorched-earth `cache.clear()`
-- [ ] **CACH-02**: `sourceRootToProject` registry has bounded capacity with LRU eviction; evicted entries call `project.clearCaches()`
+- [x] **CACH-02**: `sourceRootToProject` registry has bounded capacity with LRU eviction; evicted entries call `project.clearCaches()`
 - [ ] **CACH-03**: Startup project loading uses `computeIfAbsent` pattern to prevent duplicate loads for the same path
 
 ### Workspace Projects
@@ -93,7 +93,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CONC-04 | Phase 2 | Complete |
 | CONC-05 | Phase 2 | Complete |
 | CACH-01 | Phase 3 | Complete |
-| CACH-02 | Phase 3 | Pending |
+| CACH-02 | Phase 3 | Complete |
 | CACH-03 | Phase 3 | Pending |
 | TOML-01 | Phase 4 | Pending |
 | TOML-02 | Phase 4 | Pending |
