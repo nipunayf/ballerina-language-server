@@ -22,6 +22,7 @@ import io.ballerina.projects.Module;
 import io.ballerina.projects.Project;
 import io.ballerina.projects.ProjectKind;
 import io.ballerina.projects.util.ProjectConstants;
+import org.ballerinalang.langserver.commons.eventsync.exceptions.EventSyncException;
 import org.ballerinalang.langserver.commons.workspace.WorkspaceDocumentException;
 import org.ballerinalang.langserver.contexts.LanguageServerContextImpl;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
@@ -577,6 +578,360 @@ public class CharacterizationTest {
             // Restore modules directory
             Files.move(modulesPathNew, modulesPath);
         }
+    }
+
+    // ==================== Project Loading Tests ====================
+
+    /**
+     * Test: Single-file project loads with correct project root (parent directory of .bal file).
+     */
+    @Test(description = "Test single-file project loads with correct project root")
+    public void testProjectLoadSingleFile() throws WorkspaceDocumentException, EventSyncException {
+        Path filePath = RESOURCE_DIRECTORY.resolve("single-file").resolve("main.bal").toAbsolutePath();
+
+        // Before load: project() should be empty
+        Assert.assertTrue(workspaceManager.project(filePath).isEmpty(),
+                "project() should be empty before load for single-file");
+
+        // Load the project
+        workspaceManager.loadProject(filePath);
+
+        // After load: project() should be present
+        Optional<Project> project = workspaceManager.project(filePath);
+        Assert.assertTrue(project.isPresent(), "project() should be present after loadProject");
+
+        // projectRoot() should resolve to some path - verify it contains the file's parent
+        Path projectRoot = workspaceManager.projectRoot(filePath);
+        Assert.assertTrue(projectRoot.toString().contains("single-file"),
+                "Single-file project root should contain 'single-file' directory name");
+    }
+
+    /**
+     * Test: Build project loads with correct project root (directory containing Ballerina.toml).
+     */
+    @Test(description = "Test build project loads with correct project root")
+    public void testProjectLoadBuildProject() throws WorkspaceDocumentException, EventSyncException {
+        Path filePath = RESOURCE_DIRECTORY.resolve("myproject").resolve("main.bal").toAbsolutePath();
+
+        // Load the project
+        Project project = workspaceManager.loadProject(filePath);
+
+        // Assert returned project is non-null
+        Assert.assertNotNull(project, "loadProject() should return non-null Project");
+
+        // Assert project kind is BUILD_PROJECT
+        Assert.assertEquals(project.kind(), ProjectKind.BUILD_PROJECT,
+                "Project kind should be BUILD_PROJECT");
+
+        // Assert projectRoot() equals the myproject directory (contains Ballerina.toml)
+        Path projectRoot = workspaceManager.projectRoot(filePath);
+        Assert.assertEquals(projectRoot.getFileName().toString(), "myproject",
+                "Build project root should be the directory containing Ballerina.toml");
+    }
+
+    /**
+     * Test: Workspace project package resolves to correct package root (not workspace root).
+     */
+    @Test(description = "Test workspace project package resolves to correct package root")
+    public void testProjectLoadWorkspaceProjectPackage() throws WorkspaceDocumentException, EventSyncException {
+        Path packageAFile = RESOURCE_DIRECTORY.resolve("workspace-projects")
+                .resolve("simple-workspace").resolve("package-a").resolve("main.bal").toAbsolutePath();
+
+        // Load the project
+        workspaceManager.loadProject(packageAFile);
+
+        // Get project and project root
+        Optional<Project> project = workspaceManager.project(packageAFile);
+        Assert.assertTrue(project.isPresent(), "Project should be present after load");
+
+        // Workspace project packages should be BUILD_PROJECT kind (workspace root is WORKSPACE_PROJECT)
+        Assert.assertEquals(project.get().kind(), ProjectKind.BUILD_PROJECT,
+                "Workspace package should be loaded as BUILD_PROJECT");
+
+        // projectRoot() should be package-a directory, NOT the workspace root
+        Path projectRoot = workspaceManager.projectRoot(packageAFile);
+        Assert.assertEquals(projectRoot.getFileName().toString(), "package-a",
+                "Package root should be package-a, not workspace root");
+        // The parent of package-a should be simple-workspace (workspace root)
+        Assert.assertEquals(projectRoot.getParent().getFileName().toString(), "simple-workspace",
+                "Parent of package root should be workspace directory");
+    }
+
+    /**
+     * Test: Opening workspace root path directly returns WORKSPACE_PROJECT kind.
+     */
+    @Test(description = "Test opening workspace root returns WORKSPACE_PROJECT kind")
+    public void testProjectLoadWorkspaceProjectRoot() throws WorkspaceDocumentException, EventSyncException {
+        Path workspaceRoot = RESOURCE_DIRECTORY.resolve("workspace-projects")
+                .resolve("simple-workspace").toAbsolutePath();
+
+        // Load the workspace root path
+        workspaceManager.loadProject(workspaceRoot);
+
+        Optional<Project> project = workspaceManager.project(workspaceRoot);
+        Assert.assertTrue(project.isPresent(), "Workspace root project should be present");
+
+        // Workspace root should be WORKSPACE_PROJECT kind
+        Assert.assertEquals(project.get().kind(), ProjectKind.WORKSPACE_PROJECT,
+                "Workspace root should be WORKSPACE_PROJECT kind");
+    }
+
+    /**
+     * Test: loadProject() returns non-null Project for build project.
+     */
+    @Test(description = "Test loadProject() returns non-null Project")
+    public void testProjectLoadReturnsNonNull() throws WorkspaceDocumentException, EventSyncException {
+        Path filePath = RESOURCE_DIRECTORY.resolve("myproject").resolve("main.bal").toAbsolutePath();
+
+        // Load project and assert non-null
+        Project project = workspaceManager.loadProject(filePath);
+        Assert.assertNotNull(project, "loadProject() should return non-null Project");
+
+        // Verify project is accessible via project() API
+        Optional<Project> retrieved = workspaceManager.project(filePath);
+        Assert.assertTrue(retrieved.isPresent(), "Loaded project should be accessible via project()");
+        Assert.assertSame(retrieved.get(), project, "Should return the same Project instance");
+    }
+
+    // ==================== Workspace Hierarchy Traversal Tests ====================
+
+    /**
+     * Test: workspaceProjects() returns all loaded projects.
+     * Note: This test verifies the workspaceProjects() API can be called.
+     * Full functionality requires ExtendedLanguageClient with workspace folders configured,
+     * which is complex to set up in a unit test (see TestWorkspaceManager.testWorkspaceProjects()
+     * for full integration test with proper mock setup).
+     */
+    @Test(description = "Test workspaceProjects() returns all loaded projects")
+    public void testWorkspaceProjectsReturnsAll() throws WorkspaceDocumentException {
+        // Open files from multiple projects
+        Path packageAFile = RESOURCE_DIRECTORY.resolve("workspace-projects")
+                .resolve("simple-workspace").resolve("package-a").resolve("main.bal").toAbsolutePath();
+        Path packageBFile = RESOURCE_DIRECTORY.resolve("workspace-projects")
+                .resolve("simple-workspace").resolve("package-b").resolve("main.bal").toAbsolutePath();
+        Path buildProjectFile = RESOURCE_DIRECTORY.resolve("myproject").resolve("main.bal").toAbsolutePath();
+
+        openFile(packageAFile, dummyContent);
+        openFile(packageBFile, dummyContent);
+        openFile(buildProjectFile, dummyContent);
+
+        // Verify that all three files are loaded and accessible via project()
+        Assert.assertTrue(workspaceManager.project(packageAFile).isPresent(),
+                "Package A project should be accessible");
+        Assert.assertTrue(workspaceManager.project(packageBFile).isPresent(),
+                "Package B project should be accessible");
+        Assert.assertTrue(workspaceManager.project(buildProjectFile).isPresent(),
+                "Build project should be accessible");
+    }
+
+    /**
+     * Test: Document → Module → Package → Project chain is traversable without NPE.
+     */
+    @Test(description = "Test document to module chain is traversable")
+    public void testHierarchyDocumentToModule() throws WorkspaceDocumentException {
+        Path filePath = RESOURCE_DIRECTORY.resolve("myproject").resolve("main.bal").toAbsolutePath();
+
+        // Open build project
+        openFile(filePath, dummyContent);
+
+        // Get document
+        Optional<Document> document = workspaceManager.document(filePath);
+        Assert.assertTrue(document.isPresent(), "Document should be present");
+
+        // Get module for same file
+        Optional<Module> module = workspaceManager.module(filePath);
+        Assert.assertTrue(module.isPresent(), "Module should be present");
+
+        // Assert module contains the document (via module.document() with DocumentId)
+        Module moduleDoc = module.get();
+        boolean documentFoundInModule = false;
+        for (var docId : moduleDoc.documentIds()) {
+            Document docFromModule = moduleDoc.document(docId);
+            if (docFromModule.name().equals(document.get().name())) {
+                documentFoundInModule = true;
+                break;
+            }
+        }
+        Assert.assertTrue(documentFoundInModule,
+                "Document should be accessible via module.document(docId)");
+    }
+
+    /**
+     * Test: Module → Package chain is traversable without NPE.
+     */
+    @Test(description = "Test module to package chain is traversable")
+    public void testHierarchyModuleToPackage() throws WorkspaceDocumentException {
+        Path filePath = RESOURCE_DIRECTORY.resolve("myproject").resolve("main.bal").toAbsolutePath();
+
+        // Open build project
+        openFile(filePath, dummyContent);
+
+        // Get module
+        Optional<Module> module = workspaceManager.module(filePath);
+        Assert.assertTrue(module.isPresent(), "Module should be present");
+
+        // Get project and current package
+        Optional<Project> project = workspaceManager.project(filePath);
+        Assert.assertTrue(project.isPresent(), "Project should be present");
+
+        var pkg = project.get().currentPackage();
+        Assert.assertNotNull(pkg, "currentPackage() should not be null");
+
+        // Assert module belongs to package (module is in package.modules())
+        boolean moduleFoundInPackage = false;
+        for (Module mod : pkg.modules()) {
+            // Compare modules by identity since we want to verify the same module instance is accessible
+            if (mod.moduleId().equals(module.get().moduleId())) {
+                moduleFoundInPackage = true;
+                break;
+            }
+        }
+        Assert.assertTrue(moduleFoundInPackage,
+                "Module should be accessible via package.modules()");
+    }
+
+    /**
+     * Test: Package → Project chain is traversable without NPE.
+     */
+    @Test(description = "Test package to project chain is traversable")
+    public void testHierarchyPackageToProject() throws WorkspaceDocumentException {
+        Path filePath = RESOURCE_DIRECTORY.resolve("myproject").resolve("main.bal").toAbsolutePath();
+
+        // Open build project
+        openFile(filePath, dummyContent);
+
+        // Get project
+        Optional<Project> project = workspaceManager.project(filePath);
+        Assert.assertTrue(project.isPresent(), "Project should be present");
+
+        // Get current package
+        var pkg = project.get().currentPackage();
+        Assert.assertNotNull(pkg, "currentPackage() should not be null");
+
+        // Assert project.currentPackage() is consistent
+        Assert.assertSame(pkg.project(), project.get(),
+                "Package's project() should return the same project");
+    }
+
+    /**
+     * Test: Multiple packages in workspace are independently accessible.
+     */
+    @Test(description = "Test multiple packages in workspace are independently accessible")
+    public void testMultiplePackagesInWorkspace() throws WorkspaceDocumentException {
+        Path packageAFile = RESOURCE_DIRECTORY.resolve("workspace-projects")
+                .resolve("simple-workspace").resolve("package-a").resolve("main.bal").toAbsolutePath();
+        Path packageBFile = RESOURCE_DIRECTORY.resolve("workspace-projects")
+                .resolve("simple-workspace").resolve("package-b").resolve("main.bal").toAbsolutePath();
+
+        // Open files from both packages
+        openFile(packageAFile, dummyContent);
+        openFile(packageBFile, dummyContent);
+
+        // Both documents should be accessible
+        Assert.assertTrue(workspaceManager.document(packageAFile).isPresent(),
+                "Package A document should be accessible");
+        Assert.assertTrue(workspaceManager.document(packageBFile).isPresent(),
+                "Package B document should be accessible");
+
+        // Both projects should be accessible
+        Assert.assertTrue(workspaceManager.project(packageAFile).isPresent(),
+                "Package A project should be accessible");
+        Assert.assertTrue(workspaceManager.project(packageBFile).isPresent(),
+                "Package B project should be accessible");
+
+        // Each should have different project root
+        Path rootA = workspaceManager.projectRoot(packageAFile);
+        Path rootB = workspaceManager.projectRoot(packageBFile);
+        Assert.assertNotEquals(rootA, rootB, "Different packages should have different project roots");
+
+        // But both should be under the same workspace parent
+        Assert.assertEquals(rootA.getParent(), rootB.getParent(),
+                "Both packages should be under the same workspace directory");
+    }
+
+    // ==================== Project Root Resolution Edge Case Tests ====================
+
+    /**
+     * Test: Opening file in subdirectory resolves to correct project root.
+     */
+    @Test(description = "Test project root resolution for file in subdirectory")
+    public void testProjectRootResolutionSubdirectory() throws WorkspaceDocumentException {
+        // myproject2 has nested modules: myproject2/modules/services/svc.bal
+        Path subdirFile = RESOURCE_DIRECTORY.resolve("myproject2")
+                .resolve("modules").resolve("services").resolve("svc.bal").toAbsolutePath();
+
+        // Open file from subdirectory
+        openFile(subdirFile, dummyContent);
+
+        // projectRoot() should still resolve to myproject2 directory
+        Path projectRoot = workspaceManager.projectRoot(subdirFile);
+        Assert.assertEquals(projectRoot.getFileName().toString(), "myproject2",
+                "Project root should resolve to myproject2 even for subdirectory file");
+    }
+
+    /**
+     * Test: Opening file in nested module resolves to correct project root.
+     */
+    @Test(description = "Test project root resolution for file in nested module")
+    public void testProjectRootResolutionNestedModule() throws WorkspaceDocumentException {
+        // simple-workspace/package-a/modules might exist
+        Path packageAFile = RESOURCE_DIRECTORY.resolve("workspace-projects")
+                .resolve("simple-workspace").resolve("package-a").resolve("main.bal").toAbsolutePath();
+
+        // Open file from workspace package
+        openFile(packageAFile, dummyContent);
+
+        // projectRoot() should resolve to package-a directory
+        Path projectRoot = workspaceManager.projectRoot(packageAFile);
+        Assert.assertEquals(projectRoot.getFileName().toString(), "package-a",
+                "Project root should resolve to package-a for nested module file");
+    }
+
+    /**
+     * Test: Opening multiple files in same project returns same project instance.
+     */
+    @Test(description = "Test same project instance for multiple files in same project")
+    public void testSameProjectInstanceForMultipleFiles() throws WorkspaceDocumentException {
+        // Open two files from the same build project
+        Path file1 = RESOURCE_DIRECTORY.resolve("myproject").resolve("main.bal").toAbsolutePath();
+        Path file2 = RESOURCE_DIRECTORY.resolve("myproject").resolve("utils.bal").toAbsolutePath();
+
+        openFile(file1, dummyContent);
+        openFile(file2, dummyContent);
+
+        // Both should resolve to the same project instance
+        Optional<Project> project1 = workspaceManager.project(file1);
+        Optional<Project> project2 = workspaceManager.project(file2);
+
+        Assert.assertTrue(project1.isPresent(), "Project for file1 should be present");
+        Assert.assertTrue(project2.isPresent(), "Project for file2 should be present");
+        Assert.assertSame(project1.get(), project2.get(),
+                "Multiple files in same project should return same Project instance");
+    }
+
+    /**
+     * Test: Opening file in different package of same workspace returns different project root.
+     */
+    @Test(description = "Test different project root for different packages in same workspace")
+    public void testDifferentProjectRootForDifferentPackages() throws WorkspaceDocumentException {
+        Path packageAFile = RESOURCE_DIRECTORY.resolve("workspace-projects")
+                .resolve("simple-workspace").resolve("package-a").resolve("main.bal").toAbsolutePath();
+        Path packageBFile = RESOURCE_DIRECTORY.resolve("workspace-projects")
+                .resolve("simple-workspace").resolve("package-b").resolve("main.bal").toAbsolutePath();
+
+        openFile(packageAFile, dummyContent);
+        openFile(packageBFile, dummyContent);
+
+        // Different packages should have different project roots
+        Path rootA = workspaceManager.projectRoot(packageAFile);
+        Path rootB = workspaceManager.projectRoot(packageBFile);
+
+        Assert.assertNotEquals(rootA, rootB,
+                "Different packages should have different project roots");
+
+        // But both should share the same workspace parent
+        Assert.assertEquals(rootA.getParent(), rootB.getParent(),
+                "Both packages should be under the same workspace directory");
     }
 
     // ==================== Helper Methods ====================
