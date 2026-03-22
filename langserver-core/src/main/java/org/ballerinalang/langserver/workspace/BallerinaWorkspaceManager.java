@@ -234,7 +234,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                 return null;
             }
             loadResultRef.set(loadResult.get());
-            pathToSourceRootCache.clear();
+            invalidateCacheFor(root);
             return ProjectContext.from(loadResult.get().targetProject());
         });
         if (projectContext == null) {
@@ -888,7 +888,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                     // Thus, loading a new build-project here
                     optProject = createProjectContext(filePath, LSContextOperation.WS_WF_CHANGED.getName());
                     sourceRootToProject.put(optProject.get().project().sourceRoot(), optProject.get());
-                    pathToSourceRootCache.clear();
+                    invalidateCacheFor(optProject.get().project().sourceRoot());
 
                 }
                 return optProject;
@@ -935,7 +935,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                     // If it is a single-file-project, remove project from mapping
                     Path projectRoot = project.sourceRoot();
                     ProjectContext removed = sourceRootToProject.remove(projectRoot);
-                    pathToSourceRootCache.clear();
+                    invalidateCacheFor(projectRoot);
                     if (removed != null) {
                         removed.close();
                     }
@@ -1005,7 +1005,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                     projectContext.withWriteLock(ctx -> {
                         Path projectRoot = project.sourceRoot();
                         removedRef.set(sourceRootToProject.remove(projectRoot));
-                        pathToSourceRootCache.clear();
+                        invalidateCacheFor(projectRoot);
                         clientLogger.logTrace(
                                 String.format("Operation '%s' {project: '%s', kind: '%s'} removed",
                                         LSContextOperation.WS_WF_CHANGED.getName(),
@@ -1204,7 +1204,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                             if (ctx.project().kind() == ProjectKind.SINGLE_FILE_PROJECT) {
                                 Path projectRoot = ctx.project().sourceRoot();
                                 ProjectContext removed = sourceRootToProject.remove(projectRoot);
-                                pathToSourceRootCache.clear();
+                                invalidateCacheFor(projectRoot);
                                 removedRef.set(removed);
                                 Path ballerinaTomlFilePath = projectRoot.getParent().resolve(ProjectConstants.BALLERINA_TOML);
                                 Optional<ProjectContext> newProjectContext = createProjectContext(ballerinaTomlFilePath,
@@ -1216,7 +1216,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                                 ProjectContext updatedProjectContext = newProjectContext.get();
                                 sourceRootToProject.put(updatedProjectContext.project().sourceRoot(),
                                         updatedProjectContext);
-                                pathToSourceRootCache.clear();
+                                invalidateCacheFor(updatedProjectContext.project().sourceRoot());
                                 return;
                             }
                             throw new WorkspaceDocumentException("Invalid operation, cannot create Ballerina.toml!");
@@ -1250,7 +1250,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                         if (createIfNotExists) {
                             Path projectRoot = ctx.project().sourceRoot();
                             ProjectContext removed = sourceRootToProject.remove(projectRoot);
-                            pathToSourceRootCache.clear();
+                            invalidateCacheFor(projectRoot);
                             removedRef.set(removed);
                             Path dependenciesTomlFilePath = projectRoot.resolve(ProjectConstants.DEPENDENCIES_TOML);
                             Optional<ProjectContext> newProjectContext = createProjectContext(dependenciesTomlFilePath,
@@ -1261,7 +1261,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                             }
                             ProjectContext updatedProjectContext = newProjectContext.get();
                             sourceRootToProject.put(updatedProjectContext.project().sourceRoot(), updatedProjectContext);
-                            pathToSourceRootCache.clear();
+                            invalidateCacheFor(updatedProjectContext.project().sourceRoot());
                             return;
                         }
                         throw new WorkspaceDocumentException(ProjectConstants.DEPENDENCIES_TOML + " does not exist!");
@@ -1406,13 +1406,13 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
 
                     Project reloadedProject = reloadedProjectOpt.get();
                     sourceRootToProject.put(reloadedProject.sourceRoot(), ProjectContext.from(reloadedProject));
-                    pathToSourceRootCache.clear();
+                    invalidateCacheFor(reloadedProject.sourceRoot());
 
                     List<Project> workspacePackages = compilerApi.getWorkspaceProjectsInOrder(reloadedProject);
                     for (Project workspacePackage : workspacePackages) {
                         Path packageRoot = workspacePackage.sourceRoot();
                         sourceRootToProject.put(packageRoot, ProjectContext.from(workspacePackage));
-                        pathToSourceRootCache.clear();
+                        invalidateCacheFor(packageRoot);
                     }
 
                     ctx.setProject(reloadedProject);
@@ -1489,7 +1489,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
         if (project.get().kind() == ProjectKind.SINGLE_FILE_PROJECT) {
             Path projectRoot = project.get().sourceRoot();
             ProjectContext removed = sourceRootToProject.remove(projectRoot);
-            pathToSourceRootCache.clear();
+            invalidateCacheFor(projectRoot);
             if (removed != null) {
                 removed.close();
             }
@@ -1529,12 +1529,12 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
 
     protected void cacheProjectContext(Path projectRoot, ProjectContext projectContext) {
         sourceRootToProject.put(projectRoot, projectContext);
-        pathToSourceRootCache.clear();
+        invalidateCacheFor(projectRoot);
     }
 
     protected void removeProjectContext(Path projectRoot) {
         ProjectContext removed = sourceRootToProject.remove(projectRoot);
-        pathToSourceRootCache.clear();
+        invalidateCacheFor(projectRoot);
         if (removed != null) {
             removed.close();
         }
@@ -1614,7 +1614,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
             } else {
                 sourceRootToProject.put(workspaceRootProject.sourceRoot(), ProjectContext.from(workspaceRootProject));
             }
-            pathToSourceRootCache.clear();
+            invalidateCacheFor(workspaceRootProject.sourceRoot());
         }
 
         for (Project workspacePackage : loadResult.workspacePackages()) {
@@ -1623,7 +1623,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
             } else {
                 sourceRootToProject.put(workspacePackage.sourceRoot(), ProjectContext.from(workspacePackage));
             }
-            pathToSourceRootCache.clear();
+            invalidateCacheFor(workspacePackage.sourceRoot());
         }
     }
 
@@ -1689,7 +1689,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                 replacedRef.set(existing);
             }
             loadResultRef.set(loadResult.get());
-            pathToSourceRootCache.clear();
+            invalidateCacheFor(projectRoot);
             return ProjectContext.from(loadResult.get().targetProject());
         });
         ProjectContext replaced = replacedRef.get();
