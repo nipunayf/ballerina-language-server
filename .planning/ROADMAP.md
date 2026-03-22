@@ -60,7 +60,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. `sourceRootToProject` has a bounded capacity; when a project is evicted, `project.clearCaches()` is called — a workspace with many projects does not accumulate ~90 MB per project indefinitely
   3. Concurrent startup events (didOpen + file watcher) for the same project root do not load the project twice — the second caller receives the same `ProjectContext` via `computeIfAbsent`
 **Plans**: 3 plans
-  - [ ] 03-01-PLAN.md — Targeted cache invalidation (CACH-01)
+  - [x] 03-01-PLAN.md — Targeted cache invalidation (CACH-01)
   - [ ] 03-02-PLAN.md — LRU eviction for project registry (CACH-02)
   - [ ] 03-03-PLAN.md — Duplicate load prevention (CACH-03)
 
