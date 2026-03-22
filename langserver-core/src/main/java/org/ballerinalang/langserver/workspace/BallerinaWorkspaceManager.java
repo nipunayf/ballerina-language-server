@@ -79,7 +79,6 @@ import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -151,17 +150,9 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                 .build();
         this.pathToSourceRootCache = cache.asMap();
 
-        // We are only doing a best effort cleanup here. If we held a strong reference to the map
-        // GC will not be able to clean the projects. It impacts tests since all run in the same JVM.
-        WeakReference<Map<Path, ProjectContext>> weekMap = new WeakReference<>(sourceRootToProject);
         Runtime.getRuntime().addShutdownHook(Thread.ofVirtual().unstarted(() -> {
-            Map<Path, ProjectContext> map = weekMap.get();
-            if (map == null) {
-                return;
-            }
-            for (ProjectContext projectContext : map.values()) {
-                // Since we are anyway shutting down no need to acquire locks for each
-                projectContext.process().ifPresent(Process::destroy);
+            for (ProjectContext projectContext : sourceRootToProject.values()) {
+                projectContext.close();
             }
         }));
 
@@ -933,8 +924,11 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                 if (project.kind() == ProjectKind.SINGLE_FILE_PROJECT) {
                     // If it is a single-file-project, remove project from mapping
                     Path projectRoot = project.sourceRoot();
-                    sourceRootToProject.remove(projectRoot);
+                    ProjectContext removed = sourceRootToProject.remove(projectRoot);
                     pathToSourceRootCache.clear();
+                    if (removed != null) {
+                        removed.close();
+                    }
                     clientLogger.logTrace(String.format("Operation '%s' {project: '%s' kind: '%s'} removed",
                             LSContextOperation.WS_WF_CHANGED.getName(),
                             projectRoot.toUri().toString(),
@@ -997,9 +991,10 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                 if (project.kind() == ProjectKind.BUILD_PROJECT) {
                     // This results down-grading a build-project into a single-file-project
                     // Thus, removing the project and allow subsequent changes to create single-file-projects
+                    AtomicReference<ProjectContext> removedRef = new AtomicReference<>();
                     projectContext.withWriteLock(ctx -> {
                         Path projectRoot = project.sourceRoot();
-                        sourceRootToProject.remove(projectRoot);
+                        removedRef.set(sourceRootToProject.remove(projectRoot));
                         pathToSourceRootCache.clear();
                         clientLogger.logTrace(
                                 String.format("Operation '%s' {project: '%s', kind: '%s'} removed",
@@ -1008,6 +1003,10 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                                         ctx.project().kind().name()
                                                 .toLowerCase(Locale.getDefault())));
                     });
+                    ProjectContext removed = removedRef.get();
+                    if (removed != null) {
+                        removed.close();
+                    }
                     break;
                 } else {
                     throw new WorkspaceDocumentException("Invalid operation, cannot delete Ballerina.toml!");
@@ -1185,6 +1184,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
 
     private void updateBallerinaToml(String content, ProjectContext projectContext, boolean createIfNotExists)
             throws WorkspaceDocumentException {
+        AtomicReference<ProjectContext> removedRef = new AtomicReference<>();
         try {
             projectContext.withWriteLock(ctx -> {
                 try {
@@ -1192,10 +1192,11 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                     if (ballerinaToml.isEmpty()) {
                         if (createIfNotExists) {
                             if (ctx.project().kind() == ProjectKind.SINGLE_FILE_PROJECT) {
-                                sourceRootToProject.remove(ctx.project().sourceRoot());
+                                Path projectRoot = ctx.project().sourceRoot();
+                                ProjectContext removed = sourceRootToProject.remove(projectRoot);
                                 pathToSourceRootCache.clear();
-                                Path ballerinaTomlFilePath = ctx.project().sourceRoot().getParent()
-                                        .resolve(ProjectConstants.BALLERINA_TOML);
+                                removedRef.set(removed);
+                                Path ballerinaTomlFilePath = projectRoot.getParent().resolve(ProjectConstants.BALLERINA_TOML);
                                 Optional<ProjectContext> newProjectContext = createProjectContext(ballerinaTomlFilePath,
                                         LSContextOperation.WS_WF_CHANGED.getName());
                                 if (newProjectContext.isEmpty()) {
@@ -1222,20 +1223,26 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
         } catch (RuntimeException e) {
             throw unwrapWorkspaceDocumentException(e);
         }
+        ProjectContext removed = removedRef.get();
+        if (removed != null) {
+            removed.close();
+        }
     }
 
     private void updateDependenciesToml(String content, ProjectContext projectContext, boolean createIfNotExists)
             throws WorkspaceDocumentException {
+        AtomicReference<ProjectContext> removedRef = new AtomicReference<>();
         try {
             projectContext.withWriteLock(ctx -> {
                 try {
                     Optional<DependenciesToml> dependenciesToml = ctx.project().currentPackage().dependenciesToml();
                     if (dependenciesToml.isEmpty()) {
                         if (createIfNotExists) {
-                            sourceRootToProject.remove(ctx.project().sourceRoot());
+                            Path projectRoot = ctx.project().sourceRoot();
+                            ProjectContext removed = sourceRootToProject.remove(projectRoot);
                             pathToSourceRootCache.clear();
-                            Path dependenciesTomlFilePath = ctx.project().sourceRoot()
-                                    .resolve(ProjectConstants.DEPENDENCIES_TOML);
+                            removedRef.set(removed);
+                            Path dependenciesTomlFilePath = projectRoot.resolve(ProjectConstants.DEPENDENCIES_TOML);
                             Optional<ProjectContext> newProjectContext = createProjectContext(dependenciesTomlFilePath,
                                     LSContextOperation.WS_WF_CHANGED.getName());
                             if (newProjectContext.isEmpty()) {
@@ -1257,6 +1264,10 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
             });
         } catch (RuntimeException e) {
             throw unwrapWorkspaceDocumentException(e);
+        }
+        ProjectContext removed = removedRef.get();
+        if (removed != null) {
+            removed.close();
         }
     }
 
@@ -1467,8 +1478,11 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
         // If it is a single file project, remove project from mapping
         if (project.get().kind() == ProjectKind.SINGLE_FILE_PROJECT) {
             Path projectRoot = project.get().sourceRoot();
-            sourceRootToProject.remove(projectRoot);
+            ProjectContext removed = sourceRootToProject.remove(projectRoot);
             pathToSourceRootCache.clear();
+            if (removed != null) {
+                removed.close();
+            }
             clientLogger.logTrace("Operation '" + LSContextOperation.TXT_DID_CLOSE.getName() +
                     "' {project: '" + projectRoot.toUri().toString() +
                     "' kind: '" + project.get().kind().name().toLowerCase(Locale.getDefault()) +
@@ -1509,8 +1523,11 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
     }
 
     protected void removeProjectContext(Path projectRoot) {
-        sourceRootToProject.remove(projectRoot);
+        ProjectContext removed = sourceRootToProject.remove(projectRoot);
         pathToSourceRootCache.clear();
+        if (removed != null) {
+            removed.close();
+        }
     }
 
     private Optional<ProjectContext> createProjectContext(Path filePath, String operationName) {
@@ -1649,6 +1666,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
             throws WorkspaceDocumentException {
         Path projectRoot = projectRoot(filePath);
         AtomicReference<ProjectLoadResult> loadResultRef = new AtomicReference<>();
+        AtomicReference<ProjectContext> replacedRef = new AtomicReference<>();
         ProjectContext projectContext = sourceRootToProject.compute(projectRoot, (key, existing) -> {
             if (existing != null && !(existing.isProjectCrashed() && isSourceChange)) {
                 return existing;
@@ -1657,10 +1675,17 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
             if (loadResult.isEmpty()) {
                 return existing;
             }
+            if (existing != null) {
+                replacedRef.set(existing);
+            }
             loadResultRef.set(loadResult.get());
             pathToSourceRootCache.clear();
             return ProjectContext.from(loadResult.get().targetProject());
         });
+        ProjectContext replaced = replacedRef.get();
+        if (replaced != null) {
+            replaced.close();
+        }
         if (projectContext == null) {
             throw new WorkspaceDocumentException("Cannot find the project of uri: " + filePath);
         }
@@ -1806,6 +1831,40 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
          */
         public void removeProcess() {
             this.process = null;
+        }
+
+        /**
+         * Close this project context, releasing resources.
+         *
+         * @since 1.7.0
+         */
+        public void close() {
+            rwl.writeLock().lock();
+            try {
+                if (!closed) {
+                    closed = true;
+                    if (process != null) {
+                        process.destroy();
+                        process = null;
+                    }
+                    if (project != null) {
+                        project.clearCaches();
+                        project = null;
+                    }
+                }
+            } finally {
+                rwl.writeLock().unlock();
+            }
+        }
+
+        /**
+         * Returns whether this context has been closed.
+         *
+         * @return true if closed
+         * @since 1.7.0
+         */
+        public boolean isClosed() {
+            return closed;
         }
     }
 
