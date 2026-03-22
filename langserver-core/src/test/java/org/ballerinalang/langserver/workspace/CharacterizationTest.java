@@ -18,13 +18,17 @@
 package org.ballerinalang.langserver.workspace;
 
 import io.ballerina.projects.Document;
+import io.ballerina.projects.Module;
 import io.ballerina.projects.Project;
 import io.ballerina.projects.ProjectKind;
+import io.ballerina.projects.util.ProjectConstants;
 import org.ballerinalang.langserver.commons.workspace.WorkspaceDocumentException;
 import org.ballerinalang.langserver.contexts.LanguageServerContextImpl;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
+import org.eclipse.lsp4j.FileChangeType;
+import org.eclipse.lsp4j.FileEvent;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentItem;
@@ -33,6 +37,8 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
@@ -296,6 +302,281 @@ public class CharacterizationTest {
         DidCloseTextDocumentParams closeParams2 = new DidCloseTextDocumentParams();
         closeParams2.setTextDocument(new TextDocumentIdentifier(filePath.toUri().toString()));
         workspaceManager.didClose(filePath, closeParams2);
+    }
+
+    // ==================== File System Event Tests - .bal File Events ====================
+
+    /**
+     * Test: Creating a .bal file in a build project updates the module.
+     */
+    @Test(description = "Test creating a .bal file in a build project updates the module")
+    public void testWSEventsCreateBalSource() throws WorkspaceDocumentException, IOException {
+        Path filePath = RESOURCE_DIRECTORY.resolve("myproject").resolve("main.bal").toAbsolutePath();
+
+        // Open project
+        openFile(filePath, dummyContent);
+        Module oldModule = workspaceManager.module(filePath).orElseThrow();
+
+        // Create a new .bal file and send CREATED event
+        Path newFile = RESOURCE_DIRECTORY.resolve("myproject").resolve("new-file.bal").toAbsolutePath();
+        Files.write(newFile, "".getBytes());
+        FileEvent fileEvent = new FileEvent(newFile.toUri().toString(), FileChangeType.Created);
+        try {
+            workspaceManager.didChangeWatched(newFile, fileEvent);
+            // Creating new document changes the Module
+            Assert.assertNotSame(oldModule, workspaceManager.module(filePath).orElseThrow(),
+                    "Module should be updated after .bal file creation");
+        } finally {
+            Files.deleteIfExists(newFile);
+        }
+    }
+
+    /**
+     * Test: Deleting a .bal file in a build project updates the module.
+     */
+    @Test(description = "Test deleting a .bal file in a build project updates the module")
+    public void testWSEventsDeleteBalSource() throws WorkspaceDocumentException, IOException {
+        // Create a new file first
+        Path newFile = RESOURCE_DIRECTORY.resolve("myproject").resolve("delete-file.bal").toAbsolutePath();
+        Files.write(newFile, "".getBytes());
+
+        Path filePath = RESOURCE_DIRECTORY.resolve("myproject").resolve("main.bal").toAbsolutePath();
+
+        // Open project
+        openFile(filePath, dummyContent);
+        Module oldModule = workspaceManager.module(filePath).orElseThrow();
+
+        // Delete the file and send DELETED event
+        Files.delete(newFile);
+        FileEvent fileEvent = new FileEvent(newFile.toUri().toString(), FileChangeType.Deleted);
+        workspaceManager.didChangeWatched(newFile, fileEvent);
+
+        // File deletion forces a new module
+        Assert.assertNotSame(oldModule, workspaceManager.module(filePath).orElseThrow(),
+                "Module should be updated after .bal file deletion");
+    }
+
+    /**
+     * Test: Deleting a .bal file in a single-file project removes the project from workspace.
+     */
+    @Test(description = "Test deleting a .bal file in a single-file project removes the project")
+    public void testWSEventsDeleteBalSourceOnSingleFileProj() throws WorkspaceDocumentException, IOException {
+        // Create a new file
+        Path singleFile = RESOURCE_DIRECTORY.resolve("single-file").resolve("delete-file.bal").toAbsolutePath();
+        Files.write(singleFile, "".getBytes());
+
+        // Open project
+        openFile(singleFile, dummyContent);
+
+        // Delete the file and send DELETED event
+        Files.delete(singleFile);
+        FileEvent fileEvent = new FileEvent(singleFile.toUri().toString(), FileChangeType.Deleted);
+        workspaceManager.didChangeWatched(singleFile, fileEvent);
+
+        try {
+            // Recreate file so project() call doesn't fail
+            Files.write(singleFile, "".getBytes());
+            // File deletion for single-file project should remove project from mapping
+            Assert.assertTrue(workspaceManager.project(singleFile).isEmpty(),
+                    "Single-file project should be removed from workspace after .bal file deletion");
+        } finally {
+            Files.deleteIfExists(singleFile);
+        }
+    }
+
+    // ==================== File System Event Tests - TOML File Events ====================
+
+    /**
+     * Test: Creating Ballerina.toml on a single-file project converts it to BUILD_PROJECT.
+     */
+    @Test(description = "Test creating Ballerina.toml on a single-file project converts it to BUILD_PROJECT")
+    public void testWSEventsCreateBallerinaTomlOnSingleFileProj() throws WorkspaceDocumentException, IOException {
+        Path filePath = RESOURCE_DIRECTORY.resolve("single-file").resolve("main.bal").toAbsolutePath();
+
+        // Open project
+        openFile(filePath, dummyContent);
+
+        // Create Ballerina.toml and send CREATED event
+        Path newTomlFile = RESOURCE_DIRECTORY.resolve("single-file").resolve(ProjectConstants.BALLERINA_TOML)
+                .toAbsolutePath();
+        Files.write(newTomlFile, "[package]\norg = \"sameera\"\nname = \"myproject\"\nversion = \"0.1.0\"".getBytes());
+        FileEvent fileEvent = new FileEvent(newTomlFile.toUri().toString(), FileChangeType.Created);
+        try {
+            workspaceManager.didChangeWatched(newTomlFile, fileEvent);
+            Optional<Project> project = workspaceManager.project(filePath);
+
+            Assert.assertTrue(project.isPresent(), "Project should not be empty after Ballerina.toml creation");
+            Assert.assertSame(project.get().kind(), ProjectKind.BUILD_PROJECT,
+                    "Project should be BUILD_PROJECT after Ballerina.toml creation");
+        } finally {
+            Files.deleteIfExists(newTomlFile);
+        }
+    }
+
+    /**
+     * Test: Deleting Ballerina.toml from a build project removes the project.
+     */
+    @Test(description = "Test deleting Ballerina.toml from a build project removes the project")
+    public void testWSEventsDeleteBallerinaTomlOnBuildProj() throws WorkspaceDocumentException, IOException {
+        Path filePath = RESOURCE_DIRECTORY.resolve("single-file").resolve("main.bal").toAbsolutePath();
+
+        // Create Ballerina.toml first
+        Path tomlFile = RESOURCE_DIRECTORY.resolve("single-file").resolve(ProjectConstants.BALLERINA_TOML)
+                .toAbsolutePath();
+        Files.write(tomlFile, "[package]\norg = \"sameera\"\nname = \"myproject\"\nversion = \"0.1.0\"".getBytes());
+
+        // Open project
+        openFile(filePath, dummyContent);
+
+        // Delete Ballerina.toml and send DELETED event
+        Files.delete(tomlFile);
+        FileEvent fileEvent = new FileEvent(tomlFile.toUri().toString(), FileChangeType.Deleted);
+        workspaceManager.didChangeWatched(tomlFile, fileEvent);
+
+        // Project should return empty after Ballerina.toml deletion
+        Assert.assertTrue(workspaceManager.project(filePath).isEmpty(),
+                "Project should be empty after Ballerina.toml deletion");
+    }
+
+    /**
+     * Test: Creating Cloud.toml adds cloudToml() to package.
+     */
+    @Test(description = "Test creating Cloud.toml adds cloudToml() to package")
+    public void testWSEventsCreateCloudToml() throws WorkspaceDocumentException, IOException {
+        Path filePath = RESOURCE_DIRECTORY.resolve("myproject").resolve("main.bal").toAbsolutePath();
+
+        // Open project
+        openFile(filePath, dummyContent);
+
+        // Create Cloud.toml and send CREATED event
+        Path cloudTomlFile = RESOURCE_DIRECTORY.resolve("myproject").resolve(ProjectConstants.CLOUD_TOML)
+                .toAbsolutePath();
+        Files.write(cloudTomlFile, "".getBytes());
+        FileEvent fileEvent = new FileEvent(cloudTomlFile.toUri().toString(), FileChangeType.Created);
+        try {
+            workspaceManager.didChangeWatched(cloudTomlFile, fileEvent);
+
+            Optional<Project> project = workspaceManager.project(filePath);
+            Assert.assertTrue(project.isPresent(), "Project should not be empty after Cloud.toml creation");
+            Assert.assertTrue(project.get().currentPackage().cloudToml().isPresent(),
+                    "Package should contain Cloud.toml after creation");
+        } finally {
+            Files.deleteIfExists(cloudTomlFile);
+        }
+    }
+
+    /**
+     * Test: Deleting Cloud.toml removes cloudToml() from package.
+     */
+    @Test(description = "Test deleting Cloud.toml removes cloudToml() from package")
+    public void testWSEventsDeleteCloudToml() throws WorkspaceDocumentException, IOException {
+        Path filePath = RESOURCE_DIRECTORY.resolve("myproject").resolve("main.bal").toAbsolutePath();
+
+        // Create Cloud.toml first
+        Path cloudTomlFile = RESOURCE_DIRECTORY.resolve("myproject").resolve(ProjectConstants.CLOUD_TOML)
+                .toAbsolutePath();
+        Files.write(cloudTomlFile, "".getBytes());
+
+        // Open project
+        openFile(filePath, dummyContent);
+
+        // Delete Cloud.toml and send DELETED event
+        Files.delete(cloudTomlFile);
+        FileEvent fileEvent = new FileEvent(cloudTomlFile.toUri().toString(), FileChangeType.Deleted);
+        workspaceManager.didChangeWatched(cloudTomlFile, fileEvent);
+
+        Optional<Project> project = workspaceManager.project(filePath);
+        Assert.assertTrue(project.isPresent(), "Project should not be empty after Cloud.toml deletion");
+        Assert.assertTrue(project.get().currentPackage().cloudToml().isEmpty(),
+                "Package should not contain Cloud.toml after deletion");
+    }
+
+    /**
+     * Test: Creating Dependencies.toml adds dependenciesToml() to package.
+     */
+    @Test(description = "Test creating Dependencies.toml adds dependenciesToml() to package")
+    public void testWSEventsCreateDependenciesToml() throws WorkspaceDocumentException, IOException {
+        Path filePath = RESOURCE_DIRECTORY.resolve("myproject").resolve("main.bal").toAbsolutePath();
+
+        // Open project
+        openFile(filePath, dummyContent);
+
+        // Create Dependencies.toml and send CREATED event
+        Path depsTomlFile = RESOURCE_DIRECTORY.resolve("myproject").resolve(ProjectConstants.DEPENDENCIES_TOML)
+                .toAbsolutePath();
+        Files.write(depsTomlFile, "".getBytes());
+        FileEvent fileEvent = new FileEvent(depsTomlFile.toUri().toString(), FileChangeType.Created);
+        try {
+            workspaceManager.didChangeWatched(depsTomlFile, fileEvent);
+
+            Optional<Project> project = workspaceManager.project(filePath);
+            Assert.assertTrue(project.isPresent(), "Project should not be empty after Dependencies.toml creation");
+            Assert.assertTrue(project.get().currentPackage().dependenciesToml().isPresent(),
+                    "Package should contain Dependencies.toml after creation");
+        } finally {
+            Files.deleteIfExists(depsTomlFile);
+        }
+    }
+
+    // ==================== File System Event Tests - Module Events ====================
+
+    /**
+     * Test: Deleting a module directory triggers project reload.
+     */
+    @Test(description = "Test deleting a module directory triggers project reload")
+    public void testWSEventsDeleteModule() throws WorkspaceDocumentException, IOException {
+        Path projectPath = RESOURCE_DIRECTORY.resolve("myproject2");
+        Path filePath = projectPath.resolve("main.bal").toAbsolutePath();
+
+        // Create a new module with a file
+        Path modelsPath = projectPath.resolve(ProjectConstants.MODULES_ROOT).resolve("models").toAbsolutePath();
+        Files.createDirectories(modelsPath);
+        Path modelFilePath = modelsPath.resolve("model.bal").toAbsolutePath();
+        Files.createFile(modelFilePath);
+
+        // Open project
+        openFile(filePath, dummyContent);
+        Project oldProject = workspaceManager.project(filePath).orElseThrow();
+
+        // Delete the module directory and send DELETED event
+        Files.delete(modelFilePath);
+        Files.delete(modelsPath);
+        FileEvent fileEvent = new FileEvent(modelsPath.toUri().toString(), FileChangeType.Deleted);
+        workspaceManager.didChangeWatched(modelsPath, fileEvent);
+
+        Optional<Project> project = workspaceManager.project(filePath);
+        Assert.assertTrue(project.isPresent(), "Project should not be empty after module deletion");
+        Assert.assertNotSame(oldProject, project.get(), "Project should be reloaded after module deletion");
+    }
+
+    /**
+     * Test: Deleting the modules directory triggers project reload.
+     */
+    @Test(description = "Test deleting the modules directory triggers project reload")
+    public void testWSEventsDeleteModulesDir() throws WorkspaceDocumentException, IOException {
+        Path projectPath = RESOURCE_DIRECTORY.resolve("myproject2");
+        Path filePath = projectPath.resolve("main.bal").toAbsolutePath();
+
+        // Open project
+        openFile(filePath, dummyContent);
+        Project oldProject = workspaceManager.project(filePath).orElseThrow();
+
+        Path modulesPath = projectPath.resolve(ProjectConstants.MODULES_ROOT).toAbsolutePath();
+        Path modulesPathNew = projectPath.resolve(ProjectConstants.RESOURCE_DIR_NAME).toAbsolutePath();
+
+        // Rename modules directory and send DELETED event
+        Files.move(modulesPath, modulesPathNew);
+        FileEvent fileEvent = new FileEvent(modulesPath.toUri().toString(), FileChangeType.Deleted);
+        try {
+            workspaceManager.didChangeWatched(modulesPath, fileEvent);
+            Optional<Project> project = workspaceManager.project(filePath);
+            Assert.assertTrue(project.isPresent(), "Project should not be empty after modules dir deletion");
+            Assert.assertNotSame(oldProject, project.get(),
+                    "Project should be reloaded after modules dir deletion");
+        } finally {
+            // Restore modules directory
+            Files.move(modulesPathNew, modulesPath);
+        }
     }
 
     // ==================== Helper Methods ====================
