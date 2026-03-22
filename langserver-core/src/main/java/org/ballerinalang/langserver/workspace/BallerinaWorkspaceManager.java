@@ -1721,14 +1721,34 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
 
         private volatile boolean projectCrashed;
         private volatile boolean closed = false;
+        private final boolean workspaceChild;
+        private final Path workspaceRoot;
 
         private ProjectContext(Project project) {
+            this(project, false, null);
+        }
+
+        private ProjectContext(Project project, boolean workspaceChild, Path workspaceRoot) {
             this.project = project;
             this.compilationCrashed = false;
+            this.workspaceChild = workspaceChild;
+            this.workspaceRoot = workspaceRoot;
         }
 
         public static ProjectContext from(Project project) {
             return new ProjectContext(project);
+        }
+
+        public static ProjectContext from(Project project, boolean workspaceChild, Path workspaceRoot) {
+            return new ProjectContext(project, workspaceChild, workspaceRoot);
+        }
+
+        public boolean isWorkspaceChild() {
+            return workspaceChild;
+        }
+
+        public Path workspaceRoot() {
+            return workspaceRoot;
         }
 
         /**
