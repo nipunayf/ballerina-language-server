@@ -100,7 +100,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -1706,7 +1708,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
      */
     public static class ProjectContext {
 
-        private final Lock lock;
+        private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock(true);
         private Project project;
 
         private volatile boolean compilationCrashed;
@@ -1714,38 +1716,53 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
         private Process process;
 
         private volatile boolean projectCrashed;
+        private volatile boolean closed = false;
 
-        private ProjectContext(Project project, Lock lock) {
+        private ProjectContext(Project project) {
             this.project = project;
-            this.lock = lock;
             this.compilationCrashed = false;
         }
 
         public static ProjectContext from(Project project) {
-            return new ProjectContext(project, new ReentrantLock(true));
-        }
-
-        public static ProjectContext from(Project project, Lock lock) {
-            return new ProjectContext(project, lock);
+            return new ProjectContext(project);
         }
 
         /**
-         * Returns the associated lock for the file.
+         * Execute an action under the read lock. Returns null if the context is closed.
          *
-         * @return {@link Lock}
+         * @param action the function to execute under read lock
+         * @param <T> the return type
+         * @return the result of the action, or null if closed
+         * @since 1.7.0
          */
-        public Lock locker() {
-            return this.lock;
+        public <T> T withReadLock(Function<ProjectContext, T> action) {
+            rwl.readLock().lock();
+            try {
+                if (closed) {
+                    return null;
+                }
+                return action.apply(this);
+            } finally {
+                rwl.readLock().unlock();
+            }
         }
 
         /**
-         * Returns the associated lock for the file.
+         * Execute an action under the write lock.
          *
-         * @return {@link Lock}
+         * @param action the consumer to execute under write lock
+         * @since 1.7.0
          */
-        public Lock lockAndGet() {
-            this.lock.lock();
-            return this.lock;
+        public void withWriteLock(Consumer<ProjectContext> action) {
+            rwl.writeLock().lock();
+            try {
+                if (closed) {
+                    return;
+                }
+                action.accept(this);
+            } finally {
+                rwl.writeLock().unlock();
+            }
         }
 
         /**
