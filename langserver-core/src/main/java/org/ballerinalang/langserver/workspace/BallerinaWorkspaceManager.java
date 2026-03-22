@@ -1780,32 +1780,20 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
     private ProjectContext createOrGetProjectPair(Path filePath, String operationName, boolean isSourceChange)
             throws WorkspaceDocumentException {
         Path projectRoot = projectRoot(filePath);
-        AtomicReference<ProjectLoadResult> loadResultRef = new AtomicReference<>();
-        AtomicReference<ProjectContext> replacedRef = new AtomicReference<>();
-        ProjectContext projectContext = sourceRootToProject.compute(projectRoot, (key, existing) -> {
-            if (existing != null && !(existing.isProjectCrashed() && isSourceChange)) {
-                return existing;
-            }
-            Optional<ProjectLoadResult> loadResult = loadProjectResult(filePath, operationName);
-            if (loadResult.isEmpty()) {
-                return existing;
-            }
-            if (existing != null) {
-                replacedRef.set(existing);
-            }
-            loadResultRef.set(loadResult.get());
+        ProjectContext projectContext = sourceRootToProject.get(projectRoot);
+        if (projectContext != null && !(projectContext.isProjectCrashed() && isSourceChange)) {
+            return projectContext;
+        }
+
+        if (projectContext != null && projectContext.isProjectCrashed() && isSourceChange) {
+            ProjectContext removed = sourceRootToProject.remove(projectRoot);
             invalidateCacheFor(projectRoot);
-            return createProjectContext(loadResult.get().targetProject(), loadResult.get().workspaceRootProject());
-        });
-        ProjectContext replaced = replacedRef.get();
-        if (replaced != null) {
-            replaced.close();
+            if (removed != null) {
+                removed.close();
+            }
         }
-        if (projectContext == null) {
-            throw new WorkspaceDocumentException("Cannot find the project of uri: " + filePath);
-        }
-        cacheLoadedProjects(projectRoot, projectContext, loadResultRef.get());
-        return projectContext;
+
+        return getOrCreateProject(projectRoot, filePath, operationName);
     }
 
     private record ProjectLoadResult(Project targetProject, @Nullable Project workspaceRootProject,
