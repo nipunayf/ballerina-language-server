@@ -948,10 +948,12 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                 if (optProject.isEmpty()) {
                     // Single-file project is unavailable if we just downgraded a build-project removing Ballerina.toml
                     // Thus, loading a new build-project here
-                    optProject = createProjectContext(filePath, LSContextOperation.WS_WF_CHANGED.getName());
-                    sourceRootToProject.put(optProject.get().project().sourceRoot(), optProject.get());
-                    invalidateCacheFor(optProject.get().project().sourceRoot());
-
+                    try {
+                        optProject = Optional.of(getOrCreateProject(filePath.getParent(), filePath,
+                                LSContextOperation.WS_WF_CHANGED.getName()));
+                    } catch (WorkspaceDocumentException e) {
+                        optProject = Optional.empty();
+                    }
                 }
                 return optProject;
             } else {
@@ -1269,16 +1271,8 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                                 invalidateCacheFor(projectRoot);
                                 removedRef.set(removed);
                                 Path ballerinaTomlFilePath = projectRoot.getParent().resolve(ProjectConstants.BALLERINA_TOML);
-                                Optional<ProjectContext> newProjectContext = createProjectContext(ballerinaTomlFilePath,
+                                getOrCreateProject(projectRoot.getParent(), ballerinaTomlFilePath,
                                         LSContextOperation.WS_WF_CHANGED.getName());
-                                if (newProjectContext.isEmpty()) {
-                                    throw new WorkspaceDocumentException(
-                                            "Invalid operation, cannot create Ballerina.toml!");
-                                }
-                                ProjectContext updatedProjectContext = newProjectContext.get();
-                                sourceRootToProject.put(updatedProjectContext.project().sourceRoot(),
-                                        updatedProjectContext);
-                                invalidateCacheFor(updatedProjectContext.project().sourceRoot());
                                 return;
                             }
                             throw new WorkspaceDocumentException("Invalid operation, cannot create Ballerina.toml!");
@@ -1315,15 +1309,8 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                             invalidateCacheFor(projectRoot);
                             removedRef.set(removed);
                             Path dependenciesTomlFilePath = projectRoot.resolve(ProjectConstants.DEPENDENCIES_TOML);
-                            Optional<ProjectContext> newProjectContext = createProjectContext(dependenciesTomlFilePath,
+                            getOrCreateProject(projectRoot, dependenciesTomlFilePath,
                                     LSContextOperation.WS_WF_CHANGED.getName());
-                            if (newProjectContext.isEmpty()) {
-                                throw new WorkspaceDocumentException(
-                                        "Invalid operation, cannot create Dependencies.toml!");
-                            }
-                            ProjectContext updatedProjectContext = newProjectContext.get();
-                            sourceRootToProject.put(updatedProjectContext.project().sourceRoot(), updatedProjectContext);
-                            invalidateCacheFor(updatedProjectContext.project().sourceRoot());
                             return;
                         }
                         throw new WorkspaceDocumentException(ProjectConstants.DEPENDENCIES_TOML + " does not exist!");
