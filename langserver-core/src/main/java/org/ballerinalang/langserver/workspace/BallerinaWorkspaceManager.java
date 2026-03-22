@@ -288,21 +288,8 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
             return optionalProject.get();
         }
 
-        AtomicReference<ProjectLoadResult> loadResultRef = new AtomicReference<>();
         Path root = projectRoot(filePath);
-        ProjectContext projectContext = sourceRootToProject.computeIfAbsent(root, key -> {
-            Optional<ProjectLoadResult> loadResult = loadProjectResult(filePath, LSContextOperation.LOAD_PROJECT.getName());
-            if (loadResult.isEmpty()) {
-                return null;
-            }
-            loadResultRef.set(loadResult.get());
-            invalidateCacheFor(root);
-            return createProjectContext(loadResult.get().targetProject(), loadResult.get().workspaceRootProject());
-        });
-        if (projectContext == null) {
-            throw new WorkspaceDocumentException("Cannot find the project of uri: " + filePath);
-        }
-        cacheLoadedProjects(root, projectContext, loadResultRef.get());
+        ProjectContext projectContext = getOrCreateProject(root, filePath, LSContextOperation.LOAD_PROJECT.getName());
 
         DocumentServiceContext context = ContextBuilder.buildDocumentServiceContext(
                 filePath.toUri().toString(),
