@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: active
-stopped_at: Completed 04-01-PLAN.md
+stopped_at: Completed 04-02-PLAN.md
 last_updated: "2026-03-23T01:55:00Z"
 progress:
   total_phases: 7
   completed_phases: 3
   total_plans: 11
-  completed_plans: 10
+  completed_plans: 11
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 ## Current Position
 
 Phase: 04
-Plan: 01 (Completed)
+Plan: 02 (Completed)
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Plan: 01 (Completed)
 | Phase 03-cache-invalidation P02 | 6 min | 6 tasks | 2 files |
 | Phase 03-cache-invalidation P03 | 6 min | 6 tasks | 2 files |
 | Phase 04-toml-consolidation P01 | 25 min | 3 tasks | 10 files |
+| Phase 04-toml-consolidation P02 | 8 min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,8 @@ Recent decisions affecting current work:
 - [Phase 03-cache-invalidation]: Unified new project creation behind getOrCreateProject(...) so same-root races converge on the cache loader.
 - [Phase 03-cache-invalidation]: Kept explicit crash/replacement eviction paths and used the atomic loader only for fresh creation flows.
 - [Phase 04-toml-consolidation]: Split GenericTomlHandler into 3 explicit handlers (CloudTomlHandler, CompilerPluginTomlHandler, BalToolTomlHandler) for code clarity and type safety.
+- [Phase 04-toml-consolidation]: Used Optional<TomlHandler> for registry lookup to avoid null checks and make empty case explicit.
+- [Phase 04-toml-consolidation]: Created TomlHandlerContextImpl as private inner class for narrow BWM access without exposing internals.
 
 ### Pending Todos
 
@@ -92,6 +95,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T01:55:00Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-03-22T20:25:43Z
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None

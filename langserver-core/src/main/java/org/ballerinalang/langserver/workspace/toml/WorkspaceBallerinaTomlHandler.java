@@ -18,6 +18,7 @@
 package org.ballerinalang.langserver.workspace.toml;
 
 import io.ballerina.projects.Project;
+import io.ballerina.projects.ProjectKind;
 import io.ballerina.projects.TomlDocument;
 import io.ballerina.projects.util.ProjectConstants;
 import org.ballerinalang.langserver.LSContextOperation;
@@ -26,7 +27,9 @@ import org.ballerinalang.langserver.commons.workspace.WorkspaceDocumentException
 import org.ballerinalang.langserver.workspace.BallerinaWorkspaceManager.ProjectContext;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -64,6 +67,75 @@ public class WorkspaceBallerinaTomlHandler extends AbstractTomlHandler {
         // Workspace Ballerina.toml changes require special handling via compiler API
         context.reloadProject(projectContext, filePath, LSContextOperation.WS_WF_CHANGED.getName());
         // Register workspace children after reload
+        context.registerWorkspaceChildren(projectContext);
+    }
+
+    @Override
+    protected void onDeleted(Path filePath, ProjectContext projectContext) throws WorkspaceDocumentException {
+        Project project = projectContext.project();
+        if (project.kind() == ProjectKind.WORKSPACE_PROJECT) {
+            projectContext.withWriteLock(ctx -> {
+                // Get workspace root path
+                Path wsRoot = project.sourceRoot();
+                
+                // Get all workspace children BEFORE removing anything
+                List<Path> childRoots = new ArrayList<>();
+                for (Map.Entry<Path, ProjectContext> entry : context.projectRegistry().entrySet()) {
+                    if (entry.getValue().isWorkspaceChild() && 
+                        wsRoot.equals(entry.getValue().workspaceRoot())) {
+                        childRoots.add(entry.getKey());
+                    }
+                }
+                
+                // Evict all child packages first
+                for (Path childRoot : childRoots) {
+                    ProjectContext removed = context.projectRegistry().remove(childRoot);
+                    if (removed != null) {
+                        removed.close();
+                    }
+                }
+                
+                // Evict workspace root last
+                ProjectContext removedRoot = context.projectRegistry().remove(wsRoot);
+                if (removedRoot != null) {
+                    removedRoot.close();
+                }
+            });
+        } else {
+                throw new WorkspaceDocumentException("Invalid operation, cannot delete " + fileName() + 
+                    " from non-workspace project!");
+        }
+    }
+
+    @Override
+    protected void onCreated(Path filePath, ProjectContext projectContext) throws WorkspaceDocumentException {
+        // First, evict any existing standalone child packages under this workspace root
+        Path wsRoot = filePath.getParent();
+        List<Path> toEvict = new ArrayList<>();
+        for (Map.Entry<Path, ProjectContext> entry : context.projectRegistry().entrySet()) {
+            Path entryRoot = entry.getKey();
+            // Find entries that are children of this workspace root
+            if (entry.getValue().isWorkspaceChild() && 
+                wsRoot.equals(entry.getValue().workspaceRoot())) {
+                toEvict.add(entryRoot);
+            }
+            // Also evict standalone projects that are now part of this workspace
+            if (!entry.getValue().isWorkspaceChild() && 
+                entryRoot.startsWith(wsRoot)) {
+                toEvict.add(entryRoot);
+            }
+        }
+        
+        // Evict found entries
+        for (Path rootToEvict : toEvict) {
+            ProjectContext removed = context.projectRegistry().remove(rootToEvict);
+            if (removed != null) {
+                removed.close();
+            }
+        }
+        
+        // Now handle as normal workspace change
+        context.reloadProject(projectContext, filePath, LSContextOperation.WS_WF_CHANGED.getName());
         context.registerWorkspaceChildren(projectContext);
     }
 

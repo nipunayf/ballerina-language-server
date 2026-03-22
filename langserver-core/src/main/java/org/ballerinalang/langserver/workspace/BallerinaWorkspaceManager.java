@@ -109,6 +109,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -1546,6 +1547,48 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
             return findProjectRoot(filePath.getParent());
         }
         return Optional.empty();
+    }
+
+    /**
+     * Returns all workspace child ProjectContexts for a given workspace root.
+     * Filters sourceRootToProject by workspaceChild flag matching the workspaceRoot.
+     *
+     * @param wsRoot the workspace root path
+     * @return list of ProjectContexts for all workspace packages (excluding root)
+     */
+    private List<ProjectContext> workspaceChildren(Path wsRoot) {
+        return sourceRootToProject.entrySet().stream()
+                .filter(e -> e.getValue().isWorkspaceChild())
+                .filter(e -> {
+                    Path childRoot = e.getKey();
+                    // workspaceChild's workspaceRoot field points to the workspace root
+                    return wsRoot.equals(e.getValue().workspaceRoot());
+                })
+                .map(Map.Entry::getValue)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Returns the workspace root ProjectContext for a given child path.
+     * Returns empty if the path is not a workspace child or is the root itself.
+     *
+     * @param childRoot any path within the workspace (package root or document)
+     * @return Optional containing the workspace root's ProjectContext
+     */
+    private Optional<ProjectContext> workspaceRoot(Path childRoot) {
+        Path resolvedRoot = projectRoot(childRoot);
+        ProjectContext ctx = sourceRootToProject.get(resolvedRoot);
+        if (ctx == null) {
+            return Optional.empty();
+        }
+        if (!ctx.isWorkspaceChild()) {
+            return Optional.empty();
+        }
+        Path wsRoot = ctx.workspaceRoot();
+        if (wsRoot == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(sourceRootToProject.get(wsRoot));
     }
 
     private Optional<ProjectContext> getProjectOfWatchedFileChange(Path filePath, FileEvent fileEvent) {
