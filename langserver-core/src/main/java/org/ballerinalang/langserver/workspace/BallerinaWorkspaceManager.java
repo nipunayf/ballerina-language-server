@@ -143,7 +143,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
 
     protected final LSClientLogger clientLogger;
     private final LanguageServerContext serverContext;
-    private final Set<Path> openedDocuments = new HashSet<>();
+    private final Set<Path> openedDocuments = ConcurrentHashMap.newKeySet();
 
     public BallerinaWorkspaceManager(LanguageServerContext serverContext) {
         this.serverContext = serverContext;
@@ -1687,11 +1687,11 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
         private final Lock lock;
         private Project project;
 
-        private boolean compilationCrashed;
+        private volatile boolean compilationCrashed;
 
         private Process process;
 
-        private boolean projectCrashed;
+        private volatile boolean projectCrashed;
 
         private ProjectContext(Project project, Lock lock) {
             this.project = project;
