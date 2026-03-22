@@ -19,6 +19,9 @@ package org.ballerinalang.langserver.workspace;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
+import com.google.common.cache.Weigher;
 import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.syntax.tree.SyntaxTree;
 import io.ballerina.projects.BalToolToml;
@@ -130,7 +133,8 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
     /**
      * Mapping of source root to project instance.
      */
-    private final Map<Path, ProjectContext> sourceRootToProject = new ConcurrentHashMap<>();
+    private final Map<Path, ProjectContext> sourceRootToProject;
+    private final Cache<Path, ProjectContext> projectCache;
     /**
      * The build options are used when compiling the project for the LS change events. The build options can be changed
      * based on the flags set in the client.
@@ -149,6 +153,54 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                 .maximumSize(1000)
                 .build();
         this.pathToSourceRootCache = cache.asMap();
+        this.projectCache = CacheBuilder.newBuilder()
+                .maximumWeight(8)
+                .expireAfterAccess(15, TimeUnit.MINUTES)
+                .weigher(new Weigher<Path, ProjectContext>() {
+                    @Override
+                    public int weigh(Path key, ProjectContext value) {
+                        return value.isWorkspaceChild() ? 0 : 1;
+                    }
+                })
+                .removalListener(new RemovalListener<Path, ProjectContext>() {
+                    @Override
+                    public void onRemoval(RemovalNotification<Path, ProjectContext> notification) {
+                        if (!notification.wasEvicted()) {
+                            return;
+                        }
+
+                        ProjectContext ctx = notification.getValue();
+                        Path root = notification.getKey();
+                        if (ctx == null || root == null) {
+                            return;
+                        }
+
+                        for (Path openDoc : openedDocuments) {
+                            if (openDoc.startsWith(root)) {
+                                projectCache.put(root, ctx);
+                                return;
+                            }
+                        }
+
+                        ctx.close();
+                        invalidateCacheFor(root);
+
+                        if (!ctx.isWorkspaceChild() && ctx.workspaceRoot() == null) {
+                            sourceRootToProject.entrySet().removeIf(entry -> {
+                                ProjectContext child = entry.getValue();
+                                if (child != null && child.isWorkspaceChild()
+                                        && root.equals(child.workspaceRoot())) {
+                                    child.close();
+                                    invalidateCacheFor(entry.getKey());
+                                    return true;
+                                }
+                                return false;
+                            });
+                        }
+                    }
+                })
+                .build();
+        this.sourceRootToProject = projectCache.asMap();
 
         Runtime.getRuntime().addShutdownHook(Thread.ofVirtual().unstarted(() -> {
             for (ProjectContext projectContext : sourceRootToProject.values()) {
