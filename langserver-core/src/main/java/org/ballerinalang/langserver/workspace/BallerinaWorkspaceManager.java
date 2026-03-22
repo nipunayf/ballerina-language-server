@@ -51,6 +51,9 @@ import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 import org.ballerinalang.langserver.LSClientLogger;
 import org.ballerinalang.langserver.LSContextOperation;
+import org.ballerinalang.langserver.workspace.toml.TomlHandler;
+import org.ballerinalang.langserver.workspace.toml.TomlHandlerContext;
+import org.ballerinalang.langserver.workspace.toml.TomlHandlerRegistry;
 import org.ballerinalang.langserver.common.utils.CommonUtil;
 import org.ballerinalang.langserver.common.utils.PathUtil;
 import org.ballerinalang.langserver.commons.BallerinaCompilerApi;
@@ -145,10 +148,12 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
     protected final LSClientLogger clientLogger;
     private final LanguageServerContext serverContext;
     private final Set<Path> openedDocuments = ConcurrentHashMap.newKeySet();
+    private final TomlHandlerRegistry tomlHandlerRegistry;
 
     public BallerinaWorkspaceManager(LanguageServerContext serverContext) {
         this.serverContext = serverContext;
         this.clientLogger = LSClientLogger.getInstance(serverContext);
+        this.tomlHandlerRegistry = new TomlHandlerRegistry(new TomlHandlerContextImpl());
         Cache<Path, Path> cache = CacheBuilder.newBuilder()
                 .expireAfterWrite(10, TimeUnit.MINUTES)
                 .maximumSize(1000)
@@ -478,26 +483,15 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
         ProjectContext projectContext = createOrGetProjectPair(filePath,
                 LSContextOperation.TXT_DID_OPEN.getName(), true);
         Project project = projectContext.project();
-        if (filePath.equals(project.sourceRoot().resolve(ProjectConstants.BALLERINA_TOML))) {
-            // Check if this is a workspace or package Ballerina.toml
-            if (isWorkspaceToml(filePath)) {
-                updateWorkspaceToml(params.getTextDocument().getText(), projectContext, true);
-            } else {
-                updateBallerinaToml(params.getTextDocument().getText(), projectContext, true);
-            }
-        } else if (filePath.equals(project.sourceRoot().resolve(ProjectConstants.DEPENDENCIES_TOML))) {
-            // Create or update Dependencies.toml
-            updateDependenciesToml(params.getTextDocument().getText(), projectContext, true);
-        } else if (filePath.equals(project.sourceRoot().resolve(ProjectConstants.CLOUD_TOML))) {
-            // Create or update Cloud.toml
-            updateCloudToml(params.getTextDocument().getText(), projectContext, true);
-        } else if (filePath.equals(project.sourceRoot().resolve(ProjectConstants.COMPILER_PLUGIN_TOML))) {
-            // Create or update Compiler-plugin.toml
-            updateCompilerPluginToml(params.getTextDocument().getText(), projectContext, true);
-        } else if (filePath.equals(project.sourceRoot().resolve(ProjectConstants.BAL_TOOL_TOML))) {
-            // Create or update BalTool.toml
-            updateBalToolToml(params.getTextDocument().getText(), projectContext, true);
-        } else if (ProjectPaths.isBalFile(filePath) && project.kind() != ProjectKind.BALA_PROJECT) {
+
+        // Route TOML files through the registry
+        Optional<TomlHandler> tomlHandlerOpt = tomlHandlerRegistry.lookup(filePath);
+        if (tomlHandlerOpt.isPresent()) {
+            tomlHandlerOpt.get().updateContent(params.getTextDocument().getText(), projectContext, true);
+            return;
+        }
+
+        if (ProjectPaths.isBalFile(filePath) && project.kind() != ProjectKind.BALA_PROJECT) {
             // Create a new .bal document.
             createBalDocument(filePath, params.getTextDocument().getText(), projectContext);
         }
@@ -517,26 +511,15 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                 LSContextOperation.TXT_DID_CHANGE.getName(), true);
 
         Project project = projectContext.project();
-        if (filePath.equals(project.sourceRoot().resolve(ProjectConstants.BALLERINA_TOML))) {
-            // Check if this is a workspace or package Ballerina.toml
-            if (isWorkspaceToml(filePath)) {
-                updateWorkspaceToml(params.getContentChanges().get(0).getText(), projectContext, false);
-            } else {
-                updateBallerinaToml(params.getContentChanges().get(0).getText(), projectContext, false);
-            }
-        } else if (filePath.equals(project.sourceRoot().resolve(ProjectConstants.DEPENDENCIES_TOML))) {
-            // create or update Dependencies.toml
-            updateDependenciesToml(params.getContentChanges().get(0).getText(), projectContext, false);
-        } else if (filePath.equals(project.sourceRoot().resolve(ProjectConstants.CLOUD_TOML))) {
-            // create or update Cloud.toml
-            updateCloudToml(params.getContentChanges().get(0).getText(), projectContext, false);
-        } else if (filePath.equals(project.sourceRoot().resolve(ProjectConstants.COMPILER_PLUGIN_TOML))) {
-            // create or update Compiler-plugin.toml
-            updateCompilerPluginToml(params.getContentChanges().get(0).getText(), projectContext, false);
-        } else if (filePath.equals(project.sourceRoot().resolve(ProjectConstants.BAL_TOOL_TOML))) {
-            // create or update BalTool.toml
-            updateBalToolToml(params.getContentChanges().get(0).getText(), projectContext, false);
-        } else if (ProjectPaths.isBalFile(filePath) && project.kind() != ProjectKind.BALA_PROJECT) {
+
+        // Route TOML files through the registry
+        Optional<TomlHandler> tomlHandlerOpt = tomlHandlerRegistry.lookup(filePath);
+        if (tomlHandlerOpt.isPresent()) {
+            tomlHandlerOpt.get().updateContent(params.getContentChanges().get(0).getText(), projectContext, false);
+            return;
+        }
+
+        if (ProjectPaths.isBalFile(filePath) && project.kind() != ProjectKind.BALA_PROJECT) {
             // Update .bal document
             updateBalDocument(filePath, params.getContentChanges().get(0).getText(), projectContext);
         }
@@ -567,14 +550,13 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
         Project project = projectContext.project();
         String fileName = filePath.getFileName().toString();
         boolean isBallerinaSourceChange = fileName.endsWith(ProjectConstants.BLANG_SOURCE_EXT);
-        boolean isBallerinaTomlChange = filePath.endsWith(ProjectConstants.BALLERINA_TOML);
-        boolean isDependenciesTomlChange = filePath.endsWith(ProjectConstants.DEPENDENCIES_TOML);
-        boolean isCloudTomlChange = filePath.endsWith(ProjectConstants.CLOUD_TOML);
-        boolean isCompilerPluginTomlChange = filePath.endsWith(ProjectConstants.COMPILER_PLUGIN_TOML);
-        boolean isBalToolTomlChange = filePath.endsWith(ProjectConstants.BAL_TOOL_TOML);
+
+        // Check if this is a TOML file using the registry
+        Optional<TomlHandler> tomlHandlerOpt = tomlHandlerRegistry.lookup(filePath);
+        boolean isTomlChange = tomlHandlerOpt.isPresent();
+
         if (fileEvent.getType() == FileChangeType.Created &&
-                (isBallerinaSourceChange || isBallerinaTomlChange || isCloudTomlChange || isCompilerPluginTomlChange
-                        || isBalToolTomlChange)
+                (isBallerinaSourceChange || isTomlChange)
                 && hasDocumentOrToml(filePath, project)) {
             // Document might already exists when text/didOpen hits before workspace/didChangeWatchedFiles,
             // Thus, return silently
@@ -586,18 +568,11 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
             return;
         }
 
-        if (isBallerinaSourceChange) {
+        // Route TOML files through the registry
+        if (tomlHandlerOpt.isPresent()) {
+            tomlHandlerOpt.get().handleWatchedChange(filePath, fileEvent, projectContext);
+        } else if (isBallerinaSourceChange) {
             handleWatchedBalSourceChange(filePath, fileEvent, projectContext);
-        } else if (isBallerinaTomlChange) {
-            handleWatchedBallerinaTomlChange(filePath, fileEvent, projectContext);
-        } else if (isCloudTomlChange) {
-            handleWatchedCloudTomlChange(filePath, fileEvent, projectContext);
-        } else if (isDependenciesTomlChange) {
-            handleWatchedDependenciesTomlChange(filePath, fileEvent, projectContext);
-        } else if (isCompilerPluginTomlChange) {
-            handleWatchedCompilerPluginTomlChange(filePath, fileEvent, projectContext);
-        } else if (isBalToolTomlChange) {
-            handleWatchedBalToolTomlChange(filePath, fileEvent, projectContext);
         } else {
             handleWatchedModuleChange(filePath, fileEvent, projectContext);
         }
@@ -2022,6 +1997,51 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
         // Check if the parent directory is a workspace root
         Path parentDir = filePath.getParent();
         return parentDir != null && BallerinaCompilerApi.getInstance().isWorkspaceProjectRoot(parentDir);
+    }
+
+    /**
+     * Implementation of TomlHandlerContext providing narrow BWM access to TOML handlers.
+     */
+    private class TomlHandlerContextImpl implements TomlHandlerContext {
+
+        @Override
+        public void reloadProject(ProjectContext ctx, Path trigger, String operation) {
+            BallerinaWorkspaceManager.this.reloadProject(ctx, trigger, operation);
+        }
+
+        @Override
+        public Map<Path, ProjectContext> projectRegistry() {
+            return BallerinaWorkspaceManager.this.sourceRootToProject;
+        }
+
+        @Override
+        public Set<Path> openedDocuments() {
+            return BallerinaWorkspaceManager.this.openedDocuments;
+        }
+
+        @Override
+        public void logError(String message, Throwable t) {
+            BallerinaWorkspaceManager.this.clientLogger.logError(LSContextOperation.WS_WF_CHANGED, message, t, null,
+                    (org.eclipse.lsp4j.Position) null);
+        }
+
+        @Override
+        public void registerWorkspaceChildren(ProjectContext workspaceCtx) {
+            Project workspaceProject = workspaceCtx.project();
+            BallerinaCompilerApi compilerApi = BallerinaCompilerApi.getInstance();
+
+            if (!compilerApi.isWorkspaceProject(workspaceProject)) {
+                return;
+            }
+
+            List<Project> workspacePackages = compilerApi.getWorkspaceProjectsInOrder(workspaceProject);
+            for (Project workspacePackage : workspacePackages) {
+                Path packageRoot = workspacePackage.sourceRoot();
+                BallerinaWorkspaceManager.this.sourceRootToProject.put(packageRoot,
+                        ProjectContext.from(workspacePackage, true, workspaceProject.sourceRoot()));
+                BallerinaWorkspaceManager.this.invalidateCacheFor(packageRoot);
+            }
+        }
     }
 
     private static boolean isError(Diagnostic diagnostic) {
