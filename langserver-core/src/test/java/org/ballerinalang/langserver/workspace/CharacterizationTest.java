@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -1198,6 +1199,66 @@ public class CharacterizationTest {
         }
     }
 
+    @Test(description = "Test LRU eviction when capacity is exceeded")
+    public void testLruEviction() throws Exception {
+        Path tempRoot = Files.createTempDirectory("workspace-manager-lru");
+        List<Path> projectFiles = new ArrayList<>();
+        try {
+            for (int i = 0; i < 9; i++) {
+                Path projectDir = tempRoot.resolve("project-" + i);
+                copyDirectory(RESOURCE_DIRECTORY.resolve("myproject").toAbsolutePath(), projectDir);
+                Path projectFile = projectDir.resolve("main.bal");
+                projectFiles.add(projectFile);
+
+                openFile(projectFile, dummyContent + System.lineSeparator() + "// " + i);
+                closeFile(projectFile);
+            }
+
+            Path firstProject = projectFiles.get(0);
+            Assert.assertTrue(workspaceManager.project(firstProject).isEmpty(),
+                    "Least recently used project should be evicted after capacity is exceeded");
+
+            Project reloaded = workspaceManager.loadProject(firstProject);
+            Assert.assertNotNull(reloaded, "Evicted project should be reloadable");
+            Assert.assertTrue(workspaceManager.project(firstProject).isPresent(),
+                    "Reloaded project should be present after loadProject");
+        } finally {
+            for (Path projectFile : projectFiles) {
+                closeQuietly(projectFile);
+            }
+            deleteRecursively(tempRoot);
+        }
+    }
+
+    @Test(description = "Test pinning prevents eviction of projects with open documents")
+    public void testPinningPreventsEviction() throws Exception {
+        Path pinnedProject = RESOURCE_DIRECTORY.resolve("myproject").resolve("main.bal").toAbsolutePath();
+        Path tempRoot = Files.createTempDirectory("workspace-manager-pinned");
+        List<Path> projectFiles = new ArrayList<>();
+        try {
+            openFile(pinnedProject, dummyContent);
+
+            for (int i = 0; i < 9; i++) {
+                Path projectDir = tempRoot.resolve("project-" + i);
+                copyDirectory(RESOURCE_DIRECTORY.resolve("myproject").toAbsolutePath(), projectDir);
+                Path projectFile = projectDir.resolve("main.bal");
+                projectFiles.add(projectFile);
+
+                openFile(projectFile, dummyContent + System.lineSeparator() + "// pinned test " + i);
+                closeFile(projectFile);
+            }
+
+            Assert.assertTrue(workspaceManager.project(pinnedProject).isPresent(),
+                    "Pinned project with an open document should not be evicted");
+        } finally {
+            closeQuietly(pinnedProject);
+            for (Path projectFile : projectFiles) {
+                closeQuietly(projectFile);
+            }
+            deleteRecursively(tempRoot);
+        }
+    }
+
     // ==================== Helper Methods ====================
 
     private void openFile(Path filePath, String content) throws WorkspaceDocumentException {
@@ -1249,6 +1310,36 @@ public class CharacterizationTest {
             closeFile(filePath);
         } catch (RuntimeException ignored) {
             // Best-effort cleanup for concurrent test fixtures.
+        }
+    }
+
+    private void copyDirectory(Path sourceDir, Path targetDir) throws IOException {
+        try (var paths = Files.walk(sourceDir)) {
+            for (Path source : (Iterable<Path>) paths::iterator) {
+                Path relative = sourceDir.relativize(source);
+                Path target = targetDir.resolve(relative);
+                if (Files.isDirectory(source)) {
+                    Files.createDirectories(target);
+                } else {
+                    Files.createDirectories(target.getParent());
+                    Files.copy(source, target);
+                }
+            }
+        }
+    }
+
+    private void deleteRecursively(Path root) throws IOException {
+        if (root == null || Files.notExists(root)) {
+            return;
+        }
+        try (var paths = Files.walk(root)) {
+            paths.sorted(Comparator.reverseOrder()).forEach(path -> {
+                try {
+                    Files.deleteIfExists(path);
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to delete temp test path: " + path, e);
+                }
+            });
         }
     }
 
