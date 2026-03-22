@@ -44,6 +44,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -1156,6 +1157,47 @@ public class CharacterizationTest {
         }
     }
 
+    // ==================== Cache Invalidation Tests ====================
+
+    @Test(description = "Test cache entry survival for unrelated projects")
+    public void testCacheEntrySurvival() throws Exception {
+        Path projectA = RESOURCE_DIRECTORY.resolve("single-file").resolve("main.bal").toAbsolutePath();
+        Path projectB = RESOURCE_DIRECTORY.resolve("myproject2").resolve("main.bal").toAbsolutePath();
+        Path ballerinaToml = projectA.getParent().resolve(ProjectConstants.BALLERINA_TOML);
+
+        openFile(projectA, dummyContent);
+        openFile(projectB, dummyContent);
+
+        Path rootA = workspaceManager.projectRoot(projectA);
+        Path rootB = workspaceManager.projectRoot(projectB);
+        Map<Path, Path> cache = getPathToSourceRootCache();
+
+        Assert.assertEquals(cache.get(projectA), rootA, "Project A should populate the path cache before invalidation");
+        Assert.assertEquals(cache.get(projectB), rootB, "Project B should populate the path cache before invalidation");
+
+        Files.writeString(ballerinaToml, "[package]\norg = \"sameera\"\nname = \"myproject\"\nversion = \"0.1.0\"");
+        FileEvent fileEvent = new FileEvent(ballerinaToml.toUri().toString(), FileChangeType.Created);
+        try {
+            workspaceManager.didChangeWatched(ballerinaToml, fileEvent);
+
+            Assert.assertFalse(cache.containsKey(projectA),
+                    "Project A's old single-file cache entry should be evicted after upgrade");
+            Assert.assertTrue(cache.containsKey(projectB),
+                    "Project B's cache entry should survive unrelated invalidation");
+            Assert.assertEquals(cache.get(projectB), rootB,
+                    "Project B should still resolve to the same cached root after Project A invalidation");
+
+            Path rootBAfter = workspaceManager.projectRoot(projectB);
+            Assert.assertEquals(rootBAfter, rootB, "Project B root should remain stable after Project A invalidation");
+            Assert.assertEquals(cache.get(projectB), rootB,
+                    "Project B should still be served from the surviving cache entry");
+        } finally {
+            Files.deleteIfExists(ballerinaToml);
+            closeQuietly(projectA);
+            closeQuietly(projectB);
+        }
+    }
+
     // ==================== Helper Methods ====================
 
     private void openFile(Path filePath, String content) throws WorkspaceDocumentException {
@@ -1188,6 +1230,17 @@ public class CharacterizationTest {
             return (Set<Path>) field.get(workspaceManager);
         } catch (ReflectiveOperationException e) {
             throw new AssertionError("Failed to inspect openedDocuments", e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<Path, Path> getPathToSourceRootCache() {
+        try {
+            Field field = BallerinaWorkspaceManager.class.getDeclaredField("pathToSourceRootCache");
+            field.setAccessible(true);
+            return (Map<Path, Path>) field.get(workspaceManager);
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError("Failed to inspect pathToSourceRootCache", e);
         }
     }
 
