@@ -241,8 +241,43 @@ public class CompilationGateTest {
      */
     @Test
     public void testFatalCompilerErrorsSkipRecovery() throws Exception {
-        assertImmediateCrash(DiagnosticErrorCode.BAD_SAD_FROM_COMPILER.diagnosticId() + ": compiler crashed");
         assertImmediateCrash(DiagnosticErrorCode.CYCLIC_MODULE_IMPORTS_DETECTED.diagnosticId() + ": cyclic import");
+    }
+
+    /**
+     * Tests that BAD_SAD_FROM_COMPILER behaves as a recoverable failure triggering the recovery ladder.
+     */
+    @Test
+    public void testBadSadFromCompilerTriggersSoftRetry() throws Exception {
+        CapturingCompilerApi compilerApi = new CapturingCompilerApi(false);
+        setCompilerApiInstance(compilerApi);
+
+        Path filePath = RESOURCE_DIRECTORY.resolve("myproject").resolve("main.bal").toAbsolutePath();
+        Path projectRoot = filePath.getParent();
+        String errorMessage = DiagnosticErrorCode.BAD_SAD_FROM_COMPILER.diagnosticId() + ": compiler crashed";
+        Project initialProject = mockProject(filePath, BuildOptions.builder().build(),
+                failingPackage(errorMessage));
+        Project onlineRetryProject = mockProject(filePath, BuildOptions.builder().build(),
+                failingPackage(errorMessage));
+        PackageCompilation expectedCompilation = Mockito.mock(PackageCompilation.class);
+        Project softRetryProject = mockProject(filePath, BuildOptions.builder().build(),
+                successfulPackage(expectedCompilation));
+
+        compilerApi.enqueueProject(onlineRetryProject);
+        compilerApi.enqueueProject(softRetryProject);
+        seedProjectContext(projectRoot, initialProject);
+
+        Optional<PackageCompilation> compilation = workspaceManager.waitAndGetPackageCompilation(filePath);
+
+        Assert.assertTrue(compilation.isPresent(), "SOFT reload should recover the compilation");
+        Assert.assertSame(compilation.get(), expectedCompilation, "Recovered compilation should be returned");
+        Assert.assertEquals(compilerApi.capturedBuildOptions().size(), 2, "Online and SOFT reloads are expected");
+        Assert.assertFalse(compilerApi.capturedBuildOptions().get(0).offlineBuild(),
+                "Online retry should disable offline mode");
+        Assert.assertEquals(compilerApi.capturedBuildOptions().get(1).lockingMode(), PackageLockingMode.SOFT,
+                "Fallback retry should force SOFT locking mode");
+        Assert.assertFalse(workspaceManager.projectContext(projectRoot).orElseThrow().compilationCrashed(),
+                "Successful fallback should clear the crash flag");
     }
 
     private Path createProjectCopy(String projectName) throws IOException {

@@ -303,35 +303,38 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
      */
     @Override
     public Optional<Module> module(Path filePath) {
-        Optional<Project> project = project(filePath);
-        if (project.isEmpty()) {
-            return Optional.empty();
-        }
-        Optional<Document> document = document(filePath, project.get(), null);
-        if (document.isEmpty()) {
-            // If the file path points to the project root, then return the default module
-            // TODO: Need to extend this to support module paths once we have an API to obtain the module root from
-            //  the given file path
-            if (filePath.equals(this.projectRoot(filePath))) {
-                return Optional.of(project.get().currentPackage().getDefaultModule());
-            }
-            return Optional.empty();
-        }
-        return Optional.of(document.get().module());
+        return projectContext(projectRoot(filePath))
+                .flatMap(context -> context.withReadLock(ctx -> {
+                    Optional<Project> project = project(filePath);
+                    if (project.isEmpty()) {
+                        return Optional.empty();
+                    }
+                    Optional<Document> document = document(filePath, project.get(), null);
+                    if (document.isEmpty()) {
+                        if (filePath.equals(this.projectRoot(filePath))) {
+                            return Optional.of(project.get().currentPackage().getDefaultModule());
+                        }
+                        return Optional.<Module>empty();
+                    }
+                    return Optional.of(document.get().module());
+                }));
     }
 
     @Override
     public Optional<Module> module(Path filePath, @Nonnull CancelChecker cancelChecker) {
         cancelChecker.checkCanceled();
-        Optional<Project> project = project(filePath);
-        if (project.isEmpty()) {
-            return Optional.empty();
-        }
-        Optional<Document> document = document(filePath, project.get(), cancelChecker);
-        if (document.isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(document.get().module());
+        return projectContext(projectRoot(filePath))
+                .flatMap(context -> context.withReadLock(ctx -> {
+                    Optional<Project> project = project(filePath);
+                    if (project.isEmpty()) {
+                        return Optional.empty();
+                    }
+                    Optional<Document> document = document(filePath, project.get(), cancelChecker);
+                    if (document.isEmpty()) {
+                        return Optional.<Module>empty();
+                    }
+                    return Optional.of(document.get().module());
+                }));
     }
 
     /**
@@ -342,14 +345,20 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
      */
     @Override
     public Optional<Document> document(Path filePath) {
-        Optional<Project> project = project(filePath);
-        return project.isPresent() ? document(filePath, project.get(), null) : Optional.empty();
+        return projectContext(projectRoot(filePath))
+                .flatMap(context -> context.withReadLock(ctx -> {
+                    Optional<Project> project = project(filePath);
+                    return project.isPresent() ? document(filePath, project.get(), null) : Optional.<Document>empty();
+                }));
     }
 
     @Override
     public Optional<Document> document(Path filePath, @Nonnull CancelChecker cancelChecker) {
-        Optional<Project> project = project(filePath);
-        return project.isPresent() ? document(filePath, project.get(), cancelChecker) : Optional.empty();
+        return projectContext(projectRoot(filePath))
+                .flatMap(context -> context.withReadLock(ctx -> {
+                    Optional<Project> project = project(filePath);
+                    return project.isPresent() ? document(filePath, project.get(), cancelChecker) : Optional.<Document>empty();
+                }));
     }
 
     /**
@@ -360,20 +369,26 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
      */
     @Override
     public Optional<SyntaxTree> syntaxTree(Path filePath) {
-        Optional<Document> document = this.document(filePath);
-        if (document.isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.ofNullable(document.get().syntaxTree());
+        return projectContext(projectRoot(filePath))
+                .flatMap(context -> context.withReadLock(ctx -> {
+                    Optional<Document> document = this.document(filePath);
+                    if (document.isEmpty()) {
+                        return Optional.<SyntaxTree>empty();
+                    }
+                    return Optional.ofNullable(document.get().syntaxTree());
+                }));
     }
 
     @Override
     public Optional<SyntaxTree> syntaxTree(Path filePath, @Nonnull CancelChecker cancelChecker) {
-        Optional<Document> document = this.document(filePath, cancelChecker);
-        if (document.isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.ofNullable(document.get().syntaxTree());
+        return projectContext(projectRoot(filePath))
+                .flatMap(context -> context.withReadLock(ctx -> {
+                    Optional<Document> document = this.document(filePath, cancelChecker);
+                    if (document.isEmpty()) {
+                        return Optional.<SyntaxTree>empty();
+                    }
+                    return Optional.ofNullable(document.get().syntaxTree());
+                }));
     }
 
     /**
@@ -384,26 +399,28 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
      */
     @Override
     public Optional<SemanticModel> semanticModel(Path filePath) {
-        Optional<Module> module = this.module(filePath);
         Optional<PackageCompilation> packageCompilation = waitAndGetPackageCompilation(filePath);
-        Optional<ProjectContext> projectPair = projectContext(projectRoot(filePath));
-        if (module.isEmpty() || packageCompilation.isEmpty() || projectPair.isEmpty()
-                || projectPair.get().compilationCrashed()) {
-            return Optional.empty();
-        }
-        return Optional.of(packageCompilation.get().getSemanticModel(module.get().moduleId()));
+        return projectContext(projectRoot(filePath))
+                .flatMap(context -> context.withReadLock(ctx -> {
+                    Optional<Module> module = this.module(filePath);
+                    if (module.isEmpty() || packageCompilation.isEmpty() || context.compilationCrashed()) {
+                        return Optional.<SemanticModel>empty();
+                    }
+                    return Optional.of(packageCompilation.get().getSemanticModel(module.get().moduleId()));
+                }));
     }
 
     @Override
     public Optional<SemanticModel> semanticModel(Path filePath, @Nonnull CancelChecker cancelChecker) {
-        Optional<Module> module = this.module(filePath);
         Optional<PackageCompilation> packageCompilation = waitAndGetPackageCompilation(filePath, cancelChecker);
-        Optional<ProjectContext> projectPair = projectContext(projectRoot(filePath));
-        if (module.isEmpty() || packageCompilation.isEmpty() || projectPair.isEmpty()
-                || projectPair.get().compilationCrashed()) {
-            return Optional.empty();
-        }
-        return Optional.of(packageCompilation.get().getSemanticModel(module.get().moduleId()));
+        return projectContext(projectRoot(filePath))
+                .flatMap(context -> context.withReadLock(ctx -> {
+                    Optional<Module> module = this.module(filePath, cancelChecker);
+                    if (module.isEmpty() || packageCompilation.isEmpty() || context.compilationCrashed()) {
+                        return Optional.<SemanticModel>empty();
+                    }
+                    return Optional.of(packageCompilation.get().getSemanticModel(module.get().moduleId()));
+                }));
     }
 
     /**
@@ -1375,7 +1392,8 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
 
     private boolean isModuleLoadingFailure(BLangCompilerException exception) {
         String message = exception.getMessage();
-        return message != null && message.contains(FAILED_TO_LOAD_MODULE);
+        return message != null && (message.contains(FAILED_TO_LOAD_MODULE) ||
+                message.contains(DiagnosticErrorCode.BAD_SAD_FROM_COMPILER.diagnosticId()));
     }
 
     private boolean shouldCrashImmediately(BLangCompilerException exception) {
@@ -1383,8 +1401,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
         if (message == null) {
             return false;
         }
-        return message.contains(DiagnosticErrorCode.BAD_SAD_FROM_COMPILER.diagnosticId())
-                || message.contains(DiagnosticErrorCode.CYCLIC_MODULE_IMPORTS_DETECTED.diagnosticId());
+        return message.contains(DiagnosticErrorCode.CYCLIC_MODULE_IMPORTS_DETECTED.diagnosticId());
     }
 
     private boolean hasCompilationCrashDiagnostic(PackageCompilation compilation) {
