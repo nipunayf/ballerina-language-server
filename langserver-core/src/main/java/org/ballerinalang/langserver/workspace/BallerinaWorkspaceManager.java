@@ -20,19 +20,14 @@ package org.ballerinalang.langserver.workspace;
 import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.syntax.tree.SyntaxTree;
 import io.ballerina.projects.Document;
-import io.ballerina.projects.Document;
 import io.ballerina.projects.DocumentId;
 import io.ballerina.projects.Module;
-import io.ballerina.projects.Package;
 import io.ballerina.projects.PackageCompilation;
 import io.ballerina.projects.Project;
 import io.ballerina.projects.ProjectException;
 import io.ballerina.projects.environment.PackageLockingMode;
 import org.ballerinalang.langserver.LSClientLogger;
 import org.ballerinalang.langserver.LSContextOperation;
-import org.ballerinalang.langserver.common.utils.CommonUtil;
-import org.ballerinalang.langserver.common.utils.PathUtil;
-import org.ballerinalang.langserver.commons.BallerinaCompilerApi;
 import org.ballerinalang.langserver.commons.DocumentServiceContext;
 import org.ballerinalang.langserver.commons.LanguageServerContext;
 import org.ballerinalang.langserver.commons.client.ExtendedLanguageClient;
@@ -41,7 +36,6 @@ import org.ballerinalang.langserver.commons.eventsync.exceptions.EventSyncExcept
 import org.ballerinalang.langserver.commons.workspace.RunContext;
 import org.ballerinalang.langserver.commons.workspace.RunResult;
 import org.ballerinalang.langserver.commons.workspace.WorkspaceDocumentException;
-import org.ballerinalang.langserver.commons.workspace.WorkspaceDocumentManager;
 import org.ballerinalang.langserver.commons.workspace.WorkspaceManager;
 import org.ballerinalang.langserver.config.LSClientConfigHolder;
 import org.ballerinalang.langserver.contexts.ContextBuilder;
@@ -53,10 +47,7 @@ import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
-import org.eclipse.lsp4j.FileChangeType;
 import org.eclipse.lsp4j.FileEvent;
-import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceFolder;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 
@@ -69,7 +60,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -99,9 +89,11 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
         this.documentManager = new DocumentManager(this);
         this.tomlHandlerRegistry = new TomlHandlerRegistry(new TomlHandlerContextImpl());
 
+        final ProjectExecutor capturedExecutor = this.projectExecutor;
+        final ProjectRegistry capturedRegistry = this.projectRegistry;
         Runtime.getRuntime().addShutdownHook(Thread.ofVirtual().unstarted(() -> {
-            projectExecutor.stopAll();
-            for (ProjectContext projectContext : projectRegistry.sourceRootToProject().values()) {
+            capturedExecutor.stopAll();
+            for (ProjectContext projectContext : capturedRegistry.sourceRootToProject().values()) {
                 projectContext.close();
             }
         }));
