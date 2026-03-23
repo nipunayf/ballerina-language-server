@@ -50,6 +50,7 @@ import io.ballerina.projects.util.ProjectConstants;
 import io.ballerina.projects.util.ProjectPaths;
 import io.ballerina.tools.diagnostics.Diagnostic;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
+import org.ballerinalang.compiler.BLangCompilerException;
 import org.ballerinalang.langserver.LSClientLogger;
 import org.ballerinalang.langserver.LSContextOperation;
 import org.ballerinalang.langserver.workspace.toml.TomlHandler;
@@ -131,6 +132,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
     private static final String HEAP_DUMP_FLAG = "-XX:+HeapDumpOnOutOfMemoryError";
     private static final String HEAP_DUMP_PATH_FLAG = "-XX:HeapDumpPath=";
     private static final String DEBUG_ARGS = "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:";
+    private static final String FAILED_TO_LOAD_MODULE = "failed to load the module";
 
     /**
      * Cache mapping of document path to source root.
@@ -427,19 +429,23 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
 
         AtomicReference<PackageCompilation> compilationRef = new AtomicReference<>();
         projectPair.get().withWriteLock(ctx -> {
-            PackageCompilation compilation = ctx.project().currentPackage().getCompilation();
-            if (ctx.compilationCrashed()) {
-                ctx.setCompilationCrashed(false);
+            try {
+                PackageCompilation compilation = getPackageCompilationWithRecovery(ctx, filePath);
+                if (ctx.compilationCrashed()) {
+                    ctx.setCompilationCrashed(false);
+                }
+                if (hasCompilationCrashDiagnostic(compilation)) {
+                    ctx.setCompilationCrashed(true);
+                    ctx.project().clearCaches();
+                }
+                compilationRef.set(compilation);
+            } catch (BLangCompilerException e) {
+                if (shouldCrashImmediately(e)) {
+                    ctx.setCompilationCrashed(true);
+                    ctx.project().clearCaches();
+                }
+                throw e;
             }
-            if (compilation.diagnosticResult().diagnostics().stream()
-                    .anyMatch(diagnostic ->
-                            Arrays.asList(DiagnosticErrorCode.BAD_SAD_FROM_COMPILER.diagnosticId(),
-                                            DiagnosticErrorCode.CYCLIC_MODULE_IMPORTS_DETECTED.diagnosticId())
-                                    .contains(diagnostic.diagnosticInfo().code()))) {
-                ctx.setCompilationCrashed(true);
-                ctx.project().clearCaches();
-            }
-            compilationRef.set(compilation);
         });
         return Optional.ofNullable(compilationRef.get());
     }
@@ -1189,12 +1195,17 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
     }
 
     private Optional<ProjectLoadResult> loadProjectResult(Path filePath, String operationName) {
+        return loadProjectResult(filePath, operationName, CommonUtil.COMPILE_OFFLINE, null);
+    }
+
+    private Optional<ProjectLoadResult> loadProjectResult(Path filePath, String operationName, boolean offline,
+                                                          @Nullable PackageLockingMode lockingModeOverride) {
         Path projectRoot = computeProjectRoot(filePath);
         BallerinaCompilerApi compilerApi = BallerinaCompilerApi.getInstance();
         try {
-            PackageLockingMode lockingMode = deriveLockingMode(projectRoot);
+            PackageLockingMode lockingMode = lockingModeOverride != null ? lockingModeOverride : deriveLockingMode(projectRoot);
             BuildOptions buildOptions = BuildOptions.builder()
-                    .setOffline(CommonUtil.COMPILE_OFFLINE)
+                    .setOffline(offline)
                     .setExperimental(this.experimental)
                     .setLockingMode(lockingMode)
                     .build();
@@ -1294,13 +1305,90 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
     }
 
     private void reloadProject(ProjectContext projectContext, Path filePath, String operationName) {
+        reloadProject(projectContext, filePath, operationName, CommonUtil.COMPILE_OFFLINE, null);
+    }
+
+    private void reloadProject(ProjectContext projectContext, Path filePath, String operationName, boolean offline,
+                               @Nullable PackageLockingMode lockingModeOverride) {
         projectContext.withWriteLock(ctx -> {
-            Optional<ProjectContext> newProjectContext = createProjectContext(filePath, operationName);
-            if (newProjectContext.isEmpty()) {
+            Optional<ProjectLoadResult> loadResult = loadProjectResult(filePath, operationName, offline,
+                    lockingModeOverride);
+            if (loadResult.isEmpty()) {
                 return;
             }
-            ctx.setProject(newProjectContext.get().project());
+            ProjectLoadResult projectLoadResult = loadResult.get();
+            ctx.setProject(projectLoadResult.targetProject());
+            cacheLoadedProjects(computeProjectRoot(filePath), ctx, projectLoadResult);
         });
+    }
+
+    private PackageCompilation getPackageCompilationWithRecovery(ProjectContext ctx, Path filePath) {
+        try {
+            return ctx.project().currentPackage().getCompilation();
+        } catch (BLangCompilerException e) {
+            if (shouldCrashImmediately(e) || !isModuleLoadingFailure(e)) {
+                throw e;
+            }
+
+            if (!reloadProjectWithoutLock(ctx, filePath, LSContextOperation.WS_WF_CHANGED.getName(), false, null)) {
+                throw e;
+            }
+            try {
+                return ctx.project().currentPackage().getCompilation();
+            } catch (BLangCompilerException onlineRetryFailure) {
+                if (shouldCrashImmediately(onlineRetryFailure) || !isModuleLoadingFailure(onlineRetryFailure)) {
+                    throw onlineRetryFailure;
+                }
+
+                if (!reloadProjectWithoutLock(ctx, filePath, LSContextOperation.WS_WF_CHANGED.getName(), false,
+                        PackageLockingMode.SOFT)) {
+                    throw onlineRetryFailure;
+                }
+                try {
+                    return ctx.project().currentPackage().getCompilation();
+                } catch (BLangCompilerException softRetryFailure) {
+                    ctx.setCompilationCrashed(true);
+                    ctx.project().clearCaches();
+                    throw softRetryFailure;
+                }
+            }
+        }
+    }
+
+    private boolean reloadProjectWithoutLock(ProjectContext ctx, Path filePath, String operationName, boolean offline,
+                                             @Nullable PackageLockingMode lockingModeOverride) {
+        Optional<ProjectLoadResult> loadResult = loadProjectResult(filePath, operationName, offline, lockingModeOverride);
+        if (loadResult.isEmpty()) {
+            ctx.setCompilationCrashed(true);
+            return false;
+        }
+
+        ProjectLoadResult projectLoadResult = loadResult.get();
+        ctx.setProject(projectLoadResult.targetProject());
+        cacheLoadedProjects(computeProjectRoot(filePath), ctx, projectLoadResult);
+        return true;
+    }
+
+    private boolean isModuleLoadingFailure(BLangCompilerException exception) {
+        String message = exception.getMessage();
+        return message != null && message.contains(FAILED_TO_LOAD_MODULE);
+    }
+
+    private boolean shouldCrashImmediately(BLangCompilerException exception) {
+        String message = exception.getMessage();
+        if (message == null) {
+            return false;
+        }
+        return message.contains(DiagnosticErrorCode.BAD_SAD_FROM_COMPILER.diagnosticId())
+                || message.contains(DiagnosticErrorCode.CYCLIC_MODULE_IMPORTS_DETECTED.diagnosticId());
+    }
+
+    private boolean hasCompilationCrashDiagnostic(PackageCompilation compilation) {
+        return compilation.diagnosticResult().diagnostics().stream()
+                .anyMatch(diagnostic -> Arrays.asList(
+                        DiagnosticErrorCode.BAD_SAD_FROM_COMPILER.diagnosticId(),
+                        DiagnosticErrorCode.CYCLIC_MODULE_IMPORTS_DETECTED.diagnosticId())
+                        .contains(diagnostic.diagnosticInfo().code()));
     }
 
     private ProjectContext createOrGetProjectPair(Path filePath, String operationName)
