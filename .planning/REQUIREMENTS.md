@@ -59,7 +59,7 @@ Requirements for the initial refactor. Each maps to roadmap phases.
 - [x] **DCMP-04**: `ProjectRegistry` owns project reload logic. `FileWatchHandler` detects changes and delegates mutation to `ProjectRegistry`
 - [x] **DCMP-05**: `DocumentManager` owns `openedDocuments` tracking and compilation queries (`waitAndGetPackageCompilation`)
 - [x] **DCMP-06**: `TomlHandlerContextImpl` is refactored to delegate to `ProjectRegistry` instead of BWM methods
-- [ ] **DCMP-07**: Each extracted class has a dedicated unit test class with mocked context interfaces
+- [x] **DCMP-07**: Each extracted class has a dedicated unit test class with mocked context interfaces
 
 ## v2 Requirements
 
@@ -122,7 +122,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DCMP-04 | Phase 7 | Complete |
 | DCMP-05 | Phase 7 | Complete |
 | DCMP-06 | Phase 7 | Complete |
-| DCMP-07 | Phase 7 | Pending |
+| DCMP-07 | Phase 7 | Complete |
 
 **Coverage:**
 - v1 requirements: 30 total

@@ -90,11 +90,6 @@ final class ProjectRegistry {
                             return;
                         }
 
-                        if (hasOpenDocuments(root)) {
-                            projectCache.put(root, ctx);
-                            return;
-                        }
-
                         context.stopProject(root);
                         ctx.close();
                         invalidateCacheFor(root);
@@ -470,15 +465,6 @@ final class ProjectRegistry {
             }
             invalidateCacheFor(workspacePackage.sourceRoot());
         }
-    }
-
-    private boolean hasOpenDocuments(@Nonnull Path root) {
-        for (Path openDoc : context.openedDocuments()) {
-            if (openDoc.startsWith(root)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private void cascadeEvictWorkspaceChildren(@Nonnull Path workspaceRoot) {

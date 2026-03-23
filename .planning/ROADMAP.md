@@ -118,7 +118,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   - [x] 07-01-PLAN.md — Extract ProjectContext, exceptions, WorkspaceContext
   - [x] 07-02-PLAN.md — Extract ProjectExecutor and FileWatchHandler
   - [x] 07-03-PLAN.md — Extract ProjectRegistry and DocumentManager
-  - [ ] 07-04-PLAN.md — Finalize BallerinaWorkspaceManager facade and test
+  - [x] 07-04-PLAN.md — Finalize BallerinaWorkspaceManager facade and test
 
 ## Progress
 
