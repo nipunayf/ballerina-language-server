@@ -37,8 +37,6 @@ public class ProjectContext {
 
     private volatile boolean compilationCrashed;
 
-    private Process process;
-
     private volatile boolean projectCrashed;
     private volatile boolean closed = false;
     private final boolean workspaceChild;
@@ -186,34 +184,6 @@ public class ProjectContext {
     }
 
     /**
-     * Returns the active run process.
-     * Project lock should be acquired before modifying or destroying the process.
-     *
-     * @return process associated with the project
-     */
-    public Optional<Process> process() {
-        return Optional.ofNullable(this.process);
-    }
-
-    /**
-     * Associate a run process with the project.
-     * Project lock should be acquired before calling.
-     *
-     * @param process process to associate
-     */
-    public void setProcess(Process process) {
-        this.process = process;
-    }
-
-    /**
-     * Remove the active run process from the project.
-     * Project lock should be acquired before calling.
-     */
-    public void removeProcess() {
-        this.process = null;
-    }
-
-    /**
      * Close this project context and release resources.
      */
     public void close() {
@@ -221,10 +191,6 @@ public class ProjectContext {
         try {
             if (!closed) {
                 closed = true;
-                if (process != null) {
-                    process.destroy();
-                    process = null;
-                }
                 if (project != null) {
                     project.clearCaches();
                     project = null;
