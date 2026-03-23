@@ -36,6 +36,7 @@ import org.ballerinalang.compiler.BLangCompilerException;
 import org.ballerinalang.langserver.commons.BallerinaCompilerApi;
 import org.ballerinalang.langserver.contexts.LanguageServerContextImpl;
 import org.ballerinalang.langserver.version.BallerinaBaseCompilerApi;
+import org.ballerinalang.util.diagnostic.DiagnosticErrorCode;
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
@@ -240,8 +241,8 @@ public class CompilationGateTest {
      */
     @Test
     public void testFatalCompilerErrorsSkipRecovery() throws Exception {
-        assertImmediateCrash("bad_sad_from_compiler: compiler crashed unexpectedly");
-        assertImmediateCrash("cyclic_module_imports_detected: cyclic module imports detected");
+        assertImmediateCrash(DiagnosticErrorCode.BAD_SAD_FROM_COMPILER.diagnosticId() + ": compiler crashed");
+        assertImmediateCrash(DiagnosticErrorCode.CYCLIC_MODULE_IMPORTS_DETECTED.diagnosticId() + ": cyclic import");
     }
 
     private Path createProjectCopy(String projectName) throws IOException {
@@ -295,6 +296,9 @@ public class CompilationGateTest {
 
     private Package successfulPackage(PackageCompilation compilation) {
         Package currentPackage = Mockito.mock(Package.class);
+        DiagnosticResult diagnosticResult = Mockito.mock(DiagnosticResult.class);
+        Mockito.when(diagnosticResult.diagnostics()).thenReturn(List.of());
+        Mockito.when(compilation.diagnosticResult()).thenReturn(diagnosticResult);
         Mockito.when(currentPackage.getCompilation()).thenReturn(compilation);
         return currentPackage;
     }
