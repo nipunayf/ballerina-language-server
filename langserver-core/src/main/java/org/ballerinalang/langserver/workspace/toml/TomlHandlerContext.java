@@ -17,7 +17,7 @@
  */
 package org.ballerinalang.langserver.workspace.toml;
 
-import org.ballerinalang.langserver.workspace.BallerinaWorkspaceManager.ProjectContext;
+import org.ballerinalang.langserver.workspace.ProjectContext;
 
 import java.nio.file.Path;
 import java.util.Map;

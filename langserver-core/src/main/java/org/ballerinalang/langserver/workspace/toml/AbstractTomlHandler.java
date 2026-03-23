@@ -24,7 +24,7 @@ import io.ballerina.projects.ProjectKind;
 import io.ballerina.projects.util.ProjectConstants;
 import org.ballerinalang.langserver.LSContextOperation;
 import org.ballerinalang.langserver.commons.workspace.WorkspaceDocumentException;
-import org.ballerinalang.langserver.workspace.BallerinaWorkspaceManager.ProjectContext;
+import org.ballerinalang.langserver.workspace.ProjectContext;
 import org.eclipse.lsp4j.FileChangeType;
 import org.eclipse.lsp4j.FileEvent;
 

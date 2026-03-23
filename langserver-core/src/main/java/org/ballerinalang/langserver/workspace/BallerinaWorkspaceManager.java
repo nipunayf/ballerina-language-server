@@ -101,9 +101,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
@@ -765,7 +762,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
         AtomicReference<JBallerinaBackend> backendRef = new AtomicReference<>();
         projectContext.withWriteLock(ctx -> {
             JBallerinaBackend jBallerinaBackend = JBallerinaBackend.from(packageCompilation, JvmTarget.JAVA_21, false);
-            Package pkg = ctx.project.currentPackage();
+            Package pkg = ctx.project().currentPackage();
             for (Module module : pkg.modules()) {
                 for (DocumentId id : module.documentIds()) {
                     module.document(id).modify().apply();
@@ -1438,197 +1435,6 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
 
     private record ProjectLoadResult(Project targetProject, @Nullable Project workspaceRootProject,
                                      List<Project> workspacePackages) {
-    }
-
-    /**
-     * This class holds project and its lock.
-     */
-    public static class ProjectContext {
-
-        private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock(true);
-        private Project project;
-
-        private volatile boolean compilationCrashed;
-
-        private Process process;
-
-        private volatile boolean projectCrashed;
-        private volatile boolean closed = false;
-        private final boolean workspaceChild;
-        private final Path workspaceRoot;
-
-        private ProjectContext(Project project) {
-            this(project, false, null);
-        }
-
-        private ProjectContext(Project project, boolean workspaceChild, Path workspaceRoot) {
-            this.project = project;
-            this.compilationCrashed = false;
-            this.workspaceChild = workspaceChild;
-            this.workspaceRoot = workspaceRoot;
-        }
-
-        public static ProjectContext from(Project project) {
-            return new ProjectContext(project);
-        }
-
-        public static ProjectContext from(Project project, boolean workspaceChild, Path workspaceRoot) {
-            return new ProjectContext(project, workspaceChild, workspaceRoot);
-        }
-
-        public boolean isWorkspaceChild() {
-            return workspaceChild;
-        }
-
-        public Path workspaceRoot() {
-            return workspaceRoot;
-        }
-
-        /**
-         * Execute an action under the read lock. Returns null if the context is closed.
-         *
-         * @param action the function to execute under read lock
-         * @param <T> the return type
-         * @return the result of the action, or null if closed
-         * @since 1.7.0
-         */
-        public <T> T withReadLock(Function<ProjectContext, T> action) {
-            rwl.readLock().lock();
-            try {
-                if (closed) {
-                    return null;
-                }
-                return action.apply(this);
-            } finally {
-                rwl.readLock().unlock();
-            }
-        }
-
-        /**
-         * Execute an action under the write lock.
-         *
-         * @param action the consumer to execute under write lock
-         * @since 1.7.0
-         */
-        public void withWriteLock(Consumer<ProjectContext> action) {
-            rwl.writeLock().lock();
-            try {
-                if (closed) {
-                    return;
-                }
-                action.accept(this);
-            } finally {
-                rwl.writeLock().unlock();
-            }
-        }
-
-        /**
-         * Returns the workspace document.
-         *
-         * @return {@link WorkspaceDocumentManager}
-         */
-        public Project project() {
-            return this.project;
-        }
-
-        /**
-         * Set workspace document.
-         *
-         * @param project {@link Project}
-         */
-        public void setProject(Project project) {
-            this.project = project;
-        }
-
-        /**
-         * Check if the project is in a crashed state.
-         *
-         * @return whether the compilation is in a crashed state
-         */
-        public boolean compilationCrashed() {
-            return this.compilationCrashed;
-        }
-
-        /**
-         * Set the crashed state.
-         *
-         * @param compilationCrashed crashed state
-         */
-        public void setCompilationCrashed(boolean compilationCrashed) {
-            this.compilationCrashed = compilationCrashed;
-        }
-
-        /**
-         * Set the project crashed status.
-         *
-         * @param projectCrashed whether the project is in a crashed state
-         */
-        public void setProjectCrashed(boolean projectCrashed) {
-            this.projectCrashed = projectCrashed;
-        }
-
-        public boolean isProjectCrashed() {
-            return projectCrashed;
-        }
-
-        /**
-         * Project lock should be acquired before modifying (such as destroying) the process.
-         *
-         * @return Process associated with the project.
-         */
-        public Optional<Process> process() {
-            return Optional.ofNullable(this.process);
-        }
-
-        /**
-         * Set the process associated with the project. Project lock should be acquired before calling.
-         *
-         * @param process Process to be associated with the project.
-         */
-        public void setProcess(Process process) {
-            this.process = process;
-        }
-
-        /**
-         * Remove the process associated with the project. Project lock should be acquired before calling.
-         */
-        public void removeProcess() {
-            this.process = null;
-        }
-
-        /**
-         * Close this project context, releasing resources.
-         *
-         * @since 1.7.0
-         */
-        public void close() {
-            rwl.writeLock().lock();
-            try {
-                if (!closed) {
-                    closed = true;
-                    if (process != null) {
-                        process.destroy();
-                        process = null;
-                    }
-                    if (project != null) {
-                        project.clearCaches();
-                        project = null;
-                    }
-                }
-            } finally {
-                rwl.writeLock().unlock();
-            }
-        }
-
-        /**
-         * Returns whether this context has been closed.
-         *
-         * @return true if closed
-         * @since 1.7.0
-         */
-        public boolean isClosed() {
-            return closed;
-        }
     }
 
     private Optional<Path> findProjectRoot(Path filePath) {

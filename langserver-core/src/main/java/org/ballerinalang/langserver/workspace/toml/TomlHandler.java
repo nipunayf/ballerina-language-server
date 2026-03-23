@@ -18,7 +18,7 @@
 package org.ballerinalang.langserver.workspace.toml;
 
 import org.ballerinalang.langserver.commons.workspace.WorkspaceDocumentException;
-import org.ballerinalang.langserver.workspace.BallerinaWorkspaceManager.ProjectContext;
+import org.ballerinalang.langserver.workspace.ProjectContext;
 import org.eclipse.lsp4j.FileEvent;
 
 import java.nio.file.Path;
