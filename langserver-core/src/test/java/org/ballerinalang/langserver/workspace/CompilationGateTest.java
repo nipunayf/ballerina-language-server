@@ -318,9 +318,9 @@ public class CompilationGateTest {
         Field sourceRootToProjectField = BallerinaWorkspaceManager.class.getDeclaredField("sourceRootToProject");
         sourceRootToProjectField.setAccessible(true);
         @SuppressWarnings("unchecked")
-        Map<Path, BallerinaWorkspaceManager.ProjectContext> sourceRootToProject =
-                (Map<Path, BallerinaWorkspaceManager.ProjectContext>) sourceRootToProjectField.get(workspaceManager);
-        sourceRootToProject.put(projectRoot, BallerinaWorkspaceManager.ProjectContext.from(project));
+        Map<Path, ProjectContext> sourceRootToProject =
+                (Map<Path, ProjectContext>) sourceRootToProjectField.get(workspaceManager);
+        sourceRootToProject.put(projectRoot, ProjectContext.from(project));
     }
 
     private Package failingPackage(String message) {

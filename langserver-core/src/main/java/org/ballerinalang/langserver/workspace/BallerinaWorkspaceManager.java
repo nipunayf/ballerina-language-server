@@ -20,6 +20,7 @@ package org.ballerinalang.langserver.workspace;
 import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.syntax.tree.SyntaxTree;
 import io.ballerina.projects.Document;
+import io.ballerina.projects.Document;
 import io.ballerina.projects.DocumentId;
 import io.ballerina.projects.Module;
 import io.ballerina.projects.Package;
@@ -27,8 +28,6 @@ import io.ballerina.projects.PackageCompilation;
 import io.ballerina.projects.Project;
 import io.ballerina.projects.ProjectException;
 import io.ballerina.projects.environment.PackageLockingMode;
-import io.ballerina.projects.util.ProjectConstants;
-import io.ballerina.projects.util.ProjectPaths;
 import org.ballerinalang.langserver.LSClientLogger;
 import org.ballerinalang.langserver.LSContextOperation;
 import org.ballerinalang.langserver.common.utils.CommonUtil;
@@ -63,21 +62,13 @@ import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -417,13 +408,6 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
 
     @Override
     public Optional<Document> document(Path filePath, Project project) {
-        return document(filePath, project, null);
-    }
-
-    private Optional<Document> document(Path filePath, Project project, @Nullable CancelChecker cancelChecker) {
-        if (cancelChecker != null) {
-            cancelChecker.isCanceled();
-        }
         try {
             DocumentId documentId = project.documentId(filePath);
             Module module = project.currentPackage().module(documentId.moduleId());
@@ -466,20 +450,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
 
         @Override
         public void registerWorkspaceChildren(ProjectContext workspaceCtx) {
-            Project workspaceProject = workspaceCtx.project();
-            BallerinaCompilerApi compilerApi = BallerinaCompilerApi.getInstance();
-
-            if (!compilerApi.isWorkspaceProject(workspaceProject)) {
-                return;
-            }
-
-            List<Project> workspacePackages = compilerApi.getWorkspaceProjectsInOrder(workspaceProject);
-            for (Project workspacePackage : workspacePackages) {
-                Path packageRoot = workspacePackage.sourceRoot();
-                projectRegistry.sourceRootToProject().put(packageRoot,
-                        ProjectContext.from(workspacePackage, true, workspaceProject.sourceRoot()));
-                projectRegistry.invalidateCacheFor(packageRoot);
-            }
+            projectRegistry.registerWorkspaceChildren(workspaceCtx);
         }
 
         @Override

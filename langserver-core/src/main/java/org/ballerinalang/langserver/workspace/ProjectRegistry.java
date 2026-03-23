@@ -493,27 +493,29 @@ final class ProjectRegistry {
         });
     }
 
-    private boolean hasBallerinaToml(@Nonnull Path filePath) {
-        Path absFilePath = filePath.toAbsolutePath().normalize();
-        return absFilePath.resolve(BALLERINA_TOML).toFile().exists();
-    }
+    /**
+     * Registers workspace children projects after a workspace reload.
+     * <p>
+     * This method updates the project registry with workspace member projects
+     * after a workspace Ballerina.toml change.
+     *
+     * @param workspaceCtx the workspace project context
+     */
+    void registerWorkspaceChildren(@Nonnull ProjectContext workspaceCtx) {
+        Project workspaceProject = workspaceCtx.project();
+        BallerinaCompilerApi compilerApi = BallerinaCompilerApi.getInstance();
 
-    private boolean hasPackageJson(@Nonnull Path filePath) {
-        Path absFilePath = filePath.toAbsolutePath().normalize();
-        return absFilePath.resolve(ProjectConstants.PACKAGE_JSON).toFile().exists();
-    }
-
-    private Optional<Path> findProjectRoot(@Nullable Path filePath) {
-        if (filePath != null) {
-            filePath = filePath.toAbsolutePath().normalize();
-            if (filePath.toFile().isDirectory()) {
-                if (hasBallerinaToml(filePath) || hasPackageJson(filePath)) {
-                    return Optional.of(filePath);
-                }
-            }
-            return findProjectRoot(filePath.getParent());
+        if (!compilerApi.isWorkspaceProject(workspaceProject)) {
+            return;
         }
-        return Optional.empty();
+
+        List<Project> workspacePackages = compilerApi.getWorkspaceProjectsInOrder(workspaceProject);
+        for (Project workspacePackage : workspacePackages) {
+            Path packageRoot = workspacePackage.sourceRoot();
+            sourceRootToProject.put(packageRoot,
+                    ProjectContext.from(workspacePackage, true, workspaceProject.sourceRoot()));
+            invalidateCacheFor(packageRoot);
+        }
     }
 
     /**

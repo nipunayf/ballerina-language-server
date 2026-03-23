@@ -174,13 +174,13 @@ public class TomlHandlerTest {
     private TomlHandlerContext createMockContext() {
         return new TomlHandlerContext() {
             @Override
-            public void reloadProject(org.ballerinalang.langserver.workspace.BallerinaWorkspaceManager.ProjectContext ctx,
+            public void reloadProject(org.ballerinalang.langserver.workspace.ProjectContext ctx,
                                       Path trigger, String operation) {
                 // Mock implementation
             }
 
             @Override
-            public java.util.Map<Path, org.ballerinalang.langserver.workspace.BallerinaWorkspaceManager.ProjectContext>
+            public java.util.Map<Path, org.ballerinalang.langserver.workspace.ProjectContext>
             projectRegistry() {
                 return new java.util.HashMap<>();
             }
@@ -201,19 +201,19 @@ public class TomlHandlerTest {
 
             @Override
             public void registerWorkspaceChildren(
-                    org.ballerinalang.langserver.workspace.BallerinaWorkspaceManager.ProjectContext workspaceCtx) {
+                    org.ballerinalang.langserver.workspace.ProjectContext workspaceCtx) {
                 // Mock implementation
             }
 
             @Override
-            public java.util.Optional<org.ballerinalang.langserver.workspace.BallerinaWorkspaceManager.ProjectContext>
+            public java.util.Optional<org.ballerinalang.langserver.workspace.ProjectContext>
             getOrCreateProject(Path projectRoot, Path triggerFile, String operation) {
                 // Mock implementation
                 return java.util.Optional.empty();
             }
 
             @Override
-            public java.util.Optional<org.ballerinalang.langserver.workspace.BallerinaWorkspaceManager.ProjectContext>
+            public java.util.Optional<org.ballerinalang.langserver.workspace.ProjectContext>
             createProjectContext(Path tomlPath, String operation) {
                 // Mock implementation
                 return java.util.Optional.empty();

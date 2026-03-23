@@ -250,20 +250,20 @@ public class WorkspaceProjectTest {
         
         // Get initial ProjectContext for pkgB
         Path projectRootB = workspaceManager.projectRoot(fileInPkgB);
-        Optional<BallerinaWorkspaceManager.ProjectContext> ctxBeforeOpt = 
+        Optional<ProjectContext> ctxBeforeOpt = 
                 workspaceManager.projectContext(projectRootB);
         Assert.assertTrue(ctxBeforeOpt.isPresent(), "ProjectContext should be present for pkgB before change");
-        BallerinaWorkspaceManager.ProjectContext ctxBefore = ctxBeforeOpt.get();
+        ProjectContext ctxBefore = ctxBeforeOpt.get();
         Project projectBefore = ctxBefore.project();
         
         // Act: Change a .bal file in pkgA (NOT pkgB)
         changeFile(fileInPkgA);
         
         // Assert: pkgB's ProjectContext is the SAME object reference
-        Optional<BallerinaWorkspaceManager.ProjectContext> ctxAfterOpt = 
+        Optional<ProjectContext> ctxAfterOpt = 
                 workspaceManager.projectContext(projectRootB);
         Assert.assertTrue(ctxAfterOpt.isPresent(), "ProjectContext should be present for pkgB after change");
-        BallerinaWorkspaceManager.ProjectContext ctxAfter = ctxAfterOpt.get();
+        ProjectContext ctxAfter = ctxAfterOpt.get();
         
         // D-30: Same ProjectContext object = no reload occurred
         Assert.assertSame(ctxBefore, ctxAfter, 

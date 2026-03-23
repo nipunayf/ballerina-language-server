@@ -1006,7 +1006,7 @@ public class CharacterizationTest {
 
         ExecutorService executor = Executors.newFixedThreadPool(files.size());
         CyclicBarrier barrier = new CyclicBarrier(files.size());
-        List<Future<BallerinaWorkspaceManager.ProjectContext>> futures = new ArrayList<>();
+        List<Future<ProjectContext>> futures = new ArrayList<>();
         try {
             for (Path file : files) {
                 futures.add(executor.submit(() -> {
@@ -1019,15 +1019,15 @@ public class CharacterizationTest {
                 }));
             }
 
-            List<BallerinaWorkspaceManager.ProjectContext> projectContexts = waitForAll(futures);
-            BallerinaWorkspaceManager.ProjectContext first = projectContexts.get(0);
-            for (BallerinaWorkspaceManager.ProjectContext projectContext : projectContexts) {
+            List<ProjectContext> projectContexts = waitForAll(futures);
+            ProjectContext first = projectContexts.get(0);
+            for (ProjectContext projectContext : projectContexts) {
                 Assert.assertSame(projectContext, first,
                         "All files under the same root should resolve to the same ProjectContext instance");
             }
 
             Path projectRoot = workspaceManager.projectRoot(files.get(0));
-            BallerinaWorkspaceManager.ProjectContext projectContext =
+            ProjectContext projectContext =
                     workspaceManager.projectContext(projectRoot).orElseThrow();
             Assert.assertFalse(projectContext.isClosed(), "Shared project context should remain open");
             for (Path file : files) {
@@ -1072,7 +1072,7 @@ public class CharacterizationTest {
                     "Concurrent loads for the same root should return the same Project instance");
 
             Path projectRoot = workspaceManager.projectRoot(filePath);
-            BallerinaWorkspaceManager.ProjectContext projectContext =
+            ProjectContext projectContext =
                     workspaceManager.projectContext(projectRoot).orElseThrow();
             Assert.assertSame(projectContext.project(), firstProject,
                     "Cached project context should retain the shared project instance");
@@ -1088,7 +1088,7 @@ public class CharacterizationTest {
         openFile(filePath, dummyContent);
 
         Path projectRoot = workspaceManager.projectRoot(filePath);
-        BallerinaWorkspaceManager.ProjectContext projectContext =
+        ProjectContext projectContext =
                 workspaceManager.projectContext(projectRoot).orElseThrow();
         CountDownLatch writeDone = new CountDownLatch(1);
         AtomicInteger observedTrue = new AtomicInteger();
@@ -1124,7 +1124,7 @@ public class CharacterizationTest {
         openFile(filePath, dummyContent);
 
         Path projectRoot = workspaceManager.projectRoot(filePath);
-        BallerinaWorkspaceManager.ProjectContext oldContext =
+        ProjectContext oldContext =
                 workspaceManager.projectContext(projectRoot).orElseThrow();
         CountDownLatch closeDone = new CountDownLatch(1);
         ExecutorService executor = Executors.newFixedThreadPool(2);
@@ -1134,14 +1134,14 @@ public class CharacterizationTest {
                 closeDone.countDown();
                 return null;
             });
-            Future<BallerinaWorkspaceManager.ProjectContext> reopenFuture = executor.submit(() -> {
+            Future<ProjectContext> reopenFuture = executor.submit(() -> {
                 closeDone.await(5, TimeUnit.SECONDS);
                 openFile(filePath, dummyContent);
                 return workspaceManager.projectContext(projectRoot).orElseThrow();
             });
 
             waitFor(closeFuture);
-            BallerinaWorkspaceManager.ProjectContext newContext = waitFor(reopenFuture);
+            ProjectContext newContext = waitFor(reopenFuture);
             Assert.assertTrue(oldContext.isClosed(), "Original context should be closed after didClose");
             Assert.assertNotSame(newContext, oldContext, "Reopen should allocate a fresh ProjectContext");
             Assert.assertFalse(newContext.isClosed(), "Reopened context should remain active");
