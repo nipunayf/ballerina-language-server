@@ -158,7 +158,7 @@ public class BallerinaWorkspaceManagerProxyImpl implements BallerinaWorkspaceMan
                 return;
             }
             Path projectRoot = project.get().sourceRoot();
-            removeProjectContext(projectRoot);
+            removeProjectContextInternal(projectRoot);
             this.clientLogger.logTrace("Operation '" + LSContextOperation.TXT_DID_CLOSE.getName() +
                     "' {project: '" + projectRoot.toUri().toString() +
                     "' kind: '" + project.get().kind().name().toLowerCase(Locale.getDefault()) +

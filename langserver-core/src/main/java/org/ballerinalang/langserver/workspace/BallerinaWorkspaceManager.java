@@ -105,20 +105,10 @@ import static io.ballerina.projects.util.ProjectConstants.BALLERINA_TOML;
  *
  * @since 1.0.0
  */
-public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecutorContext, FileWatchHandlerContext {
+public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecutorContext, FileWatchHandlerContext,
+        ProjectRegistryContext {
 
     private static final String FAILED_TO_LOAD_MODULE = "failed to load the module";
-
-    /**
-     * Cache mapping of document path to source root.
-     */
-    private final Map<Path, Path> pathToSourceRootCache;
-    /**
-     * Mapping of source root to project instance.
-     */
-    private final Map<Path, ProjectContext> sourceRootToProject;
-    private final Cache<Path, ProjectContext> projectCache;
-    private boolean experimental = false;
 
     protected final LSClientLogger clientLogger;
     private final LanguageServerContext serverContext;
@@ -126,95 +116,23 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
     private final TomlHandlerRegistry tomlHandlerRegistry;
     private final ProjectExecutor projectExecutor;
     private final FileWatchHandler fileWatchHandler;
+    private final ProjectRegistry projectRegistry;
+    private boolean experimental = false;
 
     public BallerinaWorkspaceManager(LanguageServerContext serverContext) {
         this.serverContext = serverContext;
         this.clientLogger = LSClientLogger.getInstance(serverContext);
+        this.projectRegistry = new ProjectRegistry(this);
         this.projectExecutor = new ProjectExecutor(this);
         this.fileWatchHandler = new FileWatchHandler(this);
         this.tomlHandlerRegistry = new TomlHandlerRegistry(new TomlHandlerContextImpl());
-        Cache<Path, Path> cache = CacheBuilder.newBuilder()
-                .expireAfterWrite(10, TimeUnit.MINUTES)
-                .maximumSize(1000)
-                .build();
-        this.pathToSourceRootCache = cache.asMap();
-        this.projectCache = CacheBuilder.newBuilder()
-                .maximumWeight(8)
-                .expireAfterAccess(15, TimeUnit.MINUTES)
-                .weigher(new Weigher<Path, ProjectContext>() {
-                    @Override
-                    public int weigh(Path key, ProjectContext value) {
-                        return value.isWorkspaceChild() ? 0 : 1;
-                    }
-                })
-                .removalListener(new RemovalListener<Path, ProjectContext>() {
-                    @Override
-                    public void onRemoval(RemovalNotification<Path, ProjectContext> notification) {
-                        if (!notification.wasEvicted()) {
-                            return;
-                        }
-
-                        ProjectContext ctx = notification.getValue();
-                        Path root = notification.getKey();
-                        if (ctx == null || root == null) {
-                            return;
-                        }
-
-                        if (hasOpenDocuments(root)) {
-                            projectCache.put(root, ctx);
-                            return;
-                        }
-
-                        projectExecutor.stopProject(root);
-                        ctx.close();
-                        invalidateCacheFor(root);
-
-                        if (!ctx.isWorkspaceChild() && ctx.workspaceRoot() == null) {
-                            cascadeEvictWorkspaceChildren(root);
-                        }
-                    }
-                })
-                .build();
-        this.sourceRootToProject = projectCache.asMap();
 
         Runtime.getRuntime().addShutdownHook(Thread.ofVirtual().unstarted(() -> {
             projectExecutor.stopAll();
-            for (ProjectContext projectContext : sourceRootToProject.values()) {
+            for (ProjectContext projectContext : projectRegistry.sourceRootToProject().values()) {
                 projectContext.close();
             }
         }));
-
-    }
-
-    /**
-     * Invalidate all cache entries for paths under the given source root.
-     * Uses prefix-match eviction so unrelated cache entries survive project mutations.
-     *
-     * @param root the source root whose cache entries should be invalidated
-     */
-    private void invalidateCacheFor(Path root) {
-        pathToSourceRootCache.keySet().removeIf(path -> path.startsWith(root));
-    }
-
-    private boolean hasOpenDocuments(Path root) {
-        for (Path openDoc : openedDocuments) {
-            if (openDoc.startsWith(root)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void cascadeEvictWorkspaceChildren(Path workspaceRoot) {
-        sourceRootToProject.entrySet().removeIf(entry -> {
-            ProjectContext ctx = entry.getValue();
-            if (ctx != null && ctx.isWorkspaceChild() && workspaceRoot.equals(ctx.workspaceRoot())) {
-                ctx.close();
-                invalidateCacheFor(entry.getKey());
-                return true;
-            }
-            return false;
-        });
     }
 
     @Override
@@ -237,13 +155,13 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
      */
     @Override
     public Path projectRoot(Path filePath) {
-        return pathToSourceRootCache.computeIfAbsent(filePath, this::computeProjectRoot);
+        return projectRegistry.projectRoot(filePath);
     }
 
     @Override
     public Path projectRoot(Path filePath, @Nonnull CancelChecker cancelChecker) {
         cancelChecker.checkCanceled();
-        return this.projectRoot(filePath);
+        return projectRegistry.projectRoot(filePath);
     }
 
     /**
@@ -254,7 +172,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
      */
     @Override
     public Optional<Project> project(Path filePath) {
-        return projectContext(projectRoot(filePath)).map(ProjectContext::project);
+        return projectRegistry.projectContext(projectRegistry.projectRoot(filePath)).map(ProjectContext::project);
     }
 
     /**
@@ -270,9 +188,9 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
             return optionalProject.get();
         }
 
-        Path root = projectRoot(filePath);
+        Path root = projectRegistry.projectRoot(filePath);
         ProjectContext projectContext =
-                getOrCreateProjectOrThrow(root, filePath, LSContextOperation.LOAD_PROJECT.getName());
+                projectRegistry.getOrCreateProjectOrThrow(root, filePath, LSContextOperation.LOAD_PROJECT.getName());
 
         DocumentServiceContext context = ContextBuilder.buildDocumentServiceContext(
                 filePath.toUri().toString(),
@@ -292,7 +210,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
      */
     @Override
     public Optional<Module> module(Path filePath) {
-        return projectContext(projectRoot(filePath))
+        return projectRegistry.projectContext(projectRegistry.projectRoot(filePath))
                 .flatMap(context -> context.withReadLock(ctx -> {
                     Optional<Project> project = project(filePath);
                     if (project.isEmpty()) {
@@ -300,7 +218,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
                     }
                     Optional<Document> document = document(filePath, project.get(), null);
                     if (document.isEmpty()) {
-                        if (filePath.equals(this.projectRoot(filePath))) {
+                        if (filePath.equals(projectRegistry.projectRoot(filePath))) {
                             return Optional.of(project.get().currentPackage().getDefaultModule());
                         }
                         return Optional.<Module>empty();
@@ -312,7 +230,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
     @Override
     public Optional<Module> module(Path filePath, @Nonnull CancelChecker cancelChecker) {
         cancelChecker.checkCanceled();
-        return projectContext(projectRoot(filePath))
+        return projectRegistry.projectContext(projectRegistry.projectRoot(filePath))
                 .flatMap(context -> context.withReadLock(ctx -> {
                     Optional<Project> project = project(filePath);
                     if (project.isEmpty()) {
@@ -334,7 +252,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
      */
     @Override
     public Optional<Document> document(Path filePath) {
-        return projectContext(projectRoot(filePath))
+        return projectRegistry.projectContext(projectRegistry.projectRoot(filePath))
                 .flatMap(context -> context.withReadLock(ctx -> {
                     Optional<Project> project = project(filePath);
                     return project.isPresent() ? document(filePath, project.get(), null) : Optional.<Document>empty();
@@ -343,7 +261,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
 
     @Override
     public Optional<Document> document(Path filePath, @Nonnull CancelChecker cancelChecker) {
-        return projectContext(projectRoot(filePath))
+        return projectRegistry.projectContext(projectRegistry.projectRoot(filePath))
                 .flatMap(context -> context.withReadLock(ctx -> {
                     Optional<Project> project = project(filePath);
                     return project.isPresent() ? document(filePath, project.get(), cancelChecker) : Optional.<Document>empty();
@@ -358,7 +276,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
      */
     @Override
     public Optional<SyntaxTree> syntaxTree(Path filePath) {
-        return projectContext(projectRoot(filePath))
+        return projectRegistry.projectContext(projectRegistry.projectRoot(filePath))
                 .flatMap(context -> context.withReadLock(ctx -> {
                     Optional<Document> document = this.document(filePath);
                     if (document.isEmpty()) {
@@ -370,7 +288,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
 
     @Override
     public Optional<SyntaxTree> syntaxTree(Path filePath, @Nonnull CancelChecker cancelChecker) {
-        return projectContext(projectRoot(filePath))
+        return projectRegistry.projectContext(projectRegistry.projectRoot(filePath))
                 .flatMap(context -> context.withReadLock(ctx -> {
                     Optional<Document> document = this.document(filePath, cancelChecker);
                     if (document.isEmpty()) {
@@ -389,7 +307,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
     @Override
     public Optional<SemanticModel> semanticModel(Path filePath) {
         Optional<PackageCompilation> packageCompilation = waitAndGetPackageCompilation(filePath);
-        return projectContext(projectRoot(filePath))
+        return projectRegistry.projectContext(projectRegistry.projectRoot(filePath))
                 .flatMap(context -> context.withReadLock(ctx -> {
                     Optional<Module> module = this.module(filePath);
                     if (module.isEmpty() || packageCompilation.isEmpty() || context.compilationCrashed()) {
@@ -402,7 +320,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
     @Override
     public Optional<SemanticModel> semanticModel(Path filePath, @Nonnull CancelChecker cancelChecker) {
         Optional<PackageCompilation> packageCompilation = waitAndGetPackageCompilation(filePath, cancelChecker);
-        return projectContext(projectRoot(filePath))
+        return projectRegistry.projectContext(projectRegistry.projectRoot(filePath))
                 .flatMap(context -> context.withReadLock(ctx -> {
                     Optional<Module> module = this.module(filePath, cancelChecker);
                     if (module.isEmpty() || packageCompilation.isEmpty() || context.compilationCrashed()) {
@@ -421,7 +339,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
      */
     public Optional<PackageCompilation> waitAndGetPackageCompilation(Path filePath, boolean isSourceChange) {
         // Get Project and Lock
-        Optional<ProjectContext> projectPair = projectContext(projectRoot(filePath));
+        Optional<ProjectContext> projectPair = projectRegistry.projectContext(projectRegistry.projectRoot(filePath));
         if (projectPair.isEmpty() || (projectPair.get().compilationCrashed() && !isSourceChange)) {
             return Optional.empty();
         }
@@ -563,7 +481,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
             Map<Path, Project> filteredProjects = new HashMap<>();
             workspaceFolders.forEach(workspaceFolder -> {
                 Path workspaceFolderPath = Path.of(URI.create(workspaceFolder.getUri()));
-                sourceRootToProject.entrySet().stream()
+                projectRegistry.sourceRootToProject().entrySet().stream()
                         .filter(pathProjectContextEntry -> pathProjectContextEntry.getKey().toAbsolutePath()
                                 .startsWith(workspaceFolderPath))
                         .forEach(pathProjectContextEntry ->
@@ -580,7 +498,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
      * @param filePath A path of a file in the project
      */
     public void refreshProject(Path filePath) throws WorkspaceDocumentException {
-        Optional<ProjectContext> projectPairOpt = projectContext(projectRoot(filePath));
+        Optional<ProjectContext> projectPairOpt = projectRegistry.projectContext(projectRegistry.projectRoot(filePath));
         if (projectPairOpt.isEmpty()) {
             throw new WorkspaceDocumentException("Project not found for filePath: " + filePath);
         }
@@ -629,7 +547,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
             projectContext.withWriteLock(ctx -> {
                 try {
                     Optional<ProjectContext> newProjectContext =
-                            createProjectContext(filePath, LSContextOperation.TXT_DID_OPEN.getName());
+                            projectRegistry.createProjectContext(filePath, LSContextOperation.TXT_DID_OPEN.getName());
                     if (newProjectContext.isEmpty()) {
                         throw new WorkspaceDocumentException("Could not find the project for file path: " + filePath);
                     }
@@ -667,11 +585,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
         // If it is a single file project, remove project from mapping
         if (project.get().kind() == ProjectKind.SINGLE_FILE_PROJECT) {
             Path projectRoot = project.get().sourceRoot();
-            ProjectContext removed = sourceRootToProject.remove(projectRoot);
-            invalidateCacheFor(projectRoot);
-            if (removed != null) {
-                removed.close();
-            }
+            projectRegistry.removeProjectContext(projectRoot);
             clientLogger.logTrace("Operation '" + LSContextOperation.TXT_DID_CLOSE.getName() +
                     "' {project: '" + projectRoot.toUri().toString() +
                     "' kind: '" + project.get().kind().name().toLowerCase(Locale.getDefault()) +
@@ -681,203 +595,34 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
 
 // ============================================================================================================== //
 
-    private Path computeProjectRoot(Path path) {
-        if (ProjectPaths.isStandaloneBalFile(path)) {
-            return path;
-        }
-
-        BallerinaCompilerApi compilerApi = BallerinaCompilerApi.getInstance();
-        if (compilerApi.isWorkspaceProjectRoot(path)) {
-            return path;
-        }
-
-        // Check if the path points to the workspace Ballerina.toml
-        Path parentDir = path.getParent();
-        if (path.getFileName() != null &&
-                path.getFileName().toString().equals(ProjectConstants.BALLERINA_TOML) &&
-                parentDir != null && compilerApi.isWorkspaceProjectRoot(parentDir)) {
-            return parentDir;
-        }
-
-        return ProjectPaths.packageRoot(path);
+    @Override
+    public ProjectRegistry projectRegistry() {
+        return projectRegistry;
     }
 
     @Override
     public Optional<ProjectContext> projectContext(Path projectRoot) {
-        return Optional.ofNullable(sourceRootToProject.get(projectRoot));
+        return projectRegistry.projectContext(projectRoot);
     }
 
     protected void cacheProjectContext(Path projectRoot, ProjectContext projectContext) {
-        sourceRootToProject.put(projectRoot, projectContext);
-        invalidateCacheFor(projectRoot);
+        projectRegistry.cacheProjectContext(projectRoot, projectContext);
     }
 
-    @Override
-    public void removeProjectContext(Path projectRoot) {
-        ProjectContext removed = sourceRootToProject.remove(projectRoot);
-        invalidateCacheFor(projectRoot);
-        if (removed != null) {
-            projectExecutor.stopProject(projectRoot);
-            removed.close();
-        }
+    void removeProjectContextInternal(Path projectRoot) {
+        projectRegistry.removeProjectContext(projectRoot);
     }
 
-    @Override
-    public Optional<ProjectContext> createProjectContext(Path filePath, String operationName) {
-        Optional<ProjectLoadResult> loadResult = loadProjectResult(filePath, operationName);
-        if (loadResult.isEmpty()) {
-            return Optional.empty();
-        }
-        Path projectRoot = computeProjectRoot(filePath);
-        ProjectContext projectContext = createProjectContext(loadResult.get().targetProject(),
-                loadResult.get().workspaceRootProject());
-        cacheLoadedProjects(projectRoot, projectContext, loadResult.get());
-        return Optional.of(projectContext);
+    Optional<ProjectContext> createProjectContextInternal(Path filePath, String operationName) {
+        return projectRegistry.createProjectContext(filePath, operationName);
     }
 
-    private ProjectContext createProjectContext(Project project, @Nullable Project workspaceRootProject) {
-        if (workspaceRootProject == null || workspaceRootProject.sourceRoot().equals(project.sourceRoot())) {
-            return ProjectContext.from(project, false, null);
-        }
-        return ProjectContext.from(project, true, workspaceRootProject.sourceRoot());
+    Optional<ProjectContext> getOrCreateProjectInternal(Path projectRoot, Path filePath, String operationName) {
+        return projectRegistry.getOrCreateProject(projectRoot, filePath, operationName);
     }
 
-    /**
-     * Get or create a ProjectContext atomically using the project cache loader.
-     * Failed loads are not cached, so the next caller retries the load.
-     *
-     * @param projectRoot cache key for the project
-     * @param filePath file path used for project detection
-     * @param operationName operation name for logging
-     * @return cached or newly created project context
-     * @throws WorkspaceDocumentException if the project cannot be created
-     */
-    @Override
-    public Optional<ProjectContext> getOrCreateProject(Path projectRoot, Path filePath, String operationName) {
-        try {
-            return Optional.of(projectCache.get(projectRoot, () -> {
-                Optional<ProjectContext> projectContext = createProjectContext(filePath, operationName);
-                if (projectContext.isEmpty()) {
-                    throw new WorkspaceDocumentException("Cannot find the project of uri: " + filePath);
-                }
-                return projectContext.get();
-            }));
-        } catch (ExecutionException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof WorkspaceDocumentException) {
-                return Optional.empty();
-            }
-            return Optional.empty();
-        }
-    }
-
-    private ProjectContext getOrCreateProjectOrThrow(Path projectRoot, Path filePath, String operationName)
-            throws WorkspaceDocumentException {
-        try {
-            return projectCache.get(projectRoot, () -> {
-                Optional<ProjectContext> projectContext = createProjectContext(filePath, operationName);
-                if (projectContext.isEmpty()) {
-                    throw new WorkspaceDocumentException("Cannot find the project of uri: " + filePath);
-                }
-                return projectContext.get();
-            });
-        } catch (ExecutionException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof WorkspaceDocumentException workspaceDocumentException) {
-                throw workspaceDocumentException;
-            }
-            throw new WorkspaceDocumentException("Failed to create project: " + projectRoot, cause);
-        }
-    }
-
-    private Optional<ProjectLoadResult> loadProjectResult(Path filePath, String operationName) {
-        return loadProjectResult(filePath, operationName, CommonUtil.COMPILE_OFFLINE, null);
-    }
-
-    private Optional<ProjectLoadResult> loadProjectResult(Path filePath, String operationName, boolean offline,
-                                                          @Nullable PackageLockingMode lockingModeOverride) {
-        Path projectRoot = computeProjectRoot(filePath);
-        BallerinaCompilerApi compilerApi = BallerinaCompilerApi.getInstance();
-        try {
-            PackageLockingMode lockingMode = lockingModeOverride != null
-                    ? lockingModeOverride
-                    : deriveLockingMode(projectRoot);
-            BuildOptions buildOptions = buildOptions(offline, lockingMode);
-            Project project = compilerApi.loadProject(filePath, buildOptions);
-            if (lockingMode != PackageLockingMode.SOFT && compilerApi.hasOptimizedDependencyCompilation(project)) {
-                buildOptions = buildOptions(offline, PackageLockingMode.SOFT);
-                project = compilerApi.loadProject(filePath, buildOptions);
-            }
-
-            if (compilerApi.isWorkspaceProject(project)) {
-                List<Project> workspacePackages = compilerApi.getWorkspaceProjectsInOrder(project);
-                Project targetProject = project;
-                for (Project workspacePackage : workspacePackages) {
-                    if (workspacePackage.sourceRoot().equals(projectRoot)) {
-                        targetProject = workspacePackage;
-                        break;
-                    }
-                }
-                clientLogger.logTrace("Operation '" + operationName +
-                        "' {workspace package: '" + projectRoot.toUri() + "'} loaded from workspace");
-                return Optional.of(new ProjectLoadResult(targetProject, project, workspacePackages));
-            }
-
-            clientLogger.logTrace("Operation '" + operationName +
-                    "' {project: '" + projectRoot.toUri() + "' kind: '" +
-                    project.kind().name().toLowerCase(Locale.getDefault()) + "'} created");
-            return Optional.of(new ProjectLoadResult(project, null, List.of()));
-        } catch (ProjectException e) {
-            this.projectContext(projectRoot).ifPresent(projectContext -> projectContext.setProjectCrashed(true));
-            clientLogger.notifyUser("Project load failed: " + e.getMessage(), e);
-            clientLogger.logError(LSContextOperation.CREATE_PROJECT, "Operation '" + operationName +
-                            "' {project: '" + projectRoot.toUri() + "'" + "} failed", e,
-                    new TextDocumentIdentifier(filePath.toUri().toString()));
-            return Optional.empty();
-        }
-    }
-
-    private BuildOptions buildOptions(boolean offline, PackageLockingMode lockingMode) {
-        return BuildOptions.builder()
-                .setOffline(offline)
-                .setExperimental(this.experimental)
-                .setLockingMode(lockingMode)
-                .build();
-    }
-
-    private PackageLockingMode deriveLockingMode(Path projectRoot) {
-        Path dependenciesTomlPath = projectRoot.resolve(ProjectConstants.DEPENDENCIES_TOML);
-        return Files.exists(dependenciesTomlPath) ? PackageLockingMode.MEDIUM : PackageLockingMode.SOFT;
-    }
-
-    private void cacheLoadedProjects(Path primaryRoot, @Nullable ProjectContext primaryContext,
-                                     @Nullable ProjectLoadResult loadResult) {
-        if (loadResult == null) {
-            return;
-        }
-
-        if (loadResult.workspaceRootProject() != null) {
-            Project workspaceRootProject = loadResult.workspaceRootProject();
-            if (workspaceRootProject.sourceRoot().equals(primaryRoot) && primaryContext != null) {
-                sourceRootToProject.put(primaryRoot, primaryContext);
-            } else {
-                sourceRootToProject.put(workspaceRootProject.sourceRoot(),
-                        ProjectContext.from(workspaceRootProject, false, null));
-            }
-            invalidateCacheFor(workspaceRootProject.sourceRoot());
-        }
-
-        for (Project workspacePackage : loadResult.workspacePackages()) {
-            if (workspacePackage.sourceRoot().equals(primaryRoot) && primaryContext != null) {
-                sourceRootToProject.put(primaryRoot, primaryContext);
-            } else {
-                Project workspaceRoot = loadResult.workspaceRootProject();
-                sourceRootToProject.put(workspacePackage.sourceRoot(),
-                        ProjectContext.from(workspacePackage, true,
-                                workspaceRoot != null ? workspaceRoot.sourceRoot() : null));
-            }
-            invalidateCacheFor(workspacePackage.sourceRoot());
-        }
+    void reloadProjectInternal(ProjectContext projectContext, Path filePath, String operationName) {
+        projectRegistry.reloadProject(projectContext, filePath, operationName);
     }
 
     @Override
@@ -898,23 +643,9 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
         }
     }
 
-    @Override
-    public void reloadProject(ProjectContext projectContext, Path filePath, String operationName) {
-        reloadProject(projectContext, filePath, operationName, CommonUtil.COMPILE_OFFLINE, null);
-    }
-
-    private void reloadProject(ProjectContext projectContext, Path filePath, String operationName, boolean offline,
-                               @Nullable PackageLockingMode lockingModeOverride) {
-        projectContext.withWriteLock(ctx -> {
-            Optional<ProjectLoadResult> loadResult = loadProjectResult(filePath, operationName, offline,
-                    lockingModeOverride);
-            if (loadResult.isEmpty()) {
-                return;
-            }
-            ProjectLoadResult projectLoadResult = loadResult.get();
-            ctx.setProject(projectLoadResult.targetProject());
-            cacheLoadedProjects(computeProjectRoot(filePath), ctx, projectLoadResult);
-        });
+    void reloadProject(ProjectContext projectContext, Path filePath, String operationName,
+                       boolean offline, @Nullable PackageLockingMode lockingModeOverride) {
+        projectRegistry.reloadProject(projectContext, filePath, operationName, offline, lockingModeOverride);
     }
 
     private PackageCompilation getPackageCompilationWithRecovery(ProjectContext ctx, Path filePath) {
@@ -925,7 +656,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
                 throw e;
             }
 
-            if (!reloadProjectWithoutLock(ctx, filePath, LSContextOperation.WS_WF_CHANGED.getName(), false, null)) {
+            if (!projectRegistry.reloadProjectWithoutLock(ctx, filePath, LSContextOperation.WS_WF_CHANGED.getName(), false, null)) {
                 throw e;
             }
             try {
@@ -935,7 +666,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
                     throw onlineRetryFailure;
                 }
 
-                if (!reloadProjectWithoutLock(ctx, filePath, LSContextOperation.WS_WF_CHANGED.getName(), false,
+                if (!projectRegistry.reloadProjectWithoutLock(ctx, filePath, LSContextOperation.WS_WF_CHANGED.getName(), false,
                         PackageLockingMode.SOFT)) {
                     throw onlineRetryFailure;
                 }
@@ -948,21 +679,6 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
                 }
             }
         }
-    }
-
-    private boolean reloadProjectWithoutLock(ProjectContext ctx, Path filePath, String operationName, boolean offline,
-                                             @Nullable PackageLockingMode lockingModeOverride) {
-        Optional<ProjectLoadResult> loadResult = loadProjectResult(filePath, operationName, offline,
-                lockingModeOverride);
-        if (loadResult.isEmpty()) {
-            ctx.setCompilationCrashed(true);
-            return false;
-        }
-
-        ProjectLoadResult projectLoadResult = loadResult.get();
-        ctx.setProject(projectLoadResult.targetProject());
-        cacheLoadedProjects(computeProjectRoot(filePath), ctx, projectLoadResult);
-        return true;
     }
 
     private boolean isModuleLoadingFailure(BLangCompilerException exception) {
@@ -994,91 +710,17 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
 
     private ProjectContext createOrGetProjectPair(Path filePath, String operationName, boolean isSourceChange)
             throws WorkspaceDocumentException {
-        Path projectRoot = projectRoot(filePath);
-        ProjectContext projectContext = sourceRootToProject.get(projectRoot);
-        if (projectContext != null && !(projectContext.isProjectCrashed() && isSourceChange)) {
-            return projectContext;
+        Path projectRoot = projectRegistry.projectRoot(filePath);
+        Optional<ProjectContext> existingContext = projectRegistry.projectContext(projectRoot);
+        if (existingContext.isPresent() && !(existingContext.get().isProjectCrashed() && isSourceChange)) {
+            return existingContext.get();
         }
 
-        if (projectContext != null && projectContext.isProjectCrashed() && isSourceChange) {
-            ProjectContext removed = sourceRootToProject.remove(projectRoot);
-            invalidateCacheFor(projectRoot);
-            if (removed != null) {
-                projectExecutor.stopProject(projectRoot);
-                removed.close();
-            }
+        if (existingContext.isPresent() && existingContext.get().isProjectCrashed() && isSourceChange) {
+            projectRegistry.removeProjectContext(projectRoot);
         }
 
-        return getOrCreateProjectOrThrow(projectRoot, filePath, operationName);
-    }
-
-    private record ProjectLoadResult(Project targetProject, @Nullable Project workspaceRootProject,
-                                     List<Project> workspacePackages) {
-    }
-
-    private Optional<Path> findProjectRoot(Path filePath) {
-        if (filePath != null) {
-            filePath = filePath.toAbsolutePath().normalize();
-            if (filePath.toFile().isDirectory()) {
-                if (hasBallerinaToml(filePath) || hasPackageJson(filePath)) {
-                    return Optional.of(filePath);
-                }
-            }
-            return findProjectRoot(filePath.getParent());
-        }
-        return Optional.empty();
-    }
-
-    /**
-     * Returns all workspace child ProjectContexts for a given workspace root.
-     * Filters sourceRootToProject by workspaceChild flag matching the workspaceRoot.
-     *
-     * @param wsRoot the workspace root path
-     * @return list of ProjectContexts for all workspace packages (excluding root)
-     */
-    private List<ProjectContext> workspaceChildren(Path wsRoot) {
-        return sourceRootToProject.entrySet().stream()
-                .filter(e -> e.getValue().isWorkspaceChild())
-                .filter(e -> {
-                    Path childRoot = e.getKey();
-                    // workspaceChild's workspaceRoot field points to the workspace root
-                    return wsRoot.equals(e.getValue().workspaceRoot());
-                })
-                .map(Map.Entry::getValue)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Returns the workspace root ProjectContext for a given child path.
-     * Returns empty if the path is not a workspace child or is the root itself.
-     *
-     * @param childRoot any path within the workspace (package root or document)
-     * @return Optional containing the workspace root's ProjectContext
-     */
-    private Optional<ProjectContext> workspaceRoot(Path childRoot) {
-        Path resolvedRoot = projectRoot(childRoot);
-        ProjectContext ctx = sourceRootToProject.get(resolvedRoot);
-        if (ctx == null) {
-            return Optional.empty();
-        }
-        if (!ctx.isWorkspaceChild()) {
-            return Optional.empty();
-        }
-        Path wsRoot = ctx.workspaceRoot();
-        if (wsRoot == null) {
-            return Optional.empty();
-        }
-        return Optional.ofNullable(sourceRootToProject.get(wsRoot));
-    }
-
-    private boolean hasBallerinaToml(Path filePath) {
-        Path absFilePath = filePath.toAbsolutePath().normalize();
-        return absFilePath.resolve(BALLERINA_TOML).toFile().exists();
-    }
-
-    private boolean hasPackageJson(Path filePath) {
-        Path absFilePath = filePath.toAbsolutePath().normalize();
-        return absFilePath.resolve(ProjectConstants.PACKAGE_JSON).toFile().exists();
+        return projectRegistry.getOrCreateProjectOrThrow(projectRoot, filePath, operationName);
     }
 
     /**
@@ -1088,12 +730,12 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
 
         @Override
         public void reloadProject(ProjectContext ctx, Path trigger, String operation) {
-            BallerinaWorkspaceManager.this.reloadProject(ctx, trigger, operation);
+            projectRegistry.reloadProject(ctx, trigger, operation);
         }
 
         @Override
         public Map<Path, ProjectContext> projectRegistry() {
-            return BallerinaWorkspaceManager.this.sourceRootToProject;
+            return projectRegistry.sourceRootToProject();
         }
 
         @Override
@@ -1119,25 +761,25 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
             List<Project> workspacePackages = compilerApi.getWorkspaceProjectsInOrder(workspaceProject);
             for (Project workspacePackage : workspacePackages) {
                 Path packageRoot = workspacePackage.sourceRoot();
-                BallerinaWorkspaceManager.this.sourceRootToProject.put(packageRoot,
+                projectRegistry.sourceRootToProject().put(packageRoot,
                         ProjectContext.from(workspacePackage, true, workspaceProject.sourceRoot()));
-                BallerinaWorkspaceManager.this.invalidateCacheFor(packageRoot);
+                projectRegistry.invalidateCacheFor(packageRoot);
             }
         }
 
         @Override
         public Optional<ProjectContext> getOrCreateProject(Path projectRoot, Path triggerFile, String operation) {
-            return BallerinaWorkspaceManager.this.getOrCreateProject(projectRoot, triggerFile, operation);
+            return projectRegistry.getOrCreateProject(projectRoot, triggerFile, operation);
         }
 
         @Override
         public Optional<ProjectContext> createProjectContext(Path tomlPath, String operation) {
-            return BallerinaWorkspaceManager.this.createProjectContext(tomlPath, operation);
+            return projectRegistry.createProjectContext(tomlPath, operation);
         }
 
         @Override
         public void invalidateCacheFor(Path path) {
-            BallerinaWorkspaceManager.this.invalidateCacheFor(path);
+            projectRegistry.invalidateCacheFor(path);
         }
     }
 
@@ -1173,5 +815,15 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
     @Override
     public boolean isFileWatcherEnabled() {
         return LSClientConfigHolder.getInstance(serverContext).getConfig().isEnableFileWatcher();
+    }
+
+    @Override
+    public boolean experimental() {
+        return experimental;
+    }
+
+    @Override
+    public void stopProject(@Nonnull Path projectRoot) {
+        projectExecutor.stopProject(projectRoot);
     }
 }
