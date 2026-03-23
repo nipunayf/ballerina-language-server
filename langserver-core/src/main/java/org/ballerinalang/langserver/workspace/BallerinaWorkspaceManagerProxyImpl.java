@@ -15,7 +15,6 @@
  */
 package org.ballerinalang.langserver.workspace;
 
-import io.ballerina.projects.BuildOptions;
 import io.ballerina.projects.Project;
 import org.ballerinalang.langserver.LSContextOperation;
 import org.ballerinalang.langserver.common.utils.CommonUtil;
@@ -185,13 +184,14 @@ public class BallerinaWorkspaceManagerProxyImpl implements BallerinaWorkspaceMan
     }
 
     /**
-     * Sets the build options for both base and cloned workspace managers.
+     * Sets whether experimental language features should be enabled for all workspace managers.
      *
-     * @param buildOptions The build options to be set
+     * @param experimental {@code true} to enable experimental features
      */
-    public void setBuildOptions(BuildOptions buildOptions) {
-        ((BallerinaWorkspaceManager) this.baseWorkspaceManager).setBuildOptions(buildOptions);
-        this.clonedWorkspaceManager.setBuildOptions(buildOptions);
+    @Override
+    public void setExperimental(boolean experimental) {
+        ((BallerinaWorkspaceManager) this.baseWorkspaceManager).setExperimental(experimental);
+        this.clonedWorkspaceManager.setExperimental(experimental);
     }
 
     private boolean isExprScheme(String uri) {

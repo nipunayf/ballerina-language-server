@@ -18,7 +18,6 @@ package org.ballerinalang.langserver;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import io.ballerina.projects.BuildOptions;
 import io.ballerina.projects.util.ProjectConstants;
 import org.ballerinalang.langserver.command.LSCommandExecutorProvidersHolder;
 import org.ballerinalang.langserver.common.utils.CommonUtil;
@@ -148,12 +147,7 @@ public class BallerinaLanguageServer extends AbstractExtendedLanguageServer
         // Compile the project with the experimental flag if the client has it enabled
         if (capabilities.getExperimentalCapabilities().isExperimentalLanguageFeaturesEnabled() &&
                 workspaceManagerProxy instanceof BallerinaWorkspaceManagerProxyImpl ballerinaWorkspaceManagerProxy) {
-            BuildOptions buildOptions = BuildOptions.builder()
-                    .setOffline(CommonUtil.COMPILE_OFFLINE)
-                    .setSticky(false)
-                    .setExperimental(true)
-                    .build();
-            ballerinaWorkspaceManagerProxy.setBuildOptions(buildOptions);
+            ballerinaWorkspaceManagerProxy.setExperimental(true);
         }
 
         final SignatureHelpOptions signatureHelpOptions = new SignatureHelpOptions(Arrays.asList("(", ","));

@@ -28,6 +28,13 @@ import org.eclipse.lsp4j.DidOpenTextDocumentParams;
  */
 public interface BallerinaWorkspaceManagerProxy extends WorkspaceManagerProxy {
     /**
+     * Sets whether experimental language features should be enabled when loading projects.
+     *
+     * @param experimental {@code true} to enable experimental features
+     */
+    void setExperimental(boolean experimental);
+
+    /**
      * Handle the document open event.
      *
      * @param params {@link DidOpenTextDocumentParams}

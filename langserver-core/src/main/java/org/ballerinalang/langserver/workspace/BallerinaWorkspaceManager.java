@@ -140,11 +140,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
      */
     private final Map<Path, ProjectContext> sourceRootToProject;
     private final Cache<Path, ProjectContext> projectCache;
-    /**
-     * The build options are used when compiling the project for the LS change events. The build options can be changed
-     * based on the flags set in the client.
-     */
-    private BuildOptions buildOptions;
+    private boolean experimental = false;
 
     protected final LSClientLogger clientLogger;
     private final LanguageServerContext serverContext;
@@ -204,11 +200,6 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
             }
         }));
 
-        // Set the default build options
-        this.buildOptions = BuildOptions.builder()
-                .setOffline(CommonUtil.COMPILE_OFFLINE)
-                .setSticky(false)
-                .build();
     }
 
     /**
@@ -856,13 +847,12 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
     }
 
     /**
-     * Sets the build options for the subsequent builds. This is not exposed to the extended language services since it
-     * is only required for the core services.
+     * Sets whether experimental language features should be enabled for subsequent project loads.
      *
-     * @param buildOptions The build options to be set
+     * @param experimental {@code true} to enable experimental language features
      */
-    public void setBuildOptions(BuildOptions buildOptions) {
-        this.buildOptions = buildOptions;
+    public void setExperimental(boolean experimental) {
+        this.experimental = experimental;
     }
 
     private Optional<ProjectContext> projectOfWatchedFileChange(Path filePath, FileEvent fileEvent,
