@@ -104,12 +104,21 @@ Decimal phases appear between their surrounding integers in numeric order.
   - [x] 06-03-PLAN.md — Testing CompilationGate
 
 ### Phase 7: God Class Decomposition
-**Goal**: Decompose the monolithic BallerinaWorkspaceManager into focused, cohesive classes
+**Goal**: Decompose the monolithic BallerinaWorkspaceManager into a thin facade delegating to focused, cohesive domain classes (ProjectRegistry, DocumentManager, FileWatchHandler, ProjectExecutor) using narrow context interfaces
 **Depends on**: Phase 6
-**Requirements**: TBD
+**Requirements**: DCMP-01, DCMP-02, DCMP-03, DCMP-04, DCMP-05, DCMP-06, DCMP-07
 **Success Criteria** (what must be TRUE):
-  - TBD
-**Plans**: Not planned yet
+  1. `BallerinaWorkspaceManager` delegates to 4 extracted classes (`ProjectRegistry`, `DocumentManager`, `FileWatchHandler`, `ProjectExecutor`) — BWM contains no domain logic beyond routing and construction
+  2. Each extracted class receives BWM access through a narrow context interface extending `WorkspaceContext` — no direct BWM field access
+  3. `ProjectContext` is a top-level class in `org.ballerinalang.langserver.workspace` — process management fields and methods live on `ProjectExecutor` instead
+  4. Crash signaling uses typed exceptions (`CompilationCrashException`, `ProjectLoadException`) — BWM facade catches and sets crash flags on `ProjectContext`
+  5. All existing tests (`CharacterizationTest`, `TomlHandlerTest`, `WorkspaceProjectTest`, `CompilationGateTest`) pass without modification
+  6. Each extracted class has a dedicated unit test class with mocked context interfaces
+**Plans**: 4 plans
+  - [x] 07-01-PLAN.md — Extract ProjectContext, exceptions, WorkspaceContext
+  - [ ] 07-02-PLAN.md — Extract ProjectExecutor and FileWatchHandler
+  - [ ] 07-03-PLAN.md — Extract ProjectRegistry and DocumentManager
+  - [ ] 07-04-PLAN.md — Finalize BallerinaWorkspaceManager facade and test
 
 ## Progress
 
