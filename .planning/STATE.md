@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 06-02-PLAN.md
-last_updated: "2026-03-23T02:03:22.633Z"
+stopped_at: Completed 06-03-PLAN.md
+last_updated: "2026-03-23T02:15:36.529Z"
 progress:
   total_phases: 7
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 17
-  completed_plans: 16
+  completed_plans: 17
 ---
 
 # Project State
@@ -57,6 +57,7 @@ Plan: 3 of 3
 | Phase 06 P01 | 6 | 2 tasks | 4 files |
 | Phase 06 P02 | 8 | 2 tasks | 3 files |
 | Phase 06 P02 | 10 | 2 tasks | 5 files |
+| Phase 06 P03 | 5 min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,8 @@ Recent decisions affecting current work:
 - [Phase 06]: Removed the compilation recovery subscriber because recovery now happens synchronously inside the workspace manager.
 - [Phase 06]: Kept compilation recovery synchronous inside BallerinaWorkspaceManager under the existing per-project write lock.
 - [Phase 06]: Recovery reloads reuse BuildOptions overrides for online and SOFT retries instead of delegating to event subscribers.
+- [Phase 06]: Used a fake BallerinaCompilerApi in tests so locking mode assertions target the exact BuildOptions.lockingMode() values passed by the workspace manager.
+- [Phase 06]: Reload optimized dependency projects with SOFT only when the initial load reports optimized dependency compilation and the chosen locking mode was not already SOFT.
 
 ### Pending Todos
 
@@ -104,6 +107,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T02:03:22.507Z
-Stopped at: Completed 06-02-PLAN.md
+Last session: 2026-03-23T02:15:22.304Z
+Stopped at: Completed 06-03-PLAN.md
 Resume file: None

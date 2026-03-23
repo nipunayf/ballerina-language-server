@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 3: Cache Invalidation** - Replace scorched-earth cache eviction with targeted invalidation and bounded project cache
 - [ ] **Phase 4: TOML Consolidation** - Collapse 6 near-identical TOML handler methods and distinguish dependency-graph from config-only changes
 - [ ] **Phase 5: Workspace Project Correctness** - Establish clean hierarchical model for workspace projects and fix cross-package reload isolation
-- [ ] **Phase 6: Compilation Gate** - Replace coarse lock with ReadWriteLock, add locking mode enum, and add compilation recovery
+- [x] **Phase 6: Compilation Gate** - Replace coarse lock with ReadWriteLock, add locking mode enum, and add compilation recovery (completed 2026-03-23)
 - [ ] **Phase 7: God Class Decomposition** - Decompose the monolithic BallerinaWorkspaceManager into focused, cohesive classes
 
 ## Phase Details
@@ -101,7 +101,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans
   - [x] 06-01-PLAN.md — Refactor locking mode derivation and single load
   - [x] 06-02-PLAN.md — Implement compilation recovery ladder and delete subscriber
-  - [ ] 06-03-PLAN.md — Testing CompilationGate
+  - [x] 06-03-PLAN.md — Testing CompilationGate
 
 ### Phase 7: God Class Decomposition
 **Goal**: Decompose the monolithic BallerinaWorkspaceManager into focused, cohesive classes
@@ -123,5 +123,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 3. Cache Invalidation | 3/3 | Complete | 2026-03-23 |
 | 4. TOML Consolidation | 0/2 | Planned | - |
 | 5. Workspace Project Correctness | 0/3 | Planned | - |
-| 6. Compilation Gate | 2/3 | Executing | - |
+| 6. Compilation Gate | 3/3 | Complete   | 2026-03-23 |
 | 7. God Class Decomposition | 0/TBD | Not planned yet | - |

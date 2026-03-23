@@ -42,9 +42,9 @@ Requirements for the initial refactor. Each maps to roadmap phases.
 
 ### Compilation Recovery
 
-- [ ] **RECV-01**: When compilation fails with a BIR error (e.g., `BAD_SAD_FROM_COMPILER`), automatically retry with SOFT locking mode
-- [ ] **RECV-02**: Recovery attempt reloads the project with SOFT locking mode before retrying compilation
-- [ ] **RECV-03**: If recovery also fails, mark `compilationCrashed` and do not retry until next source change
+- [x] **RECV-01**: When compilation fails with a BIR error (e.g., `BAD_SAD_FROM_COMPILER`), automatically retry with SOFT locking mode
+- [x] **RECV-02**: Recovery attempt reloads the project with SOFT locking mode before retrying compilation
+- [x] **RECV-03**: If recovery also fails, mark `compilationCrashed` and do not retry until next source change
 
 ### TOML Consolidation
 
@@ -103,9 +103,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LOCK-01 | Phase 6 | Complete |
 | LOCK-02 | Phase 6 | Complete |
 | LOCK-03 | Phase 6 | Complete |
-| RECV-01 | Phase 6 | Pending |
-| RECV-02 | Phase 6 | Pending |
-| RECV-03 | Phase 6 | Pending |
+| RECV-01 | Phase 6 | Complete |
+| RECV-02 | Phase 6 | Complete |
+| RECV-03 | Phase 6 | Complete |
 
 **Coverage:**
 - v1 requirements: 23 total
