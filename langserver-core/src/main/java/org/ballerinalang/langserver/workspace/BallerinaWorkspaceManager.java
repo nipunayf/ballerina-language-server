@@ -17,14 +17,8 @@
  */
 package org.ballerinalang.langserver.workspace;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
-import com.google.common.cache.Weigher;
 import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.syntax.tree.SyntaxTree;
-import io.ballerina.projects.BuildOptions;
 import io.ballerina.projects.Document;
 import io.ballerina.projects.DocumentId;
 import io.ballerina.projects.Module;
@@ -32,13 +26,9 @@ import io.ballerina.projects.Package;
 import io.ballerina.projects.PackageCompilation;
 import io.ballerina.projects.Project;
 import io.ballerina.projects.ProjectException;
-import io.ballerina.projects.ProjectKind;
 import io.ballerina.projects.environment.PackageLockingMode;
 import io.ballerina.projects.util.ProjectConstants;
 import io.ballerina.projects.util.ProjectPaths;
-import io.ballerina.tools.diagnostics.Diagnostic;
-import io.ballerina.tools.diagnostics.DiagnosticSeverity;
-import org.ballerinalang.compiler.BLangCompilerException;
 import org.ballerinalang.langserver.LSClientLogger;
 import org.ballerinalang.langserver.LSContextOperation;
 import org.ballerinalang.langserver.common.utils.CommonUtil;
@@ -60,7 +50,6 @@ import org.ballerinalang.langserver.eventsync.EventSyncPubSubHolder;
 import org.ballerinalang.langserver.workspace.toml.TomlHandler;
 import org.ballerinalang.langserver.workspace.toml.TomlHandlerContext;
 import org.ballerinalang.langserver.workspace.toml.TomlHandlerRegistry;
-import org.ballerinalang.util.diagnostic.DiagnosticErrorCode;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
@@ -77,7 +66,6 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -89,16 +77,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
-import static io.ballerina.projects.util.ProjectConstants.BALLERINA_TOML;
 
 /**
  * Contains a set of utility methods to manage projects.
@@ -106,17 +88,15 @@ import static io.ballerina.projects.util.ProjectConstants.BALLERINA_TOML;
  * @since 1.0.0
  */
 public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecutorContext, FileWatchHandlerContext,
-        ProjectRegistryContext {
-
-    private static final String FAILED_TO_LOAD_MODULE = "failed to load the module";
+        ProjectRegistryContext, DocumentManagerContext {
 
     protected final LSClientLogger clientLogger;
     private final LanguageServerContext serverContext;
-    private final Set<Path> openedDocuments = ConcurrentHashMap.newKeySet();
     private final TomlHandlerRegistry tomlHandlerRegistry;
     private final ProjectExecutor projectExecutor;
     private final FileWatchHandler fileWatchHandler;
     private final ProjectRegistry projectRegistry;
+    private final DocumentManager documentManager;
     private boolean experimental = false;
 
     public BallerinaWorkspaceManager(LanguageServerContext serverContext) {
@@ -125,6 +105,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
         this.projectRegistry = new ProjectRegistry(this);
         this.projectExecutor = new ProjectExecutor(this);
         this.fileWatchHandler = new FileWatchHandler(this);
+        this.documentManager = new DocumentManager(this);
         this.tomlHandlerRegistry = new TomlHandlerRegistry(new TomlHandlerContextImpl());
 
         Runtime.getRuntime().addShutdownHook(Thread.ofVirtual().unstarted(() -> {
@@ -210,38 +191,13 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
      */
     @Override
     public Optional<Module> module(Path filePath) {
-        return projectRegistry.projectContext(projectRegistry.projectRoot(filePath))
-                .flatMap(context -> context.withReadLock(ctx -> {
-                    Optional<Project> project = project(filePath);
-                    if (project.isEmpty()) {
-                        return Optional.empty();
-                    }
-                    Optional<Document> document = document(filePath, project.get(), null);
-                    if (document.isEmpty()) {
-                        if (filePath.equals(projectRegistry.projectRoot(filePath))) {
-                            return Optional.of(project.get().currentPackage().getDefaultModule());
-                        }
-                        return Optional.<Module>empty();
-                    }
-                    return Optional.of(document.get().module());
-                }));
+        return documentManager.module(filePath);
     }
 
     @Override
     public Optional<Module> module(Path filePath, @Nonnull CancelChecker cancelChecker) {
         cancelChecker.checkCanceled();
-        return projectRegistry.projectContext(projectRegistry.projectRoot(filePath))
-                .flatMap(context -> context.withReadLock(ctx -> {
-                    Optional<Project> project = project(filePath);
-                    if (project.isEmpty()) {
-                        return Optional.empty();
-                    }
-                    Optional<Document> document = document(filePath, project.get(), cancelChecker);
-                    if (document.isEmpty()) {
-                        return Optional.<Module>empty();
-                    }
-                    return Optional.of(document.get().module());
-                }));
+        return documentManager.module(filePath);
     }
 
     /**
@@ -252,20 +208,13 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
      */
     @Override
     public Optional<Document> document(Path filePath) {
-        return projectRegistry.projectContext(projectRegistry.projectRoot(filePath))
-                .flatMap(context -> context.withReadLock(ctx -> {
-                    Optional<Project> project = project(filePath);
-                    return project.isPresent() ? document(filePath, project.get(), null) : Optional.<Document>empty();
-                }));
+        return documentManager.document(filePath);
     }
 
     @Override
     public Optional<Document> document(Path filePath, @Nonnull CancelChecker cancelChecker) {
-        return projectRegistry.projectContext(projectRegistry.projectRoot(filePath))
-                .flatMap(context -> context.withReadLock(ctx -> {
-                    Optional<Project> project = project(filePath);
-                    return project.isPresent() ? document(filePath, project.get(), cancelChecker) : Optional.<Document>empty();
-                }));
+        cancelChecker.checkCanceled();
+        return documentManager.document(filePath);
     }
 
     /**
@@ -276,26 +225,13 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
      */
     @Override
     public Optional<SyntaxTree> syntaxTree(Path filePath) {
-        return projectRegistry.projectContext(projectRegistry.projectRoot(filePath))
-                .flatMap(context -> context.withReadLock(ctx -> {
-                    Optional<Document> document = this.document(filePath);
-                    if (document.isEmpty()) {
-                        return Optional.<SyntaxTree>empty();
-                    }
-                    return Optional.ofNullable(document.get().syntaxTree());
-                }));
+        return documentManager.syntaxTree(filePath);
     }
 
     @Override
     public Optional<SyntaxTree> syntaxTree(Path filePath, @Nonnull CancelChecker cancelChecker) {
-        return projectRegistry.projectContext(projectRegistry.projectRoot(filePath))
-                .flatMap(context -> context.withReadLock(ctx -> {
-                    Optional<Document> document = this.document(filePath, cancelChecker);
-                    if (document.isEmpty()) {
-                        return Optional.<SyntaxTree>empty();
-                    }
-                    return Optional.ofNullable(document.get().syntaxTree());
-                }));
+        cancelChecker.checkCanceled();
+        return documentManager.syntaxTree(filePath);
     }
 
     /**
@@ -306,65 +242,13 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
      */
     @Override
     public Optional<SemanticModel> semanticModel(Path filePath) {
-        Optional<PackageCompilation> packageCompilation = waitAndGetPackageCompilation(filePath);
-        return projectRegistry.projectContext(projectRegistry.projectRoot(filePath))
-                .flatMap(context -> context.withReadLock(ctx -> {
-                    Optional<Module> module = this.module(filePath);
-                    if (module.isEmpty() || packageCompilation.isEmpty() || context.compilationCrashed()) {
-                        return Optional.<SemanticModel>empty();
-                    }
-                    return Optional.of(packageCompilation.get().getSemanticModel(module.get().moduleId()));
-                }));
+        return documentManager.semanticModel(filePath);
     }
 
     @Override
     public Optional<SemanticModel> semanticModel(Path filePath, @Nonnull CancelChecker cancelChecker) {
-        Optional<PackageCompilation> packageCompilation = waitAndGetPackageCompilation(filePath, cancelChecker);
-        return projectRegistry.projectContext(projectRegistry.projectRoot(filePath))
-                .flatMap(context -> context.withReadLock(ctx -> {
-                    Optional<Module> module = this.module(filePath, cancelChecker);
-                    if (module.isEmpty() || packageCompilation.isEmpty() || context.compilationCrashed()) {
-                        return Optional.<SemanticModel>empty();
-                    }
-                    return Optional.of(packageCompilation.get().getSemanticModel(module.get().moduleId()));
-                }));
-    }
-
-    /**
-     * Returns module compilation from the file path provided.
-     *
-     * @param filePath       file path of the document
-     * @param isSourceChange True if the given file's source is changed
-     * @return {@link ModuleCompilation}
-     */
-    public Optional<PackageCompilation> waitAndGetPackageCompilation(Path filePath, boolean isSourceChange) {
-        // Get Project and Lock
-        Optional<ProjectContext> projectPair = projectRegistry.projectContext(projectRegistry.projectRoot(filePath));
-        if (projectPair.isEmpty() || (projectPair.get().compilationCrashed() && !isSourceChange)) {
-            return Optional.empty();
-        }
-
-        AtomicReference<PackageCompilation> compilationRef = new AtomicReference<>();
-        projectPair.get().withWriteLock(ctx -> {
-            try {
-                PackageCompilation compilation = getPackageCompilationWithRecovery(ctx, filePath);
-                if (ctx.compilationCrashed()) {
-                    ctx.setCompilationCrashed(false);
-                }
-                if (hasCompilationCrashDiagnostic(compilation)) {
-                    ctx.setCompilationCrashed(true);
-                    ctx.project().clearCaches();
-                }
-                compilationRef.set(compilation);
-            } catch (BLangCompilerException e) {
-                if (shouldCrashImmediately(e)) {
-                    ctx.setCompilationCrashed(true);
-                    ctx.project().clearCaches();
-                }
-                throw e;
-            }
-        });
-        return Optional.ofNullable(compilationRef.get());
+        cancelChecker.checkCanceled();
+        return documentManager.semanticModel(filePath);
     }
 
     /**
@@ -375,14 +259,19 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
      */
     @Override
     public Optional<PackageCompilation> waitAndGetPackageCompilation(Path filePath) {
-        return waitAndGetPackageCompilation(filePath, false);
+        return documentManager.waitAndGetPackageCompilation(filePath, false);
     }
 
     @Override
     public Optional<PackageCompilation> waitAndGetPackageCompilation(Path filePath,
                                                                      @Nonnull CancelChecker cancelChecker) {
         cancelChecker.checkCanceled();
-        return waitAndGetPackageCompilation(filePath);
+        return documentManager.waitAndGetPackageCompilation(filePath, false);
+    }
+
+    @Override
+    public Optional<PackageCompilation> waitAndGetPackageCompilation(Path filePath, boolean isSourceChange) {
+        return documentManager.waitAndGetPackageCompilation(filePath, isSourceChange);
     }
 
     /**
@@ -393,24 +282,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
      */
     @Override
     public void didOpen(Path filePath, DidOpenTextDocumentParams params) throws WorkspaceDocumentException {
-        // Add the document to the opened documents set and the entry will only be removed via didClose.
-        // Hence we assume the safe concurrent access for a given document path
-        this.openedDocuments.add(filePath);
-        ProjectContext projectContext = createOrGetProjectPair(filePath,
-                LSContextOperation.TXT_DID_OPEN.getName(), true);
-        Project project = projectContext.project();
-
-        // Route TOML files through the registry
-        Optional<TomlHandler> tomlHandlerOpt = tomlHandlerRegistry.lookup(filePath);
-        if (tomlHandlerOpt.isPresent()) {
-            tomlHandlerOpt.get().updateContent(params.getTextDocument().getText(), projectContext, true);
-            return;
-        }
-
-        if (ProjectPaths.isBalFile(filePath) && project.kind() != ProjectKind.BALA_PROJECT) {
-            // Create a new .bal document.
-            createBalDocument(filePath, params.getTextDocument().getText(), projectContext);
-        }
+        documentManager.didOpen(filePath, params);
     }
 
     /**
@@ -422,23 +294,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
      */
     @Override
     public void didChange(Path filePath, DidChangeTextDocumentParams params) throws WorkspaceDocumentException {
-        // Get Project and Lock
-        ProjectContext projectContext = createOrGetProjectPair(filePath,
-                LSContextOperation.TXT_DID_CHANGE.getName(), true);
-
-        Project project = projectContext.project();
-
-        // Route TOML files through the registry
-        Optional<TomlHandler> tomlHandlerOpt = tomlHandlerRegistry.lookup(filePath);
-        if (tomlHandlerOpt.isPresent()) {
-            tomlHandlerOpt.get().updateContent(params.getContentChanges().get(0).getText(), projectContext, false);
-            return;
-        }
-
-        if (ProjectPaths.isBalFile(filePath) && project.kind() != ProjectKind.BALA_PROJECT) {
-            // Update .bal document
-            updateBalDocument(filePath, params.getContentChanges().get(0).getText(), projectContext);
-        }
+        documentManager.didChange(filePath, params);
     }
 
     /**
@@ -515,59 +371,6 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
         this.experimental = experimental;
     }
 
-    private static WorkspaceDocumentException unwrapWorkspaceDocumentException(RuntimeException exception) {
-        if (exception.getCause() instanceof WorkspaceDocumentException workspaceDocumentException) {
-            return workspaceDocumentException;
-        }
-        throw exception;
-    }
-
-    private void updateBalDocument(Path filePath, String content, ProjectContext projectContext)
-            throws WorkspaceDocumentException {
-        try {
-            projectContext.withWriteLock(ctx -> {
-                try {
-                    Optional<Document> document = document(filePath, ctx.project(), null);
-                    if (document.isEmpty()) {
-                        throw new WorkspaceDocumentException("Document does not exist in path: " + filePath);
-                    }
-                    document.get().modify().withContent(content).apply();
-                } catch (WorkspaceDocumentException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        } catch (RuntimeException e) {
-            throw unwrapWorkspaceDocumentException(e);
-        }
-    }
-
-    private void createBalDocument(Path filePath, String content, ProjectContext projectContext)
-            throws WorkspaceDocumentException {
-        try {
-            projectContext.withWriteLock(ctx -> {
-                try {
-                    Optional<ProjectContext> newProjectContext =
-                            projectRegistry.createProjectContext(filePath, LSContextOperation.TXT_DID_OPEN.getName());
-                    if (newProjectContext.isEmpty()) {
-                        throw new WorkspaceDocumentException("Could not find the project for file path: " + filePath);
-                    }
-                    Optional<Document> document = document(filePath, newProjectContext.get().project(), null);
-                    if (document.isEmpty()) {
-                        ctx.setProjectCrashed(true);
-                        throw new WorkspaceDocumentException(
-                                "Could not create a new document for file path: " + filePath);
-                    }
-                    Document updatedDoc = document.get().modify().withContent(content).apply();
-                    ctx.setProject(updatedDoc.module().project());
-                } catch (WorkspaceDocumentException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        } catch (RuntimeException e) {
-            throw unwrapWorkspaceDocumentException(e);
-        }
-    }
-
     /**
      * The document close notification is sent from the client to the server when the document got closed in the
      * client.
@@ -577,20 +380,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
      */
     @Override
     public void didClose(Path filePath, DidCloseTextDocumentParams params) {
-        this.openedDocuments.remove(filePath);
-        Optional<Project> project = project(filePath);
-        if (project.isEmpty()) {
-            return;
-        }
-        // If it is a single file project, remove project from mapping
-        if (project.get().kind() == ProjectKind.SINGLE_FILE_PROJECT) {
-            Path projectRoot = project.get().sourceRoot();
-            projectRegistry.removeProjectContext(projectRoot);
-            clientLogger.logTrace("Operation '" + LSContextOperation.TXT_DID_CLOSE.getName() +
-                    "' {project: '" + projectRoot.toUri().toString() +
-                    "' kind: '" + project.get().kind().name().toLowerCase(Locale.getDefault()) +
-                    "'} removed");
-        }
+        documentManager.didClose(filePath, params);
     }
 
 // ============================================================================================================== //
@@ -648,81 +438,6 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
         projectRegistry.reloadProject(projectContext, filePath, operationName, offline, lockingModeOverride);
     }
 
-    private PackageCompilation getPackageCompilationWithRecovery(ProjectContext ctx, Path filePath) {
-        try {
-            return ctx.project().currentPackage().getCompilation();
-        } catch (BLangCompilerException e) {
-            if (shouldCrashImmediately(e) || !isModuleLoadingFailure(e)) {
-                throw e;
-            }
-
-            if (!projectRegistry.reloadProjectWithoutLock(ctx, filePath, LSContextOperation.WS_WF_CHANGED.getName(), false, null)) {
-                throw e;
-            }
-            try {
-                return ctx.project().currentPackage().getCompilation();
-            } catch (BLangCompilerException onlineRetryFailure) {
-                if (shouldCrashImmediately(onlineRetryFailure) || !isModuleLoadingFailure(onlineRetryFailure)) {
-                    throw onlineRetryFailure;
-                }
-
-                if (!projectRegistry.reloadProjectWithoutLock(ctx, filePath, LSContextOperation.WS_WF_CHANGED.getName(), false,
-                        PackageLockingMode.SOFT)) {
-                    throw onlineRetryFailure;
-                }
-                try {
-                    return ctx.project().currentPackage().getCompilation();
-                } catch (BLangCompilerException softRetryFailure) {
-                    ctx.setCompilationCrashed(true);
-                    ctx.project().clearCaches();
-                    throw softRetryFailure;
-                }
-            }
-        }
-    }
-
-    private boolean isModuleLoadingFailure(BLangCompilerException exception) {
-        String message = exception.getMessage();
-        return message != null && (message.contains(FAILED_TO_LOAD_MODULE) ||
-                message.contains(DiagnosticErrorCode.BAD_SAD_FROM_COMPILER.diagnosticId()));
-    }
-
-    private boolean shouldCrashImmediately(BLangCompilerException exception) {
-        String message = exception.getMessage();
-        if (message == null) {
-            return false;
-        }
-        return message.contains(DiagnosticErrorCode.CYCLIC_MODULE_IMPORTS_DETECTED.diagnosticId());
-    }
-
-    private boolean hasCompilationCrashDiagnostic(PackageCompilation compilation) {
-        return compilation.diagnosticResult().diagnostics().stream()
-                .anyMatch(diagnostic -> Arrays.asList(
-                        DiagnosticErrorCode.BAD_SAD_FROM_COMPILER.diagnosticId(),
-                        DiagnosticErrorCode.CYCLIC_MODULE_IMPORTS_DETECTED.diagnosticId())
-                        .contains(diagnostic.diagnosticInfo().code()));
-    }
-
-    private ProjectContext createOrGetProjectPair(Path filePath, String operationName)
-            throws WorkspaceDocumentException {
-        return createOrGetProjectPair(filePath, operationName, false);
-    }
-
-    private ProjectContext createOrGetProjectPair(Path filePath, String operationName, boolean isSourceChange)
-            throws WorkspaceDocumentException {
-        Path projectRoot = projectRegistry.projectRoot(filePath);
-        Optional<ProjectContext> existingContext = projectRegistry.projectContext(projectRoot);
-        if (existingContext.isPresent() && !(existingContext.get().isProjectCrashed() && isSourceChange)) {
-            return existingContext.get();
-        }
-
-        if (existingContext.isPresent() && existingContext.get().isProjectCrashed() && isSourceChange) {
-            projectRegistry.removeProjectContext(projectRoot);
-        }
-
-        return projectRegistry.getOrCreateProjectOrThrow(projectRoot, filePath, operationName);
-    }
-
     /**
      * Implementation of TomlHandlerContext providing narrow BWM access to TOML handlers.
      */
@@ -740,7 +455,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
 
         @Override
         public Set<Path> openedDocuments() {
-            return BallerinaWorkspaceManager.this.openedDocuments;
+            return documentManager.openedDocuments();
         }
 
         @Override
@@ -783,10 +498,6 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
         }
     }
 
-    private static boolean isError(Diagnostic diagnostic) {
-        return diagnostic.diagnosticInfo().severity().equals(DiagnosticSeverity.ERROR);
-    }
-
     @Override
     public LanguageServerContext serverContext() {
         return this.serverContext;
@@ -809,7 +520,7 @@ public class BallerinaWorkspaceManager implements WorkspaceManager, ProjectExecu
 
     @Override
     public Set<Path> openedDocuments() {
-        return openedDocuments;
+        return documentManager.openedDocuments();
     }
 
     @Override
