@@ -68,6 +68,7 @@ final class FileWatchHandler {
             return;
         }
 
+        ProjectRegistry projectRegistry = context.projectRegistry();
         Optional<ProjectContext> optProject = getProjectOfWatchedFileChange(filePath, fileEvent);
         if (optProject.isEmpty()) {
             context.logger().logTrace(
@@ -118,6 +119,7 @@ final class FileWatchHandler {
             return Collections.emptyList();
         }
 
+        ProjectRegistry projectRegistry = context.projectRegistry();
         List<FileEvent> changes = params.getChanges();
         if (changes.size() == 1) {
             FileEvent fileEvent = changes.get(0);
@@ -151,10 +153,10 @@ final class FileWatchHandler {
             }
         }
 
-        reloadableProjects.forEach(path -> context.projectContext(path).ifPresent(projectContext ->
+        reloadableProjects.forEach(path -> projectRegistry.projectContext(path).ifPresent(projectContext ->
                 projectContext.withWriteLock(ctx -> {
                     Optional<ProjectContext> updatedProject =
-                            context.createProjectContext(path, LSContextOperation.WS_WF_CHANGED.getName());
+                            projectRegistry.createProjectContext(path, LSContextOperation.WS_WF_CHANGED.getName());
                     if (updatedProject.isEmpty()) {
                         throw new IllegalStateException("Cannot find the project of uri: " + path);
                     }
@@ -196,12 +198,13 @@ final class FileWatchHandler {
                                                                 boolean isCompilerPluginTomlChange,
                                                                 boolean isBalToolTomlChange,
                                                                 boolean isModuleChange) {
+        ProjectRegistry projectRegistry = context.projectRegistry();
         if (isBallerinaSourceChange) {
             if (fileEvent.getType() == FileChangeType.Created) {
-                return context.projectContext(context.projectRoot(filePath));
+                return projectRegistry.projectContext(projectRegistry.projectRoot(filePath));
             }
 
-            Optional<ProjectContext> optProject = context.projectContext(filePath);
+            Optional<ProjectContext> optProject = projectRegistry.projectContext(filePath);
             if (optProject.isPresent()) {
                 return optProject;
             }
@@ -217,25 +220,25 @@ final class FileWatchHandler {
             if (ProjectConstants.GENERATED_MODULES_ROOT.equals(parent.getFileName().toString())) {
                 parent = parent.getParent();
             }
-            return context.projectContext(parent);
+            return projectRegistry.projectContext(parent);
         }
 
         if (isBallerinaTomlChange) {
             if (fileEvent.getType() == FileChangeType.Created) {
-                Optional<ProjectContext> optProject = context.projectContext(filePath.getParent()).filter(projectContext ->
-                        projectContext.project().kind() == ProjectKind.SINGLE_FILE_PROJECT
-                                && projectContext.project().sourceRoot().getParent().equals(filePath.getParent()));
+                Optional<ProjectContext> optProject = projectRegistry.projectContext(filePath.getParent()).filter(pc ->
+                        pc.project().kind() == ProjectKind.SINGLE_FILE_PROJECT
+                                && pc.project().sourceRoot().getParent().equals(filePath.getParent()));
                 if (optProject.isEmpty()) {
-                    return context.getOrCreateProject(filePath.getParent(), filePath,
+                    return projectRegistry.getOrCreateProject(filePath.getParent(), filePath,
                             LSContextOperation.WS_WF_CHANGED.getName());
                 }
                 return optProject;
             }
-            return context.projectContext(filePath.getParent());
+            return projectRegistry.projectContext(filePath.getParent());
         }
 
         if (isCloudTomlChange || isCompilerPluginTomlChange || isBalToolTomlChange || isDependenciesTomlChange) {
-            return context.projectContext(filePath.getParent());
+            return projectRegistry.projectContext(filePath.getParent());
         }
 
         if (!isModuleChange) {
@@ -249,24 +252,25 @@ final class FileWatchHandler {
         } else {
             projectRoot = filePath.getParent().getParent();
         }
-        return context.projectContext(projectRoot);
+        return projectRegistry.projectContext(projectRoot);
     }
 
     private void handleWatchedBalSourceChange(Path filePath, FileEvent fileEvent, ProjectContext projectContext) {
+        ProjectRegistry projectRegistry = context.projectRegistry();
         switch (fileEvent.getType()) {
             case Created:
-                context.reloadProject(projectContext, filePath, LSContextOperation.WS_WF_CHANGED.getName());
+                projectRegistry.reloadProject(projectContext, filePath, LSContextOperation.WS_WF_CHANGED.getName());
                 break;
             case Changed:
                 if (!context.openedDocuments().contains(filePath)) {
-                    context.reloadProject(projectContext, filePath, LSContextOperation.WS_WF_CHANGED.getName());
+                    projectRegistry.reloadProject(projectContext, filePath, LSContextOperation.WS_WF_CHANGED.getName());
                 }
                 break;
             case Deleted:
                 Project project = projectContext.project();
                 if (project.kind() == ProjectKind.SINGLE_FILE_PROJECT) {
                     Path projectRoot = project.sourceRoot();
-                    context.removeProjectContext(projectRoot);
+                    projectRegistry.removeProjectContext(projectRoot);
                     context.logger().logTrace(String.format("Operation '%s' {project: '%s' kind: '%s'} removed",
                             LSContextOperation.WS_WF_CHANGED.getName(),
                             projectRoot.toUri().toString(),
@@ -287,7 +291,7 @@ final class FileWatchHandler {
                 }
 
                 Path ballerinaTomlPath = project.sourceRoot().resolve(ProjectConstants.BALLERINA_TOML);
-                context.reloadProject(projectContext, ballerinaTomlPath, LSContextOperation.WS_WF_CHANGED.getName());
+                projectRegistry.reloadProject(projectContext, ballerinaTomlPath, LSContextOperation.WS_WF_CHANGED.getName());
                 break;
             default:
                 break;
@@ -295,12 +299,13 @@ final class FileWatchHandler {
     }
 
     private void handleWatchedModuleChange(Path filePath, FileEvent fileEvent, ProjectContext projectContext) {
+        ProjectRegistry projectRegistry = context.projectRegistry();
         String fileName = filePath.getFileName().toString();
         switch (fileEvent.getType()) {
             case Created:
                 context.logger().logTrace(String.format("Operation '%s' {module: '%s', uri: '%s'} created",
                         LSContextOperation.WS_WF_CHANGED.getName(), fileName, filePath.toUri().toString()));
-                context.reloadProject(projectContext,
+                projectRegistry.reloadProject(projectContext,
                         filePath.getParent().getParent().resolve(ProjectConstants.BALLERINA_TOML),
                         LSContextOperation.WS_WF_CHANGED.getName());
                 break;
@@ -308,7 +313,7 @@ final class FileWatchHandler {
                 if (ProjectConstants.MODULES_ROOT.equals(filePath.getFileName().toString())) {
                     context.logger().logTrace(String.format("Operation '%s' {uri: '%s'} removed all modules",
                             LSContextOperation.WS_WF_CHANGED.getName(), filePath.toUri().toString()));
-                    context.reloadProject(projectContext,
+                    projectRegistry.reloadProject(projectContext,
                             filePath.getParent().resolve(ProjectConstants.BALLERINA_TOML),
                             LSContextOperation.WS_WF_CHANGED.getName());
                     return;
@@ -316,7 +321,7 @@ final class FileWatchHandler {
 
                 context.logger().logTrace(String.format("Operation '%s' {module: '%s', uri: '%s'} removed",
                         LSContextOperation.WS_WF_CHANGED.getName(), fileName, filePath.toUri().toString()));
-                context.reloadProject(projectContext,
+                projectRegistry.reloadProject(projectContext,
                         filePath.getParent().getParent().resolve(ProjectConstants.BALLERINA_TOML),
                         LSContextOperation.WS_WF_CHANGED.getName());
                 break;

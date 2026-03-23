@@ -53,12 +53,12 @@ Requirements for the initial refactor. Each maps to roadmap phases.
 
 ### God Class Decomposition
 
-- [ ] **DCMP-01**: BWM delegates to 4 extracted classes (`ProjectRegistry`, `DocumentManager`, `FileWatchHandler`, `ProjectExecutor`). Each class owns its responsibility cluster's logic
-- [ ] **DCMP-02**: Extracted classes receive BWM access via narrow context interfaces (per-delegate), with a shared `WorkspaceContext` base. BWM implements all context interfaces
+- [x] **DCMP-01**: BWM delegates to 4 extracted classes (`ProjectRegistry`, `DocumentManager`, `FileWatchHandler`, `ProjectExecutor`). Each class owns its responsibility cluster's logic
+- [x] **DCMP-02**: Extracted classes receive BWM access via narrow context interfaces (per-delegate), with a shared `WorkspaceContext` base. BWM implements all context interfaces
 - [ ] **DCMP-03**: `ProjectContext` is a top-level class in `org.ballerinalang.langserver.workspace`. Process management (process field, setProcess, removeProcess) moves to `ProjectExecutor`
 - [x] **DCMP-04**: `ProjectRegistry` owns project reload logic. `FileWatchHandler` detects changes and delegates mutation to `ProjectRegistry`
 - [x] **DCMP-05**: `DocumentManager` owns `openedDocuments` tracking and compilation queries (`waitAndGetPackageCompilation`)
-- [ ] **DCMP-06**: `TomlHandlerContextImpl` is refactored to delegate to `ProjectRegistry` instead of BWM methods
+- [x] **DCMP-06**: `TomlHandlerContextImpl` is refactored to delegate to `ProjectRegistry` instead of BWM methods
 - [ ] **DCMP-07**: Each extracted class has a dedicated unit test class with mocked context interfaces
 
 ## v2 Requirements
@@ -116,12 +116,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | RECV-01 | Phase 6 | Complete |
 | RECV-02 | Phase 6 | Complete |
 | RECV-03 | Phase 6 | Complete |
-| DCMP-01 | Phase 7 | Pending |
-| DCMP-02 | Phase 7 | Pending |
+| DCMP-01 | Phase 7 | Complete |
+| DCMP-02 | Phase 7 | Complete |
 | DCMP-03 | Phase 7 | Pending |
 | DCMP-04 | Phase 7 | Complete |
 | DCMP-05 | Phase 7 | Complete |
-| DCMP-06 | Phase 7 | Pending |
+| DCMP-06 | Phase 7 | Complete |
 | DCMP-07 | Phase 7 | Pending |
 
 **Coverage:**

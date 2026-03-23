@@ -35,22 +35,13 @@ import javax.annotation.Nonnull;
  */
 interface FileWatchHandlerContext extends WorkspaceContext {
 
+    /**
+     * Returns the project registry for project management operations.
+     *
+     * @return project registry
+     */
     @Nonnull
-    Path projectRoot(@Nonnull Path filePath);
-
-    @Nonnull
-    Optional<ProjectContext> projectContext(@Nonnull Path projectRoot);
-
-    @Nonnull
-    Optional<ProjectContext> createProjectContext(@Nonnull Path filePath, @Nonnull String operationName);
-
-    @Nonnull
-    Optional<ProjectContext> getOrCreateProject(@Nonnull Path projectRoot, @Nonnull Path filePath,
-                                                @Nonnull String operationName);
-
-    void reloadProject(@Nonnull ProjectContext projectContext, @Nonnull Path filePath, @Nonnull String operationName);
-
-    void removeProjectContext(@Nonnull Path projectRoot);
+    ProjectRegistry projectRegistry();
 
     @Nonnull
     Optional<Document> document(@Nonnull Path filePath, @Nonnull Project project);
