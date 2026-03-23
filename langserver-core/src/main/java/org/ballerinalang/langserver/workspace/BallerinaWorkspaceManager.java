@@ -45,6 +45,7 @@ import io.ballerina.projects.Project;
 import io.ballerina.projects.ProjectException;
 import io.ballerina.projects.ProjectKind;
 import io.ballerina.projects.TomlDocument;
+import io.ballerina.projects.environment.PackageLockingMode;
 import io.ballerina.projects.util.ProjectConstants;
 import io.ballerina.projects.util.ProjectPaths;
 import io.ballerina.tools.diagnostics.Diagnostic;
@@ -1191,23 +1192,13 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
         Path projectRoot = computeProjectRoot(filePath);
         BallerinaCompilerApi compilerApi = BallerinaCompilerApi.getInstance();
         try {
+            PackageLockingMode lockingMode = deriveLockingMode(projectRoot);
+            BuildOptions buildOptions = BuildOptions.builder()
+                    .setOffline(CommonUtil.COMPILE_OFFLINE)
+                    .setExperimental(this.experimental)
+                    .setLockingMode(lockingMode)
+                    .build();
             Project project = compilerApi.loadProject(filePath, buildOptions);
-
-            if (BallerinaCompilerApi.getInstance().hasOptimizedDependencyCompilation(project)) {
-                BuildOptions newOptions = BuildOptions.builder()
-                        .setOffline(CommonUtil.COMPILE_OFFLINE)
-                        .setSticky(false)
-                        .build();
-                project = compilerApi.loadProject(filePath, newOptions);
-            }
-
-            if (!compilerApi.isWorkspaceProject(project) && project.currentPackage().dependenciesToml().isPresent()) {
-                BuildOptions newOptions = BuildOptions.builder()
-                        .setOffline(CommonUtil.COMPILE_OFFLINE)
-                        .setSticky(true)
-                        .build();
-                project = compilerApi.loadProject(filePath, newOptions);
-            }
 
             if (compilerApi.isWorkspaceProject(project)) {
                 List<Project> workspacePackages = compilerApi.getWorkspaceProjectsInOrder(project);
@@ -1235,6 +1226,11 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                     new TextDocumentIdentifier(filePath.toUri().toString()));
             return Optional.empty();
         }
+    }
+
+    private PackageLockingMode deriveLockingMode(Path projectRoot) {
+        Path dependenciesTomlPath = projectRoot.resolve(ProjectConstants.DEPENDENCIES_TOML);
+        return Files.exists(dependenciesTomlPath) ? PackageLockingMode.MEDIUM : PackageLockingMode.SOFT;
     }
 
     private void cacheLoadedProjects(Path primaryRoot, @Nullable ProjectContext primaryContext,
