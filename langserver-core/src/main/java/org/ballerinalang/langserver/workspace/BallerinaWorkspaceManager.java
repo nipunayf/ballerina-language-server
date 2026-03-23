@@ -1199,12 +1199,12 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
             PackageLockingMode lockingMode = lockingModeOverride != null
                     ? lockingModeOverride
                     : deriveLockingMode(projectRoot);
-            BuildOptions buildOptions = BuildOptions.builder()
-                    .setOffline(offline)
-                    .setExperimental(this.experimental)
-                    .setLockingMode(lockingMode)
-                    .build();
+            BuildOptions buildOptions = buildOptions(offline, lockingMode);
             Project project = compilerApi.loadProject(filePath, buildOptions);
+            if (lockingMode != PackageLockingMode.SOFT && compilerApi.hasOptimizedDependencyCompilation(project)) {
+                buildOptions = buildOptions(offline, PackageLockingMode.SOFT);
+                project = compilerApi.loadProject(filePath, buildOptions);
+            }
 
             if (compilerApi.isWorkspaceProject(project)) {
                 List<Project> workspacePackages = compilerApi.getWorkspaceProjectsInOrder(project);
@@ -1232,6 +1232,14 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
                     new TextDocumentIdentifier(filePath.toUri().toString()));
             return Optional.empty();
         }
+    }
+
+    private BuildOptions buildOptions(boolean offline, PackageLockingMode lockingMode) {
+        return BuildOptions.builder()
+                .setOffline(offline)
+                .setExperimental(this.experimental)
+                .setLockingMode(lockingMode)
+                .build();
     }
 
     private PackageLockingMode deriveLockingMode(Path projectRoot) {
