@@ -24,14 +24,8 @@ import com.google.common.cache.RemovalNotification;
 import com.google.common.cache.Weigher;
 import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.syntax.tree.SyntaxTree;
-import io.ballerina.projects.BalToolToml;
-import io.ballerina.projects.BallerinaToml;
 import io.ballerina.projects.BuildOptions;
-import io.ballerina.projects.CloudToml;
-import io.ballerina.projects.CompilerPluginToml;
-import io.ballerina.projects.DependenciesToml;
 import io.ballerina.projects.Document;
-import io.ballerina.projects.DocumentConfig;
 import io.ballerina.projects.DocumentId;
 import io.ballerina.projects.JBallerinaBackend;
 import io.ballerina.projects.JarLibrary;
@@ -44,7 +38,6 @@ import io.ballerina.projects.PackageCompilation;
 import io.ballerina.projects.Project;
 import io.ballerina.projects.ProjectException;
 import io.ballerina.projects.ProjectKind;
-import io.ballerina.projects.TomlDocument;
 import io.ballerina.projects.environment.PackageLockingMode;
 import io.ballerina.projects.util.ProjectConstants;
 import io.ballerina.projects.util.ProjectPaths;
@@ -53,9 +46,6 @@ import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 import org.ballerinalang.compiler.BLangCompilerException;
 import org.ballerinalang.langserver.LSClientLogger;
 import org.ballerinalang.langserver.LSContextOperation;
-import org.ballerinalang.langserver.workspace.toml.TomlHandler;
-import org.ballerinalang.langserver.workspace.toml.TomlHandlerContext;
-import org.ballerinalang.langserver.workspace.toml.TomlHandlerRegistry;
 import org.ballerinalang.langserver.common.utils.CommonUtil;
 import org.ballerinalang.langserver.common.utils.PathUtil;
 import org.ballerinalang.langserver.commons.BallerinaCompilerApi;
@@ -73,6 +63,9 @@ import org.ballerinalang.langserver.config.LSClientConfigHolder;
 import org.ballerinalang.langserver.contexts.ContextBuilder;
 import org.ballerinalang.langserver.eventsync.EventSyncPubSubHolder;
 import org.ballerinalang.langserver.exception.UserErrorException;
+import org.ballerinalang.langserver.workspace.toml.TomlHandler;
+import org.ballerinalang.langserver.workspace.toml.TomlHandlerContext;
+import org.ballerinalang.langserver.workspace.toml.TomlHandlerRegistry;
 import org.ballerinalang.util.diagnostic.DiagnosticErrorCode;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
@@ -1203,7 +1196,9 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
         Path projectRoot = computeProjectRoot(filePath);
         BallerinaCompilerApi compilerApi = BallerinaCompilerApi.getInstance();
         try {
-            PackageLockingMode lockingMode = lockingModeOverride != null ? lockingModeOverride : deriveLockingMode(projectRoot);
+            PackageLockingMode lockingMode = lockingModeOverride != null
+                    ? lockingModeOverride
+                    : deriveLockingMode(projectRoot);
             BuildOptions buildOptions = BuildOptions.builder()
                     .setOffline(offline)
                     .setExperimental(this.experimental)
@@ -1357,7 +1352,8 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
 
     private boolean reloadProjectWithoutLock(ProjectContext ctx, Path filePath, String operationName, boolean offline,
                                              @Nullable PackageLockingMode lockingModeOverride) {
-        Optional<ProjectLoadResult> loadResult = loadProjectResult(filePath, operationName, offline, lockingModeOverride);
+        Optional<ProjectLoadResult> loadResult = loadProjectResult(filePath, operationName, offline,
+                lockingModeOverride);
         if (loadResult.isEmpty()) {
             ctx.setCompilationCrashed(true);
             return false;
@@ -1746,7 +1742,8 @@ public class BallerinaWorkspaceManager implements WorkspaceManager {
         @Override
         public Optional<ProjectContext> getOrCreateProject(Path projectRoot, Path triggerFile, String operation) {
             try {
-                return Optional.of(BallerinaWorkspaceManager.this.getOrCreateProject(projectRoot, triggerFile, operation));
+                return Optional.of(
+                        BallerinaWorkspaceManager.this.getOrCreateProject(projectRoot, triggerFile, operation));
             } catch (WorkspaceDocumentException e) {
                 BallerinaWorkspaceManager.this.clientLogger.logError(LSContextOperation.WS_WF_CHANGED,
                         "Failed to get or create project: " + projectRoot, e, null, (org.eclipse.lsp4j.Position) null);
