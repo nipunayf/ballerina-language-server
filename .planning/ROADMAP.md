@@ -83,7 +83,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. A workspace project can be traversed as `WorkspaceProject` → N `Project` instances → 1 `Package` per project → M `Module`s per package → K `Document`s per module — the hierarchy is navigable without NPE or inconsistency
   2. Opening a file inside a workspace project resolves to the `Package` that contains that file's source root — it does not resolve to a sibling package or the workspace root itself
   3. A file system event (create, delete, or change a `.bal` file) inside package A of a workspace project does not cause package B to reload — diagnostic events and compilation triggers are scoped to the affected package only
-**Plans**: TBD
+**Plans**: 3 plans
+  - [ ] 05-01-PLAN.md — Workspace helpers + cascade eviction wiring (WKSP-01, WKSP-02, WKSP-03)
+  - [ ] 05-02-PLAN.md — WorkspaceProjectTest class + hierarchy test (WKSP-01)
+  - [ ] 05-03-PLAN.md — Path resolution + reload isolation tests (WKSP-02, WKSP-03)
 
 ### Phase 6: Compilation Gate
 **Goal**: Reads (hover, completion, syntax tree) run concurrently under a read lock while writes compile under a write lock; locking mode is an explicit enum translating to `BuildOptions`; failed compilations retry with SOFT mode before being marked as crashed
@@ -95,7 +98,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. A fresh project without `Dependencies.toml` defaults to SOFT mode; a project with an existing `Dependencies.toml` defaults to MEDIUM mode — the appropriate `BuildOptions` are passed to the compiler for each
   4. When compilation fails with a BIR error, the system automatically retries using SOFT locking mode with a freshly loaded project before surfacing the failure
   5. If the SOFT-mode recovery compilation also fails, `compilationCrashed` is set and no further retry occurs until the next source change
-**Plans**: TBD
+**Plans**: 3 plans
+  - [x] 06-01-PLAN.md — Refactor locking mode derivation and single load
+  - [ ] 06-02-PLAN.md — Implement compilation recovery ladder and delete subscriber
+  - [ ] 06-03-PLAN.md — Testing CompilationGate
 
 ### Phase 7: God Class Decomposition
 **Goal**: Decompose the monolithic BallerinaWorkspaceManager into focused, cohesive classes
@@ -116,6 +122,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 2. Concurrency Foundations | 3/3 | Complete   | 2026-03-22 |
 | 3. Cache Invalidation | 3/3 | Complete | 2026-03-23 |
 | 4. TOML Consolidation | 0/2 | Planned | - |
-| 5. Workspace Project Correctness | 0/TBD | Not started | - |
-| 6. Compilation Gate | 0/TBD | Not started | - |
+| 5. Workspace Project Correctness | 0/3 | Planned | - |
+| 6. Compilation Gate | 0/3 | Planned | - |
 | 7. God Class Decomposition | 0/TBD | Not planned yet | - |

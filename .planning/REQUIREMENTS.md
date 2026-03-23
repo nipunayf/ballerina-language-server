@@ -36,9 +36,9 @@ Requirements for the initial refactor. Each maps to roadmap phases.
 
 ### Locking Mode
 
-- [ ] **LOCK-01**: Replace boolean `sticky` flag with 4-level locking mode enum (SOFT, MEDIUM, HARD, LOCKED)
-- [ ] **LOCK-02**: Default locking mode is SOFT for fresh projects (no Dependencies.toml) and MEDIUM for existing projects (with Dependencies.toml)
-- [ ] **LOCK-03**: Locking mode translates to appropriate `BuildOptions` configuration before passing to the compiler
+- [x] **LOCK-01**: Replace boolean `sticky` flag with 4-level locking mode enum (SOFT, MEDIUM, HARD, LOCKED)
+- [x] **LOCK-02**: Default locking mode is SOFT for fresh projects (no Dependencies.toml) and MEDIUM for existing projects (with Dependencies.toml)
+- [x] **LOCK-03**: Locking mode translates to appropriate `BuildOptions` configuration before passing to the compiler
 
 ### Compilation Recovery
 
@@ -100,9 +100,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | WKSP-01 | Phase 5 | Pending |
 | WKSP-02 | Phase 5 | Pending |
 | WKSP-03 | Phase 5 | Pending |
-| LOCK-01 | Phase 6 | Pending |
-| LOCK-02 | Phase 6 | Pending |
-| LOCK-03 | Phase 6 | Pending |
+| LOCK-01 | Phase 6 | Complete |
+| LOCK-02 | Phase 6 | Complete |
+| LOCK-03 | Phase 6 | Complete |
 | RECV-01 | Phase 6 | Pending |
 | RECV-02 | Phase 6 | Pending |
 | RECV-03 | Phase 6 | Pending |
