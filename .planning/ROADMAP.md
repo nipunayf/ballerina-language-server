@@ -100,7 +100,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   5. If the SOFT-mode recovery compilation also fails, `compilationCrashed` is set and no further retry occurs until the next source change
 **Plans**: 3 plans
   - [x] 06-01-PLAN.md — Refactor locking mode derivation and single load
-  - [ ] 06-02-PLAN.md — Implement compilation recovery ladder and delete subscriber
+  - [x] 06-02-PLAN.md — Implement compilation recovery ladder and delete subscriber
   - [ ] 06-03-PLAN.md — Testing CompilationGate
 
 ### Phase 7: God Class Decomposition
@@ -123,5 +123,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | 3. Cache Invalidation | 3/3 | Complete | 2026-03-23 |
 | 4. TOML Consolidation | 0/2 | Planned | - |
 | 5. Workspace Project Correctness | 0/3 | Planned | - |
-| 6. Compilation Gate | 0/3 | Planned | - |
+| 6. Compilation Gate | 2/3 | Executing | - |
 | 7. God Class Decomposition | 0/TBD | Not planned yet | - |
