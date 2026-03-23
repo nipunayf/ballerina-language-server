@@ -25,12 +25,14 @@ import io.ballerina.projects.BuildOptions;
 import io.ballerina.projects.Document;
 import io.ballerina.projects.DiagnosticResult;
 import io.ballerina.projects.Package;
+import io.ballerina.projects.PackageCompilation;
 import io.ballerina.projects.Project;
 import io.ballerina.projects.ProjectEnvironmentBuilder;
 import io.ballerina.projects.ProjectKind;
 import io.ballerina.projects.TomlDocument;
 import io.ballerina.projects.environment.PackageLockingMode;
 import org.apache.commons.io.FileUtils;
+import org.ballerinalang.compiler.BLangCompilerException;
 import org.ballerinalang.langserver.commons.BallerinaCompilerApi;
 import org.ballerinalang.langserver.contexts.LanguageServerContextImpl;
 import org.ballerinalang.langserver.version.BallerinaBaseCompilerApi;
@@ -46,9 +48,11 @@ import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -147,6 +151,99 @@ public class CompilationGateTest {
         }
     }
 
+    /**
+     * Tests that a module loading failure retries with an online reload and succeeds.
+     */
+    @Test
+    public void testModuleLoadingFailureRetriesOnlineReload() throws Exception {
+        CapturingCompilerApi compilerApi = new CapturingCompilerApi(false);
+        setCompilerApiInstance(compilerApi);
+
+        Path filePath = RESOURCE_DIRECTORY.resolve("myproject").resolve("main.bal").toAbsolutePath();
+        Path projectRoot = filePath.getParent();
+        PackageCompilation expectedCompilation = Mockito.mock(PackageCompilation.class);
+        compilerApi.enqueueProject(mockProject(filePath, BuildOptions.builder().build(),
+                successfulPackage(expectedCompilation)));
+        seedProjectContext(projectRoot, mockProject(filePath, BuildOptions.builder().build(),
+                failingPackage("failed to load the module")));
+
+        Optional<PackageCompilation> compilation = workspaceManager.waitAndGetPackageCompilation(filePath);
+
+        Assert.assertTrue(compilation.isPresent(), "Online reload should recover the compilation");
+        Assert.assertSame(compilation.get(), expectedCompilation, "Recovered compilation should be returned");
+        Assert.assertEquals(compilerApi.capturedBuildOptions().size(), 1, "Only one online reload is expected");
+        Assert.assertFalse(compilerApi.lastBuildOptions().offlineBuild(), "Recovery should retry online");
+        Assert.assertFalse(workspaceManager.projectContext(projectRoot).orElseThrow().compilationCrashed(),
+                "Successful recovery should leave the crash flag cleared");
+    }
+
+    /**
+     * Tests that a failed online retry falls back to a SOFT locking reload.
+     */
+    @Test
+    public void testOnlineRetryFallsBackToSoftReload() throws Exception {
+        CapturingCompilerApi compilerApi = new CapturingCompilerApi(false);
+        setCompilerApiInstance(compilerApi);
+
+        Path filePath = RESOURCE_DIRECTORY.resolve("myproject").resolve("main.bal").toAbsolutePath();
+        Path projectRoot = filePath.getParent();
+        PackageCompilation expectedCompilation = Mockito.mock(PackageCompilation.class);
+        compilerApi.enqueueProject(mockProject(filePath, BuildOptions.builder().build(),
+                failingPackage("failed to load the module")));
+        compilerApi.enqueueProject(mockProject(filePath, BuildOptions.builder().build(),
+                successfulPackage(expectedCompilation)));
+        seedProjectContext(projectRoot, mockProject(filePath, BuildOptions.builder().build(),
+                failingPackage("failed to load the module")));
+
+        Optional<PackageCompilation> compilation = workspaceManager.waitAndGetPackageCompilation(filePath);
+
+        Assert.assertTrue(compilation.isPresent(), "SOFT reload should recover the compilation");
+        Assert.assertSame(compilation.get(), expectedCompilation, "Recovered compilation should be returned");
+        Assert.assertEquals(compilerApi.capturedBuildOptions().size(), 2, "Online and SOFT reloads are expected");
+        Assert.assertFalse(compilerApi.capturedBuildOptions().get(0).offlineBuild(),
+                "Online retry should disable offline mode");
+        Assert.assertEquals(compilerApi.capturedBuildOptions().get(1).lockingMode(), PackageLockingMode.SOFT,
+                "Fallback retry should force SOFT locking mode");
+        Assert.assertFalse(workspaceManager.projectContext(projectRoot).orElseThrow().compilationCrashed(),
+                "Successful fallback should clear the crash flag");
+    }
+
+    /**
+     * Tests that repeated module loading failures mark the project as crashed.
+     */
+    @Test
+    public void testSoftRetryFailureMarksCompilationAsCrashed() throws Exception {
+        CapturingCompilerApi compilerApi = new CapturingCompilerApi(false);
+        setCompilerApiInstance(compilerApi);
+
+        Path filePath = RESOURCE_DIRECTORY.resolve("myproject").resolve("main.bal").toAbsolutePath();
+        Path projectRoot = filePath.getParent();
+        Project initialProject = mockProject(filePath, BuildOptions.builder().build(),
+                failingPackage("failed to load the module"));
+        Project onlineRetryProject = mockProject(filePath, BuildOptions.builder().build(),
+                failingPackage("failed to load the module"));
+        Project softRetryProject = mockProject(filePath, BuildOptions.builder().build(),
+                failingPackage("failed to load the module"));
+        compilerApi.enqueueProject(onlineRetryProject);
+        compilerApi.enqueueProject(softRetryProject);
+        seedProjectContext(projectRoot, initialProject);
+
+        Assert.expectThrows(BLangCompilerException.class,
+                () -> workspaceManager.waitAndGetPackageCompilation(filePath));
+        Assert.assertTrue(workspaceManager.projectContext(projectRoot).orElseThrow().compilationCrashed(),
+                "Repeated recovery failures should mark the project as crashed");
+        Assert.assertEquals(compilerApi.capturedBuildOptions().size(), 2, "Both recovery reloads should be attempted");
+    }
+
+    /**
+     * Tests that fatal compiler errors skip the recovery ladder and crash immediately.
+     */
+    @Test
+    public void testFatalCompilerErrorsSkipRecovery() throws Exception {
+        assertImmediateCrash("bad_sad_from_compiler: compiler crashed unexpectedly");
+        assertImmediateCrash("cyclic_module_imports_detected: cyclic module imports detected");
+    }
+
     private Path createProjectCopy(String projectName) throws IOException {
         Path tempDir = Files.createTempDirectory("compilation-gate-test-");
         Path sourceDir = RESOURCE_DIRECTORY.resolve(projectName).toAbsolutePath();
@@ -181,10 +278,50 @@ public class CompilationGateTest {
         instanceField.set(null, compilerApi);
     }
 
+    private void seedProjectContext(Path projectRoot, Project project) throws Exception {
+        Field sourceRootToProjectField = BallerinaWorkspaceManager.class.getDeclaredField("sourceRootToProject");
+        sourceRootToProjectField.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        Map<Path, BallerinaWorkspaceManager.ProjectContext> sourceRootToProject =
+                (Map<Path, BallerinaWorkspaceManager.ProjectContext>) sourceRootToProjectField.get(workspaceManager);
+        sourceRootToProject.put(projectRoot, BallerinaWorkspaceManager.ProjectContext.from(project));
+    }
+
+    private Package failingPackage(String message) {
+        Package currentPackage = Mockito.mock(Package.class);
+        Mockito.when(currentPackage.getCompilation()).thenThrow(new BLangCompilerException(message));
+        return currentPackage;
+    }
+
+    private Package successfulPackage(PackageCompilation compilation) {
+        Package currentPackage = Mockito.mock(Package.class);
+        Mockito.when(currentPackage.getCompilation()).thenReturn(compilation);
+        return currentPackage;
+    }
+
+    private void assertImmediateCrash(String message) throws Exception {
+        CapturingCompilerApi compilerApi = new CapturingCompilerApi(false);
+        setCompilerApiInstance(compilerApi);
+
+        Path filePath = RESOURCE_DIRECTORY.resolve("myproject").resolve("main.bal").toAbsolutePath();
+        Path projectRoot = filePath.getParent();
+        seedProjectContext(projectRoot, mockProject(filePath, BuildOptions.builder().build(), failingPackage(message)));
+
+        Assert.expectThrows(BLangCompilerException.class,
+                () -> workspaceManager.waitAndGetPackageCompilation(filePath));
+        Assert.assertTrue(workspaceManager.projectContext(projectRoot).orElseThrow().compilationCrashed(),
+                "Fatal compiler errors should crash immediately");
+        Assert.assertTrue(compilerApi.capturedBuildOptions().isEmpty(),
+                "Fatal compiler errors should not trigger reloads");
+    }
+
     private Project mockProject(Path filePath, BuildOptions buildOptions) {
+        return mockProject(filePath, buildOptions, Mockito.mock(Package.class));
+    }
+
+    private Project mockProject(Path filePath, BuildOptions buildOptions, Package currentPackage) {
         Path projectRoot = filePath.getParent();
         Project project = Mockito.mock(Project.class);
-        Package currentPackage = Mockito.mock(Package.class);
         Mockito.when(project.kind()).thenReturn(ProjectKind.BUILD_PROJECT);
         Mockito.when(project.sourceRoot()).thenReturn(projectRoot);
         Mockito.when(project.currentPackage()).thenReturn(currentPackage);
@@ -201,6 +338,7 @@ public class CompilationGateTest {
 
         private final boolean optimizedDependencyCompilation;
         private final List<BuildOptions> capturedBuildOptions = new ArrayList<>();
+        private final Deque<Project> queuedProjects = new LinkedList<>();
 
         private CapturingCompilerApi(boolean optimizedDependencyCompilation) {
             this.optimizedDependencyCompilation = optimizedDependencyCompilation;
@@ -224,6 +362,15 @@ public class CompilationGateTest {
             return capturedBuildOptions.get(capturedBuildOptions.size() - 1);
         }
 
+        /**
+         * Queues a project to be returned by the next load invocation.
+         *
+         * @param project project to enqueue
+         */
+        public void enqueueProject(Project project) {
+            this.queuedProjects.add(project);
+        }
+
         @Override
         public boolean hasOptimizedDependencyCompilation(Project project) {
             return this.optimizedDependencyCompilation;
@@ -232,6 +379,9 @@ public class CompilationGateTest {
         @Override
         public Project loadProject(Path path, BuildOptions buildOptions) {
             this.capturedBuildOptions.add(buildOptions);
+            if (!this.queuedProjects.isEmpty()) {
+                return this.queuedProjects.removeFirst();
+            }
             return mockProject(path, buildOptions);
         }
 
