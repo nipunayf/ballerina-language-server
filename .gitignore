@@ -43,6 +43,7 @@ replay_pid*
 build/
 **/bin/
 .cache/
+target/
 
 # macOS metadata files
 .DS_Store
