@@ -105,46 +105,41 @@ if (moduleVersion.indexOf('-') != -1) {
     moduleVersion = moduleVersion.substring(0, moduleVersion.indexOf('-'))
 }
 
-// TODO: Remove this once the workspace manager is refactored to import modules where necessary.
-def pullBallerinaModule(String packageName, String version = null, String orgName = "ballerinax") {
-    tasks.register("pull${orgName.capitalize()}Module_${packageName.replace('/', '_')}") {
-        doLast {
-            def errOutput = new ByteArrayOutputStream()
-            def result = exec {
-                ignoreExitValue = true
+task resolveBallerinaDependencies {
+    description 'Resolves Ballerina dependencies by executing bal build in build-config/ballerina_dependencies'
+    group 'build'
 
-                // Check if the package exists in the ballerina user home
-                def centralRepoDir = new File(System.getProperty("user.home"), ".ballerina/repositories/central.ballerina.io/bala/${orgName}")
-                if (centralRepoDir.exists()) {
-                    def pkgDir = new File(centralRepoDir, packageName)
-                    if (pkgDir.exists()) {
-                        if (version != null) {
-                            // Check if the specific version exists
-                            def versionDir = new File(pkgDir, version)
-                            if (versionDir.exists()) {
-                                commandLine 'echo', "Package ${packageName} version ${version} exists"
-                                return
-                            }
-                        } else {
-                            // If no version is specified, check for any version
-                            commandLine 'echo', "Package ${packageName} exists"
-                            return
-                        }
-                    }
-                }
+    def sourceDir = file("build-config/ballerina_dependencies")
+    def targetDir = file("$buildDir/ballerina_dependencies")
 
-                def balPullCommand = "bal pull ${orgName}/${packageName}${version ? ':' + version : ''} --sticky=false"
-                if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
-                    commandLine 'cmd', '/c', balPullCommand
-                } else {
-                    commandLine '/bin/sh', '-c', balPullCommand
-                }
-                errorOutput = errOutput
+    inputs.dir sourceDir
+    outputs.dir targetDir
+
+    doLast {
+        // Copy the directory to build location
+        copy {
+            from sourceDir
+            into targetDir
+        }
+
+        // Execute bal build in the copied directory
+        def errOutput = new ByteArrayOutputStream()
+        def result = exec {
+            ignoreExitValue = true
+            workingDir targetDir
+
+            def balBuildCommand = "bal build"
+            if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
+                commandLine 'cmd', '/c', balBuildCommand
+            } else {
+                commandLine '/bin/sh', '-c', balBuildCommand
             }
-            if (result.exitValue != 0) {
-                println errOutput
-                throw new GradleException("Failed to pull Ballerina module: ${packageName}")
-            }
+            errorOutput = errOutput
+        }
+
+        if (result.exitValue != 0) {
+            println errOutput
+            throw new GradleException("Failed to build Ballerina dependencies")
         }
     }
 }
@@ -335,20 +330,8 @@ task pack(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
     }
 }
 
-task pullBallerinaModules {
-    dependsOn pullBallerinaModule('ai', ballerinaxAiAgent)
-    dependsOn pullBallerinaModule('kafka', ballerinaxKafkaVersion)
-    dependsOn pullBallerinaModule('rabbitmq', ballerinaxRabbitmqVersion)
-    dependsOn pullBallerinaModule('solace', ballerinaxSolaceVersion)
-    dependsOn pullBallerinaModule('cdc', ballerinaxCdcVersion)
-    dependsOn pullBallerinaModule('mssql', ballerinaxMSSQLVersion)
-    dependsOn pullBallerinaModule('mssql.cdc.driver', ballerinaxMSSQLCDCDriverVersion)
-    dependsOn pullBallerinaModule('trigger.github', ballerinaxGithubTriggerVersion)
-    dependsOn pullBallerinaModule('np', ballerinaxNp)
-}
-
 test {
-    dependsOn pullBallerinaModules
+    dependsOn resolveBallerinaDependencies
 }
 
 task buildFlow {
