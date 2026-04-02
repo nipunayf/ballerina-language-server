@@ -23,7 +23,7 @@ import io.ballerina.projects.Package;
 import java.util.Optional;
 
 /**
- * Compatibility facade for {@link org.ballerinalang.langserver.common.utils.PackageUtil}.
+ * Compatibility facade for {@link org.ballerinalang.langserver.common.utils.PackageResolver}.
  * <p>
  * TODO: This facade exists solely to break the cyclic dependency between diagram-util and langserver-core.
  *       This should be resolved by restructuring the module dependencies in the future.
@@ -33,7 +33,7 @@ import java.util.Optional;
 public final class PackageUtil {
 
     public static Optional<Package> resolveModulePackage(String orgName, String packageName, String version) {
-        return org.ballerinalang.langserver.common.utils.PackageUtil.resolveModulePackage(orgName, packageName,
+        return org.ballerinalang.langserver.common.utils.PackageResolver.resolveModulePackage(orgName, packageName,
                 version);
     }
 }

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com)
+ *  Copyright (c) 2026, WSO2 LLC. (http://www.wso2.com)
  *
  *  WSO2 LLC. licenses this file to you under the Apache License,
  *  Version 2.0 (the "License"); you may not use this file except
@@ -48,11 +48,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Utility class that contains methods to perform package-related operations.
+ * Provides utility methods for resolving, loading, and compiling Ballerina packages and modules
+ * within the language server. This class acts as a singleton, initialized in either online or
+ * offline mode, and delegates package resolution to the appropriate subclass.
  *
- * @since 1.0.0
+ * <p>Online mode ({@link RemotePackageResolver}) resolves packages via the Ballerina central
+ * repository, while offline mode ({@link OfflinePackageResolver}) resolves only from the local
+ * cache.</p>
+ *
+ * @since 1.7.0
  */
-public abstract class PackageUtil {
+public abstract class PackageResolver {
 
     private static final String BALLERINA_HOME_PROPERTY = "ballerina.home";
     private static final String PULLING_THE_MODULE_MESSAGE = "Pulling the module '%s' from the central";
@@ -61,11 +67,11 @@ public abstract class PackageUtil {
 
     private static final ConcurrentHashMap<Path, ReentrantLock> PROJECT_LOCKS = new ConcurrentHashMap<>();
 
-    private static volatile PackageUtil instance;
+    private static volatile PackageResolver instance;
 
     private final BuildProject sampleProject;
 
-    protected PackageUtil() {
+    protected PackageResolver() {
         this.sampleProject = createSampleProject();
     }
 
@@ -75,7 +81,7 @@ public abstract class PackageUtil {
      * @param offline Whether the utility should resolve packages in offline mode.
      */
     public static synchronized void initialize(boolean offline) {
-        instance = offline ? new OfflinePackageUtil() : new OnlinePackageUtil();
+        instance = offline ? new OfflinePackageResolver() : new RemotePackageResolver();
     }
 
     public static BuildProject getSampleProject() {
@@ -150,7 +156,7 @@ public abstract class PackageUtil {
                     }
                     moduleId = module.moduleId();
                 }
-                return Optional.of(PackageUtil.getCompilation(currentPackage).getSemanticModel(moduleId));
+                return Optional.of(PackageResolver.getCompilation(currentPackage).getSemanticModel(moduleId));
             }
         } catch (WorkspaceDocumentException | EventSyncException e) {
             // Ignore and fall through to Optional.empty().
@@ -267,7 +273,7 @@ public abstract class PackageUtil {
         String ballerinaHome = System.getProperty(BALLERINA_HOME_PROPERTY);
         if (ballerinaHome == null || ballerinaHome.isEmpty()) {
             Path currentPath = getPath(Paths.get(
-                    PackageUtil.class.getProtectionDomain().getCodeSource().getLocation().getPath()));
+                    PackageResolver.class.getProtectionDomain().getCodeSource().getLocation().getPath()));
             Path distributionPath = getParentPath(getParentPath(getParentPath(currentPath)));
             System.setProperty(BALLERINA_HOME_PROPERTY, distributionPath.toString());
         }

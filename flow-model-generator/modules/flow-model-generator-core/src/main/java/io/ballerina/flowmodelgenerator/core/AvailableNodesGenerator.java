@@ -62,7 +62,7 @@ import io.ballerina.projects.Document;
 import io.ballerina.projects.Package;
 import io.ballerina.tools.text.LinePosition;
 import io.ballerina.tools.text.TextRange;
-import org.ballerinalang.langserver.common.utils.PackageUtil;
+import org.ballerinalang.langserver.common.utils.PackageResolver;
 
 import java.nio.file.Path;
 import java.util.ArrayList;

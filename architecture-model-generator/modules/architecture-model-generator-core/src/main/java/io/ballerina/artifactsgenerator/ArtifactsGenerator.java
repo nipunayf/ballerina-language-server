@@ -25,7 +25,7 @@ import io.ballerina.projects.Document;
 import io.ballerina.projects.Module;
 import io.ballerina.projects.Package;
 import io.ballerina.projects.Project;
-import org.ballerinalang.langserver.common.utils.PackageUtil;
+import org.ballerinalang.langserver.common.utils.PackageResolver;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -85,7 +85,7 @@ public class ArtifactsGenerator {
         Package currentPackage = project.currentPackage();
         Module defaultModule = currentPackage.getDefaultModule();
         SemanticModel semanticModel =
-                PackageUtil.getCompilation(currentPackage).getSemanticModel(defaultModule.moduleId());
+                PackageResolver.getCompilation(currentPackage).getSemanticModel(defaultModule.moduleId());
 
         Map<String, Map<String, Artifact>> artifactMap = new ConcurrentHashMap<>();
         ConcurrentMap<String, Map<String, List<String>>> documentMap = new ConcurrentHashMap<>();
@@ -113,7 +113,7 @@ public class ArtifactsGenerator {
         Package currentPackage = project.currentPackage();
         Module defaultModule = currentPackage.getDefaultModule();
         SemanticModel semanticModel =
-                PackageUtil.getCompilation(currentPackage).getSemanticModel(defaultModule.moduleId());
+                PackageResolver.getCompilation(currentPackage).getSemanticModel(defaultModule.moduleId());
 
         // Process each document in parallel to calculate deltas
         Map<String, Map<String, List<String>>> cachedArtifactsByDocument =

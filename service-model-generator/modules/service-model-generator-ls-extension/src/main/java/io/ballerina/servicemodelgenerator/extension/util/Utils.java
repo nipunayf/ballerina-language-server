@@ -77,7 +77,7 @@ import io.ballerina.tools.text.LinePosition;
 import io.ballerina.tools.text.LineRange;
 import org.ballerinalang.langserver.LSClientLogger;
 import org.ballerinalang.langserver.common.utils.NameUtil;
-import org.ballerinalang.langserver.common.utils.PackageUtil;
+import org.ballerinalang.langserver.common.utils.PackageResolver;
 import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
@@ -1279,9 +1279,9 @@ public final class Utils {
         String latestVersion = centralApi.latestPackageVersion(orgName, packageName);
         ModuleInfo moduleInfo = new ModuleInfo(orgName, packageName, moduleName, latestVersion);
 
-        if (PackageUtil.isModuleUnresolved(orgName, packageName, latestVersion)) {
+        if (PackageResolver.isModuleUnresolved(orgName, packageName, latestVersion)) {
             notifyClient(MessageType.Info, PULLING_THE_MODULE_MESSAGE, moduleInfo, lsClientLogger);
-            Optional<SemanticModel> semanticModel = PackageUtil.getSemanticModel(moduleInfo.org(),
+            Optional<SemanticModel> semanticModel = PackageResolver.getSemanticModel(moduleInfo.org(),
                     moduleInfo.packageName(), moduleInfo.moduleName(), moduleInfo.version());
             if (semanticModel.isEmpty()) {
                 notifyClient(MessageType.Error, MODULE_PULLING_FAILED_MESSAGE, moduleInfo, lsClientLogger);

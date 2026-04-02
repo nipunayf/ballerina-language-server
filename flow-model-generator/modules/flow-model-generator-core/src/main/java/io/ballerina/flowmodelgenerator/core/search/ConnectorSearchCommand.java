@@ -45,7 +45,7 @@ import io.ballerina.projects.PackageCompilation;
 import io.ballerina.projects.Project;
 import io.ballerina.tools.text.LineRange;
 import org.ballerinalang.diagramutil.connector.models.connector.Connector;
-import org.ballerinalang.langserver.common.utils.PackageUtil;
+import org.ballerinalang.langserver.common.utils.PackageResolver;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;

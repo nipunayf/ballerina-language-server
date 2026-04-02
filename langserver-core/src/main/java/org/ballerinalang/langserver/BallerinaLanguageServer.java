@@ -22,7 +22,7 @@ import io.ballerina.projects.BuildOptions;
 import io.ballerina.projects.util.ProjectConstants;
 import org.ballerinalang.langserver.command.LSCommandExecutorProvidersHolder;
 import org.ballerinalang.langserver.common.utils.CommonUtil;
-import org.ballerinalang.langserver.common.utils.PackageUtil;
+import org.ballerinalang.langserver.common.utils.PackageResolver;
 import org.ballerinalang.langserver.commons.LanguageServerContext;
 import org.ballerinalang.langserver.commons.capability.LSClientCapabilities;
 import org.ballerinalang.langserver.commons.client.ExtendedLanguageClient;
@@ -141,7 +141,7 @@ public class BallerinaLanguageServer extends AbstractExtendedLanguageServer
                 experimentalClientCapabilities,
                 initializationOptions);
         this.serverContext.put(LSClientCapabilities.class, capabilities);
-        PackageUtil.initialize(packageUtilOffline);
+        PackageResolver.initialize(packageUtilOffline);
 
         //Checks for instances in which the LS needs to be initiated in lightweight mode
         if (capabilities.getInitializationOptions().isEnableLightWeightMode()) {

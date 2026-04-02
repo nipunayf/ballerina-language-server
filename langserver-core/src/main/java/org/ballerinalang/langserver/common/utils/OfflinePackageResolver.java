@@ -35,11 +35,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-final class OfflinePackageUtil extends PackageUtil {
+/**
+ * Offline implementation of {@link PackageResolver} that resolves packages exclusively from
+ * the local Ballerina user home repository. When the latest version is requested, it
+ * searches the local cache and picks the highest semantic version available.
+ *
+ * @since 1.7.0
+ */
+final class OfflinePackageResolver   extends PackageResolver {
 
     private final PackageRepository userHomeRepository;
 
-    OfflinePackageUtil() {
+    OfflinePackageResolver() {
         this.userHomeRepository = BallerinaUserHome
                 .from(sampleProject().projectEnvironmentContext().environment())
                 .remotePackageRepository();

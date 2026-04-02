@@ -71,7 +71,7 @@ import io.ballerina.projects.Project;
 import io.ballerina.tools.diagnostics.Location;
 import io.ballerina.tools.text.TextRange;
 import org.ballerinalang.langserver.common.utils.CommonUtil;
-import org.ballerinalang.langserver.common.utils.PackageUtil;
+import org.ballerinalang.langserver.common.utils.PackageResolver;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -102,7 +102,7 @@ class ServiceIndexGenerator {
     private static final Gson GSON = new Gson();
 
     public static void main(String[] args) {
-        PackageUtil.initialize(false);
+        PackageResolver.initialize(false);
         DatabaseManager.createDatabase();
 
         Gson gson = new Gson();
@@ -122,7 +122,7 @@ class ServiceIndexGenerator {
                                        PackageMetadataInfo packageMetadataInfo) {
         Package resolvedPackage;
         try {
-            Optional<Package> packageOpt = PackageUtil.resolveModulePackage(org,
+            Optional<Package> packageOpt = PackageResolver.resolveModulePackage(org,
 
                     packageMetadataInfo.name(), packageMetadataInfo.version());
             if (packageOpt.isEmpty()) {
@@ -147,7 +147,7 @@ class ServiceIndexGenerator {
 
         SemanticModel semanticModel;
         try {
-            semanticModel = PackageUtil.getCompilation(resolvedPackage)
+            semanticModel = PackageResolver.getCompilation(resolvedPackage)
                     .getSemanticModel(resolvedPackage.getDefaultModule().moduleId());
         } catch (Exception e) {
             LOGGER.severe("Error reading semantic model: " + e.getMessage());

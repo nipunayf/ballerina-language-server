@@ -37,7 +37,7 @@ import io.ballerina.modelgenerator.commons.ParameterMemberTypeData;
 import io.ballerina.projects.Module;
 import io.ballerina.projects.ModuleDescriptor;
 import io.ballerina.projects.Package;
-import org.ballerinalang.langserver.common.utils.PackageUtil;
+import org.ballerinalang.langserver.common.utils.PackageResolver;
 
 import java.io.FileReader;
 import java.io.IOException;

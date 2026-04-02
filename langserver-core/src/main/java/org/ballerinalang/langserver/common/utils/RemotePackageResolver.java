@@ -26,7 +26,6 @@ import io.ballerina.projects.PackageName;
 import io.ballerina.projects.PackageOrg;
 import io.ballerina.projects.PackageVersion;
 import io.ballerina.projects.environment.PackageMetadataResponse;
-import io.ballerina.projects.environment.PackageResolver;
 import io.ballerina.projects.environment.ResolutionOptions;
 import io.ballerina.projects.environment.ResolutionRequest;
 import io.ballerina.projects.environment.ResolutionResponse;
@@ -35,17 +34,26 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 
-final class OnlinePackageUtil extends PackageUtil {
+/**
+ * Online implementation of {@link PackageResolver} that resolves packages by contacting
+ * the Ballerina central repository. When a package or its latest version is not
+ * available locally, it fetches the metadata and downloads the package from central.
+ *
+ * @since 1.7.0
+ */
+final class RemotePackageResolver extends PackageResolver {
 
     @Override
     protected Optional<Package> getModulePackage(String org, String name, String version) {
         ResolutionRequest resolutionRequest = ResolutionRequest.from(
                 PackageDescriptor.from(PackageOrg.from(org), PackageName.from(name), PackageVersion.from(version)));
 
-        Collection<ResolutionResponse> resolutionResponses =
-                sampleProject().projectEnvironmentContext().getService(PackageResolver.class)
-                        .resolvePackages(Collections.singletonList(resolutionRequest),
-                                ResolutionOptions.builder().setOffline(false).setSticky(false).build());
+        io.ballerina.projects.environment.PackageResolver resolver =
+                sampleProject().projectEnvironmentContext()
+                        .getService(io.ballerina.projects.environment.PackageResolver.class);
+        Collection<ResolutionResponse> resolutionResponses = resolver.resolvePackages(
+                Collections.singletonList(resolutionRequest),
+                ResolutionOptions.builder().setOffline(false).setSticky(false).build());
         return resolutionResponses.stream().findFirst()
                 .flatMap(response -> loadBalaPackage(response.resolvedPackage().project().sourceRoot()));
     }
@@ -54,7 +62,9 @@ final class OnlinePackageUtil extends PackageUtil {
     protected Optional<Package> getModulePackage(String org, String name) {
         ResolutionRequest resolutionRequest = ResolutionRequest.from(
                 PackageDescriptor.from(PackageOrg.from(org), PackageName.from(name)));
-        PackageResolver packageResolver = sampleProject().projectEnvironmentContext().getService(PackageResolver.class);
+        io.ballerina.projects.environment.PackageResolver packageResolver =
+                sampleProject().projectEnvironmentContext()
+                        .getService(io.ballerina.projects.environment.PackageResolver.class);
         Collection<PackageMetadataResponse> packageMetadataResponses = packageResolver.resolvePackageMetadata(
                 Collections.singletonList(resolutionRequest),
                 ResolutionOptions.builder().setOffline(true).build());
@@ -81,7 +91,9 @@ final class OnlinePackageUtil extends PackageUtil {
     protected boolean isModuleUnresolvedInternal(String org, String name, String version) {
         ResolutionRequest resolutionRequest = ResolutionRequest.from(
                 PackageDescriptor.from(PackageOrg.from(org), PackageName.from(name), PackageVersion.from(version)));
-        PackageResolver packageResolver = sampleProject().projectEnvironmentContext().getService(PackageResolver.class);
+        io.ballerina.projects.environment.PackageResolver packageResolver =
+                sampleProject().projectEnvironmentContext()
+                        .getService(io.ballerina.projects.environment.PackageResolver.class);
         return packageResolver.resolvePackageMetadata(Collections.singletonList(resolutionRequest),
                         ResolutionOptions.builder().setOffline(true).build()).stream()
                 .findFirst()
