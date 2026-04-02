@@ -116,6 +116,20 @@ task resolveBallerinaDependencies {
     outputs.dir targetDir
 
     doLast {
+        def tomlFile = file("build-config/ballerina_dependencies/Ballerina.toml")
+        def hashFile = file("$buildDir/ballerina_dependencies/.toml-hash")
+
+        def currentHash = java.security.MessageDigest
+            .getInstance("SHA-256")
+            .digest(tomlFile.bytes)
+            .collect { String.format("%02x", it) }
+            .join()
+
+        if (hashFile.exists() && hashFile.text.trim() == currentHash) {
+            logger.lifecycle("Ballerina.toml unchanged — skipping dependency resolution")
+            return
+        }
+
         // Copy the directory to build location
         copy {
             from sourceDir
@@ -141,6 +155,8 @@ task resolveBallerinaDependencies {
             println errOutput
             throw new GradleException("Failed to build Ballerina dependencies")
         }
+
+        hashFile.text = currentHash
     }
 }
 
@@ -330,10 +346,6 @@ task pack(type: com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
     }
 }
 
-test {
-    dependsOn resolveBallerinaDependencies
-}
-
 task buildFlow {
     dependsOn(":flow-model-generator:flow-model-generator-core:build")
     dependsOn(":flow-model-generator:flow-model-generator-ls-extension:build")
@@ -404,7 +416,7 @@ cyclonedxBom {
     includeBomSerialNumber = true
 }
 
-build.dependsOn test
+build.dependsOn resolveBallerinaDependencies
 build.doNotTrackState("build needs to run every time")
 publishToMavenLocal.dependsOn build
 publish.dependsOn build
