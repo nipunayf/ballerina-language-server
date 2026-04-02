@@ -27,7 +27,7 @@ import io.ballerina.flowmodelgenerator.core.model.Property;
 import io.ballerina.flowmodelgenerator.core.model.SourceBuilder;
 import io.ballerina.flowmodelgenerator.core.utils.FlowNodeUtil;
 import io.ballerina.modelgenerator.commons.FunctionData;
-import io.ballerina.modelgenerator.commons.PackageUtil;
+import org.ballerinalang.langserver.common.utils.PackageUtil;
 import org.eclipse.lsp4j.TextEdit;
 
 import java.nio.file.Path;

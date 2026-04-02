@@ -21,11 +21,11 @@ package io.ballerina.artifactsgenerator;
 import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.syntax.tree.ModulePartNode;
 import io.ballerina.compiler.syntax.tree.SyntaxTree;
-import io.ballerina.modelgenerator.commons.PackageUtil;
 import io.ballerina.projects.Document;
 import io.ballerina.projects.Module;
 import io.ballerina.projects.Package;
 import io.ballerina.projects.Project;
+import org.ballerinalang.langserver.common.utils.PackageUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;

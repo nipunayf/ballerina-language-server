@@ -42,7 +42,6 @@ import io.ballerina.flowmodelgenerator.core.model.PropertyType;
 import io.ballerina.flowmodelgenerator.core.model.SourceBuilder;
 import io.ballerina.modelgenerator.commons.CommonUtils;
 import io.ballerina.modelgenerator.commons.ModuleInfo;
-import io.ballerina.modelgenerator.commons.PackageUtil;
 import io.ballerina.projects.DependenciesToml;
 import io.ballerina.projects.PackageDescriptor;
 import io.ballerina.projects.PackageName;
@@ -54,6 +53,7 @@ import io.ballerina.projects.environment.PackageResolver;
 import io.ballerina.projects.environment.ResolutionOptions;
 import io.ballerina.projects.environment.ResolutionRequest;
 import io.ballerina.projects.environment.ResolutionResponse;
+import org.ballerinalang.langserver.common.utils.PackageUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -680,7 +680,8 @@ public class AiUtils {
 
     private static Optional<SemanticModel> getSemanticModel(ModuleInfo module) {
         return module.version() == null ? PackageUtil.getSemanticModel(module.org(), module.moduleName())
-                : PackageUtil.getSemanticModel(module);
+                : PackageUtil.getSemanticModel(module.org(), module.packageName(), module.moduleName(),
+                module.version());
     }
 
     private static boolean isModelProviderClass(ClassSymbol classSymbol) {

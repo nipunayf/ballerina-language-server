@@ -32,12 +32,12 @@ import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.modelgenerator.commons.FunctionData;
 import io.ballerina.modelgenerator.commons.FunctionDataBuilder;
 import io.ballerina.modelgenerator.commons.ModuleInfo;
-import io.ballerina.modelgenerator.commons.PackageUtil;
 import io.ballerina.modelgenerator.commons.ParameterData;
 import io.ballerina.modelgenerator.commons.ParameterMemberTypeData;
 import io.ballerina.projects.Module;
 import io.ballerina.projects.ModuleDescriptor;
 import io.ballerina.projects.Package;
+import org.ballerinalang.langserver.common.utils.PackageUtil;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -64,6 +64,7 @@ class IndexGenerator {
     private static final Logger LOGGER = Logger.getLogger(IndexGenerator.class.getName());
 
     public static void main(String[] args) {
+        PackageUtil.initialize(false);
         DatabaseManager.createDatabase();
 
         Gson gson = new Gson();

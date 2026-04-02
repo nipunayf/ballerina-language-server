@@ -59,7 +59,6 @@ import io.ballerina.flowmodelgenerator.extension.response.TypeResponse;
 import io.ballerina.flowmodelgenerator.extension.response.TypeUpdateResponse;
 import io.ballerina.flowmodelgenerator.extension.response.VerifyTypeDeleteResponse;
 import io.ballerina.modelgenerator.commons.ModuleInfo;
-import io.ballerina.modelgenerator.commons.PackageUtil;
 import io.ballerina.projects.Document;
 import io.ballerina.projects.Project;
 import io.ballerina.tools.diagnostics.Location;
@@ -67,6 +66,7 @@ import io.ballerina.tools.text.TextDocument;
 import io.ballerina.tools.text.TextRange;
 import org.ballerinalang.annotation.JavaSPIService;
 import org.ballerinalang.diagramutil.connector.models.connector.Type;
+import org.ballerinalang.langserver.common.utils.PackageUtil;
 import org.ballerinalang.langserver.common.utils.PathUtil;
 import org.ballerinalang.langserver.commons.LanguageServerContext;
 import org.ballerinalang.langserver.commons.service.spi.ExtendedLanguageServerService;
@@ -616,7 +616,8 @@ public class TypesManagerService implements ExtendedLanguageServerService {
         }
 
         ModuleInfo moduleInfo = new ModuleInfo(org, packageName, moduleName, version);
-        model = PackageUtil.getSemanticModel(moduleInfo);
+        model = PackageUtil.getSemanticModel(moduleInfo.org(), moduleInfo.packageName(), moduleInfo.moduleName(),
+                moduleInfo.version());
         model.ifPresent(m -> semanticModelCache.put(keyWithoutPath, m));
         return model;
     }

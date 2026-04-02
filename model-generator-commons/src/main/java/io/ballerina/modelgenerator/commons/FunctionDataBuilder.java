@@ -70,6 +70,7 @@ import io.ballerina.runtime.api.utils.IdentifierUtils;
 import io.ballerina.tools.text.LinePosition;
 import org.ballerinalang.langserver.LSClientLogger;
 import org.ballerinalang.langserver.common.utils.CommonUtil;
+import org.ballerinalang.langserver.common.utils.PackageUtil;
 import org.ballerinalang.langserver.commons.BallerinaCompilerApi;
 import org.ballerinalang.langserver.commons.workspace.WorkspaceManager;
 import org.eclipse.lsp4j.MessageType;
@@ -684,7 +685,8 @@ public class FunctionDataBuilder {
     }
 
     private void deriveSemanticModel() {
-        semanticModel(PackageUtil.getSemanticModel(moduleInfo)
+        semanticModel(PackageUtil.getSemanticModel(moduleInfo.org(), moduleInfo.packageName(), moduleInfo.moduleName(),
+                        moduleInfo.version())
                 .orElseThrow(() -> new IllegalStateException("Semantic model not found")));
     }
 

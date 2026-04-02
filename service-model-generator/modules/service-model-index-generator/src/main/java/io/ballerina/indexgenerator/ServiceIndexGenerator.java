@@ -62,7 +62,6 @@ import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.modelgenerator.commons.CommonUtils;
 import io.ballerina.modelgenerator.commons.DefaultValueGeneratorUtil;
 import io.ballerina.modelgenerator.commons.ModuleInfo;
-import io.ballerina.modelgenerator.commons.PackageUtil;
 import io.ballerina.projects.Document;
 import io.ballerina.projects.DocumentId;
 import io.ballerina.projects.Module;
@@ -72,6 +71,7 @@ import io.ballerina.projects.Project;
 import io.ballerina.tools.diagnostics.Location;
 import io.ballerina.tools.text.TextRange;
 import org.ballerinalang.langserver.common.utils.CommonUtil;
+import org.ballerinalang.langserver.common.utils.PackageUtil;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -102,6 +102,7 @@ class ServiceIndexGenerator {
     private static final Gson GSON = new Gson();
 
     public static void main(String[] args) {
+        PackageUtil.initialize(false);
         DatabaseManager.createDatabase();
 
         Gson gson = new Gson();

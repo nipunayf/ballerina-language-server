@@ -38,7 +38,6 @@ import io.ballerina.flowmodelgenerator.core.utils.FileSystemUtils;
 import io.ballerina.modelgenerator.commons.CommonUtils;
 import io.ballerina.modelgenerator.commons.DefaultValueGeneratorUtil;
 import io.ballerina.modelgenerator.commons.ModuleInfo;
-import io.ballerina.modelgenerator.commons.PackageUtil;
 import io.ballerina.modelgenerator.commons.ParameterData;
 import io.ballerina.projects.Document;
 import io.ballerina.projects.Module;
@@ -51,6 +50,7 @@ import org.ballerinalang.formatter.core.FormattingTreeModifier;
 import org.ballerinalang.formatter.core.options.FormattingOptions;
 import org.ballerinalang.langserver.LSClientLogger;
 import org.ballerinalang.langserver.common.utils.CommonUtil;
+import org.ballerinalang.langserver.common.utils.PackageUtil;
 import org.ballerinalang.langserver.common.utils.RecordUtil;
 import org.ballerinalang.langserver.commons.BallerinaCompilerApi;
 import org.ballerinalang.langserver.commons.eventsync.exceptions.EventSyncException;
@@ -391,7 +391,8 @@ public class SourceBuilder {
             imports.values().forEach(moduleId -> {
                 ModuleInfo moduleInfo = ModuleInfo.from(moduleId);
                 if (!subModuleIds.contains(moduleInfo.packageName())) {
-                    PackageUtil.pullModuleAndNotify(lsClientLogger, moduleInfo).ifPresent(pkg ->
+                    PackageUtil.pullModuleAndNotify(lsClientLogger, moduleInfo.org(), moduleInfo.packageName(),
+                            moduleInfo.moduleName(), moduleInfo.version()).ifPresent(pkg ->
                             packageMap.put(CommonUtils.getDefaultModulePrefix(pkg.packageName().value()),
                                     PackageUtil.getCompilation(pkg).defaultModuleBLangPackage())
                     );

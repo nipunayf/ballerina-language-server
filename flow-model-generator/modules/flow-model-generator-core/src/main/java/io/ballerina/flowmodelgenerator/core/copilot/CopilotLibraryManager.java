@@ -31,7 +31,7 @@ import io.ballerina.flowmodelgenerator.core.copilot.model.Service;
 import io.ballerina.flowmodelgenerator.core.copilot.service.ServiceLoader;
 import io.ballerina.flowmodelgenerator.core.copilot.util.SymbolProcessor;
 import io.ballerina.modelgenerator.commons.ModuleInfo;
-import io.ballerina.modelgenerator.commons.PackageUtil;
+import org.ballerinalang.langserver.common.utils.PackageUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
