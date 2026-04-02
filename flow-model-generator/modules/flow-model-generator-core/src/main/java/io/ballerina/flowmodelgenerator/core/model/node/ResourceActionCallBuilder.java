@@ -74,7 +74,7 @@ public class ResourceActionCallBuilder extends CallBuilder {
                 .lsClientLogger(context.lsClientLogger())
                 .parentSymbolType(codedata.object())
                 .resourcePath(codedata.resourcePath())
-                .project(PackageUtil.loadProject(context.workspaceManager(), context.filePath()))
+                .project(PackageResolver.loadProject(context.workspaceManager(), context.filePath()))
                 .functionResultKind(FunctionData.Kind.RESOURCE)
                 .workspaceManager(context.workspaceManager())
                 .filePath(context.filePath());

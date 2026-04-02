@@ -133,7 +133,7 @@ public class AgentsGenerator {
             throws WorkspaceDocumentException, EventSyncException {
         Path projectPath = Path.of(path);
         Project project = workspaceManager.loadProject(projectPath);
-        BLangPackage bLangPackage = PackageUtil.getCompilation(project.currentPackage()).defaultModuleBLangPackage();
+        BLangPackage bLangPackage = PackageResolver.getCompilation(project.currentPackage()).defaultModuleBLangPackage();
         return importExists(bLangPackage, BALLERINAX, AI) ? BALLERINAX : BALLERINA;
     }
 
@@ -763,7 +763,7 @@ public class AgentsGenerator {
                         .document(document.documentId()).modify().withContent(String.join(System.lineSeparator(),
                                 modifiedTextDoc.textLines())).apply();
 
-        SemanticModel newSemanticModel = PackageUtil.getCompilation(modifiedDoc.module().packageInstance())
+        SemanticModel newSemanticModel = PackageResolver.getCompilation(modifiedDoc.module().packageInstance())
                 .getSemanticModel(modifiedDoc.module().moduleId());
         Optional<Property> property = flowNode.getProperty(Property.VARIABLE_KEY);
         if (property.isEmpty()) {

@@ -783,7 +783,7 @@ public class CodeAnalyzer extends NodeVisitor {
                                        MethodSymbol functionSymbol, String objName,
                                        Map<String, Object> metadataData) {
         Optional<Package> resolvedPackage = moduleInfo != null ?
-                PackageUtil.resolveModulePackage(moduleInfo.org(), moduleInfo.packageName(), moduleInfo.version()) :
+                PackageResolver.resolveModulePackage(moduleInfo.org(), moduleInfo.packageName(), moduleInfo.version()) :
                 Optional.empty();
 
         FunctionDataBuilder functionDataBuilder = new FunctionDataBuilder()

@@ -88,7 +88,7 @@ public class AgentIdAuthConfigBuilder extends NodeBuilder {
         }
 
         ModuleInfo aiModuleInfo = new ModuleInfo(Ai.BALLERINA_ORG, Ai.AI_PACKAGE, Ai.AI_PACKAGE, aiModuleVersion);
-        Optional<SemanticModel> semanticModelOpt = PackageUtil.getSemanticModel(aiModuleInfo.org(),
+        Optional<SemanticModel> semanticModelOpt = PackageResolver.getSemanticModel(aiModuleInfo.org(),
                 aiModuleInfo.packageName(), aiModuleInfo.moduleName(), aiModuleInfo.version());
         if (semanticModelOpt.isEmpty()) {
             return;

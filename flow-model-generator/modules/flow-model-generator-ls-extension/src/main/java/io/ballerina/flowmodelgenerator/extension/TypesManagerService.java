@@ -596,7 +596,7 @@ public class TypesManagerService implements ExtendedLanguageServerService {
         // Try to load via filePath-specific method
 
         WorkspaceManager workspaceManager = this.workspaceManagerProxy.get();
-        Optional<SemanticModel> model = PackageUtil.getSemanticModelIfMatched(workspaceManager, filePath, org,
+        Optional<SemanticModel> model = PackageResolver.getSemanticModelIfMatched(workspaceManager, filePath, org,
                 packageName, moduleName, version);
         if (model.isPresent()) {
             semanticModelCache.put(keyWithPath, model.get());
@@ -616,7 +616,7 @@ public class TypesManagerService implements ExtendedLanguageServerService {
         }
 
         ModuleInfo moduleInfo = new ModuleInfo(org, packageName, moduleName, version);
-        model = PackageUtil.getSemanticModel(moduleInfo.org(), moduleInfo.packageName(), moduleInfo.moduleName(),
+        model = PackageResolver.getSemanticModel(moduleInfo.org(), moduleInfo.packageName(), moduleInfo.moduleName(),
                 moduleInfo.version());
         model.ifPresent(m -> semanticModelCache.put(keyWithoutPath, m));
         return model;

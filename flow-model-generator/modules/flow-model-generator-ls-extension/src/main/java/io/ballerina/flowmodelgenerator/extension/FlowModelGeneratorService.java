@@ -192,7 +192,7 @@ public class FlowModelGeneratorService implements ExtendedLanguageServerService 
                 DocumentId documentId = newProject.documentId(filePath);
                 Module newModule = newProject.currentPackage().module(documentId.moduleId());
                 SemanticModel newSemanticModel =
-                        PackageUtil.getCompilation(newProject).getSemanticModel(newModule.moduleId());
+                        PackageResolver.getCompilation(newProject).getSemanticModel(newModule.moduleId());
                 Document newDocument = newModule.document(documentId);
                 if (newSemanticModel == null || newDocument == null) {
                     return response;
@@ -227,7 +227,7 @@ public class FlowModelGeneratorService implements ExtendedLanguageServerService 
                         newTextDocument.linePositionFrom(end + request.text().length()));
 
                 ModelGenerator suggestedModelGenerator =
-                        new ModelGenerator(newProject, PackageUtil.getCompilation(newProject)
+                        new ModelGenerator(newProject, PackageResolver.getCompilation(newProject)
                                 .getSemanticModel(newDoc.module().moduleId()), filePath, workspaceManager);
                 JsonElement newFlowModel = suggestedModelGenerator.getFlowModel(newDoc,
                         endLineRange, newDataMappingsDoc.orElse(null), newFunctionsDoc.orElse(null));
@@ -635,7 +635,7 @@ public class FlowModelGeneratorService implements ExtendedLanguageServerService 
 
                 if (Files.isDirectory(filePath)) {
                     // For project paths, use the default module's semantic model
-                    semanticModel = PackageUtil.getCompilation(project.currentPackage())
+                    semanticModel = PackageResolver.getCompilation(project.currentPackage())
                             .getSemanticModel(project.currentPackage().getDefaultModule().moduleId());
                     position = null;
                 } else {

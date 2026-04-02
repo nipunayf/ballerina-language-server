@@ -89,7 +89,7 @@ public abstract class CallBuilder extends NodeBuilder {
                 .moduleInfo(targetModuleInfo)
                 .lsClientLogger(context.lsClientLogger())
                 .functionResultKind(getFunctionResultKind())
-                .project(PackageUtil.loadProject(context.workspaceManager(), context.filePath()))
+                .project(PackageResolver.loadProject(context.workspaceManager(), context.filePath()))
                 .userModuleInfo(moduleInfo)
                 .workspaceManager(context.workspaceManager())
                 .filePath(context.filePath());
@@ -127,7 +127,7 @@ public abstract class CallBuilder extends NodeBuilder {
                     .label(Property.CONNECTION_LABEL)
                     .description(Property.CONNECTION_DOC)
                     .stepOut()
-                    .type(Property.ValueType.EXPRESSION, PackageUtil.isLocalFunction(context.workspaceManager(),
+                    .type(Property.ValueType.EXPRESSION, PackageResolver.isLocalFunction(context.workspaceManager(),
                             context.filePath(), codedata.org(), codedata.module()) ? codedata.object() :
                             CommonUtils.getClassType(codedata.module(), codedata.object()))
                     .value(codedata.parentSymbol())

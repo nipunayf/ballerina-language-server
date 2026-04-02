@@ -76,7 +76,7 @@ public class AllKindsSearchCommand extends SearchCommand {
         super(project, position, queryMap);
         this.functionsDoc = functionsDoc;
         Package currentPackage = project.currentPackage();
-        PackageUtil.getCompilation(currentPackage);
+        PackageResolver.getCompilation(currentPackage);
         this.moduleNames = currentPackage.getDefaultModule().moduleDependencies().stream()
                 .map(moduleDependency -> moduleDependency.descriptor().name().packageName().value())
                 .toList();

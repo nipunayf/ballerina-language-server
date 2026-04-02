@@ -119,7 +119,7 @@ public class FileSystemUtils {
         // Obtain the default semantic model if not exists
         Project project = workspaceManager.project(filePath).orElseThrow();
         Package currentPackage = project.currentPackage();
-        return PackageUtil.getCompilation(currentPackage)
+        return PackageResolver.getCompilation(currentPackage)
                 .getSemanticModel(currentPackage.getDefaultModule().moduleId());
     }
 

@@ -76,7 +76,7 @@ class FunctionSearchCommand extends SearchCommand {
 
         // Obtain the imported module names
         Package currentPackage = project.currentPackage();
-        PackageUtil.getCompilation(currentPackage);
+        PackageResolver.getCompilation(currentPackage);
         moduleNames = currentPackage.getDefaultModule().moduleDependencies().stream()
                 .map(moduleDependency -> moduleDependency.descriptor().name().packageName().value())
                 .toList();

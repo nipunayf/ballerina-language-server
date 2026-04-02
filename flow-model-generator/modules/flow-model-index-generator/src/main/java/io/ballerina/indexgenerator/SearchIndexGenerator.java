@@ -67,7 +67,7 @@ public class SearchIndexGenerator {
     private static final String CONNECTOR_EXCLUDE_JSON = "connector_exclude.json";
 
     public static void main(String[] args) {
-        PackageUtil.initialize(false);
+        PackageResolver.initialize(false);
         SearchDatabaseManager.createDatabase();
 
         Gson gson = new Gson();
@@ -123,7 +123,7 @@ public class SearchIndexGenerator {
                                        SearchIndexLogger logger) throws Exception {
         Package resolvedPackage;
         try {
-            resolvedPackage = Objects.requireNonNull(PackageUtil.resolveModulePackage(org,
+            resolvedPackage = Objects.requireNonNull(PackageResolver.resolveModulePackage(org,
                     packageMetadataInfo.name(), packageMetadataInfo.version())).orElseThrow();
         } catch (Throwable e) {
             logger.error("Error resolving package: " + packageMetadataInfo.name() + " " + e.getMessage());
@@ -153,7 +153,7 @@ public class SearchIndexGenerator {
             throw new Exception("Error inserting package to database: " + module);
         }
 
-        SemanticModel semanticModel = PackageUtil.getCompilation(resolvedPackage)
+        SemanticModel semanticModel = PackageResolver.getCompilation(resolvedPackage)
                 .getSemanticModel(module.moduleId());
 
         for (Symbol symbol : semanticModel.moduleSymbols()) {

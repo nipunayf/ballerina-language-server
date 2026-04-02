@@ -295,7 +295,7 @@ public class ExpressionEditorService implements ExtendedLanguageServerService {
         Optional<TextEdit> importTextEdit = expressionEditorContext.getImport(importStatement);
         importTextEdit.ifPresent(textEdit -> {
             ModuleInfo moduleInfo = ModuleInfo.from(moduleId);
-            PackageUtil.pullModuleAndNotify(lsClientLogger, moduleInfo.org(), moduleInfo.packageName(),
+            PackageResolver.pullModuleAndNotify(lsClientLogger, moduleInfo.org(), moduleInfo.packageName(),
                     moduleInfo.moduleName(), moduleInfo.version());
         });
         response.setPrefix(CommonUtils.getPackageName(importStatement));

@@ -369,7 +369,7 @@ public class SourceBuilder {
     }
 
     public Optional<String> getExpressionBodyText(String typeName, Map<String, String> imports) {
-        Project project = PackageUtil.loadProject(workspaceManager, filePath);
+        Project project = PackageResolver.loadProject(workspaceManager, filePath);
         Document document = FileSystemUtils.getDocument(workspaceManager, filePath);
 
         // Fetch the module ids of the project
@@ -391,10 +391,10 @@ public class SourceBuilder {
             imports.values().forEach(moduleId -> {
                 ModuleInfo moduleInfo = ModuleInfo.from(moduleId);
                 if (!subModuleIds.contains(moduleInfo.packageName())) {
-                    PackageUtil.pullModuleAndNotify(lsClientLogger, moduleInfo.org(), moduleInfo.packageName(),
+                    PackageResolver.pullModuleAndNotify(lsClientLogger, moduleInfo.org(), moduleInfo.packageName(),
                             moduleInfo.moduleName(), moduleInfo.version()).ifPresent(pkg ->
                             packageMap.put(CommonUtils.getDefaultModulePrefix(pkg.packageName().value()),
-                                    PackageUtil.getCompilation(pkg).defaultModuleBLangPackage())
+                                    PackageResolver.getCompilation(pkg).defaultModuleBLangPackage())
                     );
                 }
             });

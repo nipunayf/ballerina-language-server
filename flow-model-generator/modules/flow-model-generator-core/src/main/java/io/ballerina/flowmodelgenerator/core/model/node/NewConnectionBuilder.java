@@ -140,12 +140,12 @@ public class NewConnectionBuilder extends CallBuilder {
                 throw new IllegalStateException("Project path not found");
             }
             WorkspaceManager workspaceManager = context.workspaceManager();
-            Project project = PackageUtil.loadProject(workspaceManager, context.filePath());
+            Project project = PackageResolver.loadProject(workspaceManager, context.filePath());
             SemanticModel semanticModel = null;
             for (Module module : project.currentPackage().modules()) {
                 String moduleNamePath = module.moduleName().moduleNamePart();
                 if (moduleNamePath != null && moduleNamePath.equals(codedata.module())) {
-                    semanticModel = PackageUtil.getCompilation(project).getSemanticModel(module.moduleId());
+                    semanticModel = PackageResolver.getCompilation(project).getSemanticModel(module.moduleId());
                     break;
                 }
             }

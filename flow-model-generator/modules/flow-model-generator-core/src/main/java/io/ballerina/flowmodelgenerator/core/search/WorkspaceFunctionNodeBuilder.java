@@ -171,7 +171,7 @@ class WorkspaceFunctionNodeBuilder {
     static List<FunctionSymbol> getFunctions(Project project) {
         Package currentPackage = project.currentPackage();
 
-        return PackageUtil.getCompilation(currentPackage)
+        return PackageResolver.getCompilation(currentPackage)
                 .getSemanticModel(currentPackage.getDefaultModule().moduleId())
                 .moduleSymbols().stream()
                 .filter(symbol -> symbol.kind().equals(SymbolKind.FUNCTION) &&

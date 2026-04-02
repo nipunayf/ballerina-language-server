@@ -2636,7 +2636,7 @@ public class DataMapManager {
             semanticModel = sm;
         } else {
             ModuleInfo moduleInfo = new ModuleInfo(org, codedata.packageName(), codedata.module(), codedata.version());
-            Optional<SemanticModel> optSemanticModel = PackageUtil.getSemanticModel(moduleInfo.org(),
+            Optional<SemanticModel> optSemanticModel = PackageResolver.getSemanticModel(moduleInfo.org(),
                     moduleInfo.packageName(), moduleInfo.moduleName(), moduleInfo.version());
             if (optSemanticModel.isEmpty()) {
                 throw new IllegalStateException("Semantic model cannot be found for the module: " + moduleInfo);

@@ -121,7 +121,7 @@ public class AgentToolSearchCommand extends SearchCommand {
 
     private List<Item> buildAgentToolNodes() {
         Package currentPackage = project.currentPackage();
-        List<Symbol> functionSymbols = PackageUtil.getCompilation(currentPackage)
+        List<Symbol> functionSymbols = PackageResolver.getCompilation(currentPackage)
                 .getSemanticModel(currentPackage.getDefaultModule().moduleId())
                 .moduleSymbols().stream()
                 .filter(symbol -> symbol.kind().equals(SymbolKind.FUNCTION))
@@ -238,7 +238,7 @@ public class AgentToolSearchCommand extends SearchCommand {
 
     private boolean isValidAgentToolSignature(FunctionSymbol functionSymbol) {
         FunctionTypeSymbol functionTypeSymbol = functionSymbol.typeDescriptor();
-        TypeSymbol anydata = PackageUtil.getCompilation(project.currentPackage())
+        TypeSymbol anydata = PackageResolver.getCompilation(project.currentPackage())
                 .getSemanticModel(project.currentPackage().getDefaultModule().moduleId())
                 .types().ANYDATA;
 

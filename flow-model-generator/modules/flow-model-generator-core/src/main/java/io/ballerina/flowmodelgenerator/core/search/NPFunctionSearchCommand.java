@@ -80,7 +80,7 @@ class NPFunctionSearchCommand extends SearchCommand {
 
     private void buildProjectNodes() {
         Package currentPackage = project.currentPackage();
-        List<Symbol> functionSymbols = PackageUtil.getCompilation(currentPackage)
+        List<Symbol> functionSymbols = PackageResolver.getCompilation(currentPackage)
                 .getSemanticModel(currentPackage.getDefaultModule().moduleId())
                 .moduleSymbols().stream()
                 .filter(symbol -> symbol.kind().equals(SymbolKind.FUNCTION)).toList();

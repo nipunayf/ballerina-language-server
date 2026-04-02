@@ -270,7 +270,7 @@ public class ConnectorSearchCommand extends SearchCommand {
     }
 
     private List<SearchResult> getLocalConnectors() {
-        PackageCompilation compilation = PackageUtil.getCompilation(project);
+        PackageCompilation compilation = PackageResolver.getCompilation(project);
         Iterable<Module> modules = project.currentPackage().modules();
         List<SearchResult> localConnections = new ArrayList<>();
         for (Module module : modules) {

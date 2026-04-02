@@ -52,7 +52,6 @@ import io.ballerina.projects.PackageOrg;
 import io.ballerina.projects.Project;
 import io.ballerina.projects.TomlDocument;
 import io.ballerina.projects.environment.PackageMetadataResponse;
-import io.ballerina.projects.environment.PackageResolver;
 import io.ballerina.projects.environment.ResolutionOptions;
 import io.ballerina.projects.environment.ResolutionRequest;
 import io.ballerina.projects.environment.ResolutionResponse;
@@ -110,7 +109,7 @@ public class AgentsManagerService implements ExtendedLanguageServerService {
             try {
                 AgentsGenerator agentsGenerator = new AgentsGenerator();
                 String orgName = request.orgName() != null ? request.orgName() : BALLERINAX;
-                Optional<SemanticModel> semanticModel = PackageUtil.getSemanticModel(orgName, AI);
+                Optional<SemanticModel> semanticModel = PackageResolver.getSemanticModel(orgName, AI);
                 if (semanticModel.isEmpty()) {
                     return response;
                 }
@@ -132,7 +131,7 @@ public class AgentsManagerService implements ExtendedLanguageServerService {
                 if (BALLERINA.equals(request.orgName())) {
                     response.setModels(agentsGenerator.getNewBallerinaxModels());
                 } else {
-                    Optional<SemanticModel> semanticModel = PackageUtil.getSemanticModel(BALLERINAX, AI);
+                    Optional<SemanticModel> semanticModel = PackageResolver.getSemanticModel(BALLERINAX, AI);
                     semanticModel.ifPresent(model -> response.setModels(agentsGenerator.getAllBallerinaxModels(model)));
                 }
             } catch (Throwable e) {
@@ -149,7 +148,7 @@ public class AgentsManagerService implements ExtendedLanguageServerService {
             try {
                 AgentsGenerator agentsGenerator = new AgentsGenerator();
                 String orgName = request.orgName() != null ? request.orgName() : BALLERINAX;
-                Optional<SemanticModel> semanticModel = PackageUtil.getSemanticModel(orgName, AI);
+                Optional<SemanticModel> semanticModel = PackageResolver.getSemanticModel(orgName, AI);
                 if (semanticModel.isEmpty()) {
                     return response;
                 }
@@ -368,8 +367,8 @@ public class AgentsManagerService implements ExtendedLanguageServerService {
                 }
 
                 // Fallback: resolve from local/distribution repo (offline, no network calls)
-                PackageResolver resolver = project
-                        .projectEnvironmentContext().getService(PackageResolver.class);
+                io.ballerina.projects.environment.PackageResolver resolver = project
+                        .projectEnvironmentContext().getService(io.ballerina.projects.environment.PackageResolver.class);
                 ResolutionRequest resolutionRequest = ResolutionRequest.from(
                         PackageDescriptor.from(PackageOrg.from(org), PackageName.from(packageName)));
                 Collection<PackageMetadataResponse> metadataResponses = resolver.resolvePackageMetadata(

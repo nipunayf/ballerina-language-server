@@ -108,7 +108,7 @@ public class CopilotLibraryManager {
                     packageName, null);
 
             // Get semantic model for the module
-            Optional<SemanticModel> optSemanticModel = PackageUtil.getSemanticModel(org, packageName);
+            Optional<SemanticModel> optSemanticModel = PackageResolver.getSemanticModel(org, packageName);
             if (optSemanticModel.isEmpty()) {
                 continue; // Skip if semantic model not found
             }

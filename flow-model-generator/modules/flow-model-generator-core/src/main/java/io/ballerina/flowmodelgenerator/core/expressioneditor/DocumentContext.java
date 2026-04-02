@@ -153,7 +153,7 @@ public class DocumentContext {
             return;
         }
         // Check if the document exists
-        PackageUtil.loadProject(workspaceManager(), inputFilePath);
+        PackageResolver.loadProject(workspaceManager(), inputFilePath);
         Optional<Document> inputDoc;
         try {
             inputDoc = workspaceManager.document(inputFilePath);

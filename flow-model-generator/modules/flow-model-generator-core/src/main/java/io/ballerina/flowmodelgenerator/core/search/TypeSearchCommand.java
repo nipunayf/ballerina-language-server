@@ -89,7 +89,7 @@ class TypeSearchCommand extends SearchCommand {
 
         // Obtain the imported project names
         Package currentPackage = project.currentPackage();
-        PackageUtil.getCompilation(currentPackage);
+        PackageResolver.getCompilation(currentPackage);
         moduleNames = currentPackage.getDefaultModule().moduleDependencies().stream()
                 .map(moduleDependency -> {
                     ModuleName name = moduleDependency.descriptor().name();
@@ -178,7 +178,7 @@ class TypeSearchCommand extends SearchCommand {
 
     private List<Symbol> getTypes(Project project) {
         Package currentPackage = project.currentPackage();
-        return PackageUtil.getCompilation(currentPackage)
+        return PackageResolver.getCompilation(currentPackage)
                 .getSemanticModel(currentPackage.getDefaultModule().moduleId())
                 .moduleSymbols().stream()
                 .filter(symbol -> symbol instanceof TypeDefinitionSymbol || symbol instanceof ClassSymbol)
@@ -335,7 +335,7 @@ class TypeSearchCommand extends SearchCommand {
             if (module.isDefaultModule()) {
                 continue;
             }
-            SemanticModel semanticModel = PackageUtil.getCompilation(module.packageInstance())
+            SemanticModel semanticModel = PackageResolver.getCompilation(module.packageInstance())
                     .getSemanticModel(module.moduleId());
             if (semanticModel == null) {
                 continue;

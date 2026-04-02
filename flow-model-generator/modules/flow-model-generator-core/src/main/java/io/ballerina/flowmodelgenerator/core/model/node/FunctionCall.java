@@ -61,7 +61,7 @@ public class FunctionCall extends CallBuilder {
             sourceBuilder.token().keyword(SyntaxKind.CHECK_KEYWORD);
         }
 
-        if (PackageUtil.isLocalFunction(sourceBuilder.workspaceManager, sourceBuilder.filePath,
+        if (PackageResolver.isLocalFunction(sourceBuilder.workspaceManager, sourceBuilder.filePath,
                 codedata.org(), codedata.module())) {
             return sourceBuilder.token()
                     .name(codedata.symbol())

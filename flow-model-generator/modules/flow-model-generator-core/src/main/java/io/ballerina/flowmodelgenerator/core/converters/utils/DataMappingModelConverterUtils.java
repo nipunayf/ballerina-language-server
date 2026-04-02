@@ -115,7 +115,7 @@ public final class DataMappingModelConverterUtils {
                 // Since the project-root cannot be found, the provided file is considered as SingleFileProject.
                 project = SingleFileProject.load(filePath);
                 Package currentPackage = project.currentPackage();
-                moduleSymbols = PackageUtil.getCompilation(currentPackage)
+                moduleSymbols = PackageResolver.getCompilation(currentPackage)
                         .getSemanticModel(currentPackage.getDefaultModule().moduleId())
                         .moduleSymbols();
                 moduleSymbols.forEach(symbol -> {
@@ -126,7 +126,7 @@ public final class DataMappingModelConverterUtils {
             } else {
                 project = BuildProject.load(projectRoot);
                 Package currentPackage = project.currentPackage();
-                moduleSymbols = PackageUtil.getCompilation(currentPackage)
+                moduleSymbols = PackageResolver.getCompilation(currentPackage)
                         .getSemanticModel(currentPackage.getDefaultModule().moduleId())
                         .moduleSymbols();
                 moduleSymbols.forEach(symbol -> {
