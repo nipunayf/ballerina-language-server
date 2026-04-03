@@ -481,7 +481,8 @@ public class AvailableNodesGenerator {
 
             // Create and set the resolved package for the function
             Optional<Package> resolvedPackage = moduleInfo != null ?
-                    PackageResolver.resolveModulePackage(moduleInfo.org(), moduleInfo.packageName(), moduleInfo.version()) :
+                    PackageResolver.resolveModulePackage(moduleInfo.org(), moduleInfo.packageName(),
+                            moduleInfo.version()) :
                     Optional.empty();
 
             FunctionDataBuilder functionDataBuilder = new FunctionDataBuilder()

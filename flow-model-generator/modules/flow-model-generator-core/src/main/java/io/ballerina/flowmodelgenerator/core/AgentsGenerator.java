@@ -133,7 +133,8 @@ public class AgentsGenerator {
             throws WorkspaceDocumentException, EventSyncException {
         Path projectPath = Path.of(path);
         Project project = workspaceManager.loadProject(projectPath);
-        BLangPackage bLangPackage = PackageResolver.getCompilation(project.currentPackage()).defaultModuleBLangPackage();
+        BLangPackage bLangPackage = PackageResolver.getCompilation(project.currentPackage())
+                .defaultModuleBLangPackage();
         return importExists(bLangPackage, BALLERINAX, AI) ? BALLERINAX : BALLERINA;
     }
 
