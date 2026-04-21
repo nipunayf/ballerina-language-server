@@ -34,8 +34,13 @@
         "label": "connectionPool",
         "description": "The `sql:ConnectionPool` to be used for the connection. If there is no\n`connectionPool` provided, the global connection pool (shared by all clients) will be used"
       },
-      "valueType": "EXPRESSION",
-      "valueTypeConstraint": "sql:ConnectionPool|()",
+      "types": [
+        {
+          "fieldType": "EXPRESSION",
+          "ballerinaType": "sql:ConnectionPool|()",
+          "selected": true
+        }
+      ],
       "placeholder": "()",
       "optional": true,
       "editable": true,
@@ -64,6 +69,9 @@
     },
     {
       "label": "transactionIsolation",
+      "labelDetails": {
+        "detail": " sql:ConnectionPool.transactionIsolation"
+      },
       "kind": "Field",
       "detail": "sql:ConnectionPool.transactionIsolation",
       "sortText": "K",
@@ -72,6 +80,9 @@
     },
     {
       "label": "connectionTestQuery",
+      "labelDetails": {
+        "detail": " sql:ConnectionPool.connectionTestQuery"
+      },
       "kind": "Field",
       "detail": "sql:ConnectionPool.connectionTestQuery",
       "sortText": "K",
@@ -80,6 +91,9 @@
     },
     {
       "label": "maxOpenConnections",
+      "labelDetails": {
+        "detail": " sql:ConnectionPool.maxOpenConnections"
+      },
       "kind": "Field",
       "detail": "sql:ConnectionPool.maxOpenConnections",
       "sortText": "K",
@@ -88,6 +102,9 @@
     },
     {
       "label": "maxConnectionLifeTime",
+      "labelDetails": {
+        "detail": " sql:ConnectionPool.maxConnectionLifeTime"
+      },
       "kind": "Field",
       "detail": "sql:ConnectionPool.maxConnectionLifeTime",
       "sortText": "K",
@@ -96,6 +113,9 @@
     },
     {
       "label": "poolName",
+      "labelDetails": {
+        "detail": " sql:ConnectionPool.poolName"
+      },
       "kind": "Field",
       "detail": "sql:ConnectionPool.poolName",
       "sortText": "K",
@@ -104,6 +124,9 @@
     },
     {
       "label": "initializationFailTimeout",
+      "labelDetails": {
+        "detail": " sql:ConnectionPool.initializationFailTimeout"
+      },
       "kind": "Field",
       "detail": "sql:ConnectionPool.initializationFailTimeout",
       "sortText": "K",
@@ -112,6 +135,9 @@
     },
     {
       "label": "connectionTimeout",
+      "labelDetails": {
+        "detail": " sql:ConnectionPool.connectionTimeout"
+      },
       "kind": "Field",
       "detail": "sql:ConnectionPool.connectionTimeout",
       "sortText": "K",
@@ -120,6 +146,9 @@
     },
     {
       "label": "isolateInternalQueries",
+      "labelDetails": {
+        "detail": " sql:ConnectionPool.isolateInternalQueries"
+      },
       "kind": "Field",
       "detail": "sql:ConnectionPool.isolateInternalQueries",
       "sortText": "K",
@@ -128,6 +157,9 @@
     },
     {
       "label": "connectionInitSql",
+      "labelDetails": {
+        "detail": " sql:ConnectionPool.connectionInitSql"
+      },
       "kind": "Field",
       "detail": "sql:ConnectionPool.connectionInitSql",
       "sortText": "K",
@@ -136,6 +168,9 @@
     },
     {
       "label": "allowPoolSuspension",
+      "labelDetails": {
+        "detail": " sql:ConnectionPool.allowPoolSuspension"
+      },
       "kind": "Field",
       "detail": "sql:ConnectionPool.allowPoolSuspension",
       "sortText": "K",
@@ -144,6 +179,9 @@
     },
     {
       "label": "validationTimeout",
+      "labelDetails": {
+        "detail": " sql:ConnectionPool.validationTimeout"
+      },
       "kind": "Field",
       "detail": "sql:ConnectionPool.validationTimeout",
       "sortText": "K",
@@ -152,6 +190,9 @@
     },
     {
       "label": "leakDetectionThreshold",
+      "labelDetails": {
+        "detail": " sql:ConnectionPool.leakDetectionThreshold"
+      },
       "kind": "Field",
       "detail": "sql:ConnectionPool.leakDetectionThreshold",
       "sortText": "K",
@@ -160,6 +201,9 @@
     },
     {
       "label": "idleTimeout",
+      "labelDetails": {
+        "detail": " sql:ConnectionPool.idleTimeout"
+      },
       "kind": "Field",
       "detail": "sql:ConnectionPool.idleTimeout",
       "sortText": "K",
@@ -168,6 +212,9 @@
     },
     {
       "label": "keepAliveTime",
+      "labelDetails": {
+        "detail": " sql:ConnectionPool.keepAliveTime"
+      },
       "kind": "Field",
       "detail": "sql:ConnectionPool.keepAliveTime",
       "sortText": "K",
@@ -176,6 +223,9 @@
     },
     {
       "label": "minIdleConnections",
+      "labelDetails": {
+        "detail": " sql:ConnectionPool.minIdleConnections"
+      },
       "kind": "Field",
       "detail": "sql:ConnectionPool.minIdleConnections",
       "sortText": "K",
@@ -184,6 +234,9 @@
     },
     {
       "label": "readOnly",
+      "labelDetails": {
+        "detail": " sql:ConnectionPool.readOnly"
+      },
       "kind": "Field",
       "detail": "sql:ConnectionPool.readOnly",
       "sortText": "K",

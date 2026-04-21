@@ -1,31 +1,8 @@
 {
   "source": "new/config.bal",
   "description": "Test reload project with pre-existing artifacts",
+  "packageName": "proj329",
   "output": {
-    "Connections": {
-      "updates": {
-        "httpEp": {
-          "id": "httpEp",
-          "location": {
-            "fileName": "connections.bal",
-            "startLine": {
-              "line": 2,
-              "offset": 0
-            },
-            "endLine": {
-              "line": 2,
-              "offset": 64
-            }
-          },
-          "type": "CONNECTION",
-          "name": "httpEp",
-          "scope": "Global",
-          "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.15.0.png",
-          "module": "http",
-          "children": {}
-        }
-      }
-    },
     "Variables": {
       "updates": {
         "_telegramAgentAgent": {
@@ -44,6 +21,7 @@
           "type": "VARIABLE",
           "name": "_telegramAgentAgent",
           "scope": "Global",
+          "visibility": "module",
           "children": {}
         },
         "menuItems": {
@@ -62,42 +40,7 @@
           "type": "VARIABLE",
           "name": "menuItems",
           "scope": "Global",
-          "children": {}
-        },
-        "orders": {
-          "id": "orders",
-          "location": {
-            "fileName": "main.bal",
-            "startLine": {
-              "line": 12,
-              "offset": 0
-            },
-            "endLine": {
-              "line": 31,
-              "offset": 2
-            }
-          },
-          "type": "VARIABLE",
-          "name": "orders",
-          "scope": "Global",
-          "children": {}
-        },
-        "orderCounter": {
-          "id": "orderCounter",
-          "location": {
-            "fileName": "main.bal",
-            "startLine": {
-              "line": 34,
-              "offset": 0
-            },
-            "endLine": {
-              "line": 34,
-              "offset": 21
-            }
-          },
-          "type": "VARIABLE",
-          "name": "orderCounter",
-          "scope": "Global",
+          "visibility": "module",
           "children": {}
         },
         "_telegramAgentModel": {
@@ -116,6 +59,70 @@
           "type": "VARIABLE",
           "name": "_telegramAgentModel",
           "scope": "Global",
+          "visibility": "module",
+          "children": {}
+        },
+        "orders": {
+          "id": "orders",
+          "location": {
+            "fileName": "main.bal",
+            "startLine": {
+              "line": 12,
+              "offset": 0
+            },
+            "endLine": {
+              "line": 31,
+              "offset": 2
+            }
+          },
+          "type": "VARIABLE",
+          "name": "orders",
+          "scope": "Global",
+          "visibility": "module",
+          "children": {}
+        },
+        "orderCounter": {
+          "id": "orderCounter",
+          "location": {
+            "fileName": "main.bal",
+            "startLine": {
+              "line": 34,
+              "offset": 0
+            },
+            "endLine": {
+              "line": 34,
+              "offset": 21
+            }
+          },
+          "type": "VARIABLE",
+          "name": "orderCounter",
+          "scope": "Global",
+          "visibility": "module",
+          "children": {}
+        }
+      }
+    },
+    "Connections": {
+      "updates": {
+        "httpEp": {
+          "id": "httpEp",
+          "location": {
+            "fileName": "connections.bal",
+            "startLine": {
+              "line": 2,
+              "offset": 0
+            },
+            "endLine": {
+              "line": 2,
+              "offset": 64
+            }
+          },
+          "type": "CONNECTION",
+          "name": "httpEp",
+          "scope": "Global",
+          "visibility": "module",
+          "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.16.1.png",
+          "module": "http",
           "children": {}
         }
       }
@@ -138,6 +145,7 @@
           "type": "TYPE",
           "name": "Order",
           "scope": "Global",
+          "visibility": "module",
           "children": {}
         },
         "OrderRequest": {
@@ -156,6 +164,7 @@
           "type": "TYPE",
           "name": "OrderRequest",
           "scope": "Global",
+          "visibility": "module",
           "children": {}
         },
         "OrderItem": {
@@ -174,6 +183,7 @@
           "type": "TYPE",
           "name": "OrderItem",
           "scope": "Global",
+          "visibility": "module",
           "children": {}
         },
         "MenuItem": {
@@ -192,6 +202,7 @@
           "type": "TYPE",
           "name": "MenuItem",
           "scope": "Global",
+          "visibility": "module",
           "children": {}
         }
       }
@@ -220,7 +231,8 @@
           "type": "LISTENER",
           "name": "httpListener",
           "scope": "Global",
-          "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.15.0.png",
+          "visibility": "module",
+          "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.16.1.png",
           "module": "http",
           "children": {}
         }
@@ -250,6 +262,7 @@
           "type": "FUNCTION",
           "name": "isPalindrome",
           "scope": "Global",
+          "visibility": "public",
           "children": {}
         },
         "reverseString": {
@@ -268,6 +281,7 @@
           "type": "FUNCTION",
           "name": "reverseString",
           "scope": "Global",
+          "visibility": "public",
           "children": {}
         },
         "factorial": {
@@ -286,6 +300,7 @@
           "type": "FUNCTION",
           "name": "factorial",
           "scope": "Global",
+          "visibility": "public",
           "children": {}
         },
         "isPrime": {
@@ -304,6 +319,7 @@
           "type": "FUNCTION",
           "name": "isPrime",
           "scope": "Global",
+          "visibility": "public",
           "children": {}
         },
         "findMax": {
@@ -322,6 +338,7 @@
           "type": "FUNCTION",
           "name": "findMax",
           "scope": "Global",
+          "visibility": "public",
           "children": {}
         }
       }
@@ -344,6 +361,7 @@
           "type": "DATA_MAPPER",
           "name": "calculateOrderTotal",
           "scope": "Global",
+          "visibility": "module",
           "children": {}
         },
         "toOrder": {
@@ -362,6 +380,7 @@
           "type": "DATA_MAPPER",
           "name": "toOrder",
           "scope": "Global",
+          "visibility": "module",
           "children": {}
         }
       },
@@ -400,6 +419,7 @@
           "type": "DATA_MAPPER",
           "name": "mapMenuItemV1ToV2",
           "scope": "Global",
+          "visibility": "module",
           "children": {}
         },
         "menuItemToJson": {
@@ -418,6 +438,7 @@
           "type": "DATA_MAPPER",
           "name": "menuItemToJson",
           "scope": "Global",
+          "visibility": "module",
           "children": {}
         },
         "orderItemToJson": {
@@ -436,6 +457,7 @@
           "type": "DATA_MAPPER",
           "name": "orderItemToJson",
           "scope": "Global",
+          "visibility": "module",
           "children": {}
         }
       }
@@ -458,6 +480,7 @@
           "type": "CONFIGURABLE",
           "name": "telegramToken",
           "scope": "Global",
+          "visibility": "module",
           "children": {}
         },
         "port": {
@@ -476,6 +499,7 @@
           "type": "CONFIGURABLE",
           "name": "port",
           "scope": "Global",
+          "visibility": "module",
           "children": {}
         },
         "telegramChatId": {
@@ -494,6 +518,7 @@
           "type": "CONFIGURABLE",
           "name": "telegramChatId",
           "scope": "Global",
+          "visibility": "module",
           "children": {}
         }
       }
@@ -516,7 +541,8 @@
           "type": "SERVICE",
           "name": "HTTP Service - /restaurant",
           "scope": "Global",
-          "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.15.0.png",
+          "visibility": "module",
+          "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.16.1.png",
           "module": "http",
           "children": {
             "post#orders": {
@@ -536,6 +562,7 @@
               "name": "orders",
               "accessor": "post",
               "scope": "Global",
+              "visibility": "module",
               "children": {}
             },
             "get#items": {
@@ -555,6 +582,7 @@
               "name": "items",
               "accessor": "get",
               "scope": "Global",
+              "visibility": "module",
               "children": {}
             }
           }

@@ -20,12 +20,14 @@ package io.ballerina.flowmodelgenerator.core.model.node;
 
 import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
+import io.ballerina.flowmodelgenerator.core.ConnectionActionProvider;
 import io.ballerina.flowmodelgenerator.core.model.Codedata;
 import io.ballerina.flowmodelgenerator.core.model.FormBuilder;
 import io.ballerina.flowmodelgenerator.core.model.NodeBuilder;
 import io.ballerina.flowmodelgenerator.core.model.NodeKind;
 import io.ballerina.flowmodelgenerator.core.model.Property;
 import io.ballerina.flowmodelgenerator.core.model.SourceBuilder;
+import io.ballerina.flowmodelgenerator.core.utils.ConnectorUtil;
 import io.ballerina.flowmodelgenerator.core.utils.FlowNodeUtil;
 import io.ballerina.flowmodelgenerator.core.utils.ParamUtils;
 import io.ballerina.modelgenerator.commons.CommonUtils;
@@ -40,10 +42,12 @@ import org.ballerinalang.langserver.commons.workspace.WorkspaceManager;
 import org.eclipse.lsp4j.TextEdit;
 
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Represents a new connection node in the flow model.
@@ -61,16 +65,9 @@ public class NewConnectionBuilder extends CallBuilder {
     public static final String CONNECTION_NAME_DOC = "Name of the connection";
     private static final String CONNECTIONS_BAL = "connections.bal";
     private static final String DRIVER_SUB_PACKAGE = ".driver";
-    public static final List<String> CONNECTION_DRIVERS = List.of(
-            "ballerinax/mysql",
-            "ballerinax/postgresql",
-            "ballerinax/oracledb",
-            "ballerinax/mssql"
-    );
 
     @Override
     public void setConcreteConstData() {
-        metadata().label(NEW_CONNECTION_LABEL);
         codedata().node(NodeKind.NEW_CONNECTION).symbol(INIT_SYMBOL);
     }
 
@@ -111,13 +108,14 @@ public class NewConnectionBuilder extends CallBuilder {
             sourceBuilder.acceptImport();
         }
 
+        preloadConnectorActions(sourceBuilder);
         return sourceBuilder.build();
     }
 
     private static void checkDriverImport(SourceBuilder sourceBuilder, Codedata codedata, Path filePath) {
         // TODO: This information should be embedded to the package index.
         // Check if the new connection requires a driver import
-        if (CONNECTION_DRIVERS.contains(codedata.getImportSignature())) {
+        if (CommonUtils.PERSIST_DB_DRIVERS.contains(codedata.getImportSignature())) {
             sourceBuilder.acceptImport(codedata.org(), codedata.module() + DRIVER_SUB_PACKAGE, true);
         }
     }
@@ -134,7 +132,9 @@ public class NewConnectionBuilder extends CallBuilder {
                         codedata.version()))
                 .lsClientLogger(context.lsClientLogger())
                 .functionResultKind(FunctionData.Kind.CONNECTOR)
-                .userModuleInfo(moduleInfo);
+                .userModuleInfo(moduleInfo)
+                .workspaceManager(context.workspaceManager())
+                .filePath(context.filePath());
 
         // TODO: If we set the module info properly this logic can be removed.
         if (Boolean.TRUE.equals(codedata.isGenerated())) {
@@ -160,7 +160,7 @@ public class NewConnectionBuilder extends CallBuilder {
 
         functionData = functionDataBuilder.build();
         metadata()
-                .label(functionData.packageName())
+                .label(ConnectorUtil.getConnectorName(functionData.name(), functionData.moduleName()))
                 .description(functionData.description())
                 .icon(CommonUtils.generateIcon(functionData.org(), functionData.packageName(),
                         functionData.version()));
@@ -174,7 +174,8 @@ public class NewConnectionBuilder extends CallBuilder {
                 .symbol(INIT_SYMBOL)
                 .isGenerated(codedata.isGenerated());
 
-        setParameterProperties(functionData);
+        Module module = context.workspaceManager().module(context.filePath()).orElse(null);
+        setParameterProperties(functionData, module);
 
         if (CommonUtils.hasReturn(functionData.returnType())) {
             setReturnTypeProperties(functionData, context, CONNECTION_NAME_LABEL, CONNECTION_NAME_DOC, true);
@@ -185,12 +186,32 @@ public class NewConnectionBuilder extends CallBuilder {
                 .checkError(true, CHECK_ERROR_DOC, false);
     }
 
-    protected void setParameterProperties(FunctionData function) {
+    private void preloadConnectorActions(SourceBuilder sourceBuilder) {
+        CompletableFuture.runAsync(() -> {
+            ConnectionActionProvider.getInstance().populate(sourceBuilder.flowNode.codedata(),
+                    sourceBuilder.workspaceManager, sourceBuilder.filePath);
+        });
+    }
+
+    @Override
+    protected void setReturnTypeProperties(FunctionData functionData, TemplateContext context, String label, String doc,
+                                           boolean hidden) {
+        Set<String> existingNames = new HashSet<>(context.getAllModuleSymbolNames());
+        if (context.position() != null) {
+            existingNames.addAll(context.getAllVisibleSymbolNames());
+        }
+        properties()
+                .type(functionData.returnType(), false, functionData.importStatements(), hidden,
+                        Property.RESULT_TYPE_LABEL)
+                .data(functionData.returnType(), existingNames, label, doc, true);
+    }
+
+    protected void setParameterProperties(FunctionData function, Module module) {
         boolean hasOnlyRestParams = function.parameters().size() == 1;
 
         for (ParameterData paramResult : function.parameters().values()) {
             if (paramResult.kind() == ParameterData.Kind.PARAM_FOR_TYPE_INFER) {
-                buildInferredTypeProperty(this, paramResult, null);
+                buildInferredTypeProperty(this, paramResult, null, module);
                 continue;
             }
 
@@ -212,8 +233,6 @@ public class NewConnectionBuilder extends CallBuilder {
                     .stepOut()
                     .placeholder(paramResult.placeholder())
                     .defaultValue(paramResult.defaultValue())
-                    .typeConstraint(paramResult.type())
-                    .typeMembers(paramResult.typeMembers())
                     .editable()
                     .defaultable(paramResult.optional());
 
@@ -223,20 +242,31 @@ public class NewConnectionBuilder extends CallBuilder {
                         customPropBuilder.defaultable(false);
                     }
                     unescapedParamName = "additionalValues";
-                    customPropBuilder.type(Property.ValueType.MAPPING_EXPRESSION_SET);
+                    Property template = customPropBuilder.buildRepeatableTemplates(paramResult.typeSymbol(),
+                            semanticModel, moduleInfo);
+                    customPropBuilder.type()
+                            .fieldType(Property.ValueType.REPEATABLE_MAP)
+                            .ballerinaType(paramResult.type())
+                            .template(template)
+                            .selected(true)
+                            .stepOut();
                 }
                 case REST_PARAMETER -> {
                     if (hasOnlyRestParams) {
                         customPropBuilder.defaultable(false);
                     }
-                    customPropBuilder.type(Property.ValueType.EXPRESSION_SET);
+                    Property template = customPropBuilder.buildRepeatableTemplates(paramResult.typeSymbol(),
+                            semanticModel, moduleInfo);
+                    customPropBuilder.type()
+                            .fieldType(Property.ValueType.REPEATABLE_LIST)
+                            .ballerinaType(paramResult.type())
+                            .template(template)
+                            .selected(true)
+                            .stepOut();
                 }
                 default -> {
-                    if (paramResult.type() instanceof List<?>) {
-                        customPropBuilder.type(Property.ValueType.SINGLE_SELECT);
-                    } else {
-                        customPropBuilder.type(Property.ValueType.EXPRESSION);
-                    }
+                    customPropBuilder.typeWithExpression(paramResult.typeSymbol(), moduleInfo,
+                            paramResult.defaultValue());
                 }
             }
 

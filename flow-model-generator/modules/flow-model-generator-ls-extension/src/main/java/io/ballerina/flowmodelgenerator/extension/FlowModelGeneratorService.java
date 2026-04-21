@@ -32,7 +32,6 @@ import io.ballerina.flowmodelgenerator.core.EnclosedNodeFinder;
 import io.ballerina.flowmodelgenerator.core.ErrorHandlerGenerator;
 import io.ballerina.flowmodelgenerator.core.ModelGenerator;
 import io.ballerina.flowmodelgenerator.core.NodeTemplateGenerator;
-import io.ballerina.flowmodelgenerator.core.OpenApiServiceGenerator;
 import io.ballerina.flowmodelgenerator.core.SourceGenerator;
 import io.ballerina.flowmodelgenerator.core.SuggestedComponentService;
 import io.ballerina.flowmodelgenerator.core.SuggestedModelGenerator;
@@ -52,7 +51,6 @@ import io.ballerina.flowmodelgenerator.extension.request.FlowModelSourceGenerato
 import io.ballerina.flowmodelgenerator.extension.request.FlowModelSuggestedGenerationRequest;
 import io.ballerina.flowmodelgenerator.extension.request.FlowNodeDeleteRequest;
 import io.ballerina.flowmodelgenerator.extension.request.FunctionDefinitionRequest;
-import io.ballerina.flowmodelgenerator.extension.request.OpenAPIServiceGenerationRequest;
 import io.ballerina.flowmodelgenerator.extension.request.SearchNodesRequest;
 import io.ballerina.flowmodelgenerator.extension.request.SearchRequest;
 import io.ballerina.flowmodelgenerator.extension.request.ServiceFieldNodesRequest;
@@ -66,7 +64,6 @@ import io.ballerina.flowmodelgenerator.extension.response.FlowModelNodeTemplateR
 import io.ballerina.flowmodelgenerator.extension.response.FlowModelSourceGeneratorResponse;
 import io.ballerina.flowmodelgenerator.extension.response.FlowNodeDeleteResponse;
 import io.ballerina.flowmodelgenerator.extension.response.FunctionDefinitionResponse;
-import io.ballerina.flowmodelgenerator.extension.response.OpenApiServiceGenerationResponse;
 import io.ballerina.flowmodelgenerator.extension.response.SearchNodesResponse;
 import io.ballerina.modelgenerator.commons.CommonUtils;
 import io.ballerina.modelgenerator.commons.ModuleInfo;
@@ -84,6 +81,7 @@ import io.ballerina.tools.text.TextEdit;
 import io.ballerina.tools.text.TextRange;
 import org.ballerinalang.annotation.JavaSPIService;
 import org.ballerinalang.langserver.LSClientLogger;
+import org.ballerinalang.langserver.common.utils.PathUtil;
 import org.ballerinalang.langserver.commons.LanguageServerContext;
 import org.ballerinalang.langserver.commons.service.spi.ExtendedLanguageServerService;
 import org.ballerinalang.langserver.commons.workspace.WorkspaceManager;
@@ -131,10 +129,9 @@ public class FlowModelGeneratorService implements ExtendedLanguageServerService 
         return CompletableFuture.supplyAsync(() -> {
             FlowModelGeneratorResponse response = new FlowModelGeneratorResponse();
             try {
-                Path filePath = Path.of(request.filePath());
-                WorkspaceManager workspaceManager = this.workspaceManagerProxy.get();
-
+                Path filePath = PathUtil.convertUriStringToPath(request.filePath());
                 // Obtain the semantic model and the document
+                WorkspaceManager workspaceManager = workspaceManagerProxy.get(request.filePath());
                 Project project = workspaceManager.loadProject(filePath);
                 Optional<SemanticModel> semanticModel = workspaceManager.semanticModel(filePath);
                 Optional<Document> document = workspaceManager.document(filePath);
@@ -305,10 +302,11 @@ public class FlowModelGeneratorService implements ExtendedLanguageServerService 
                 }
 
                 AvailableNodesGenerator generator = new AvailableNodesGenerator(semanticModel.get(),
-                        document.get(), project.currentPackage());
+                        document.get(), project.currentPackage(), filePath);
                 boolean disableBallerinaAiNodes = AgentsGenerator.getAiModuleOrgName(request.filePath(),
                         workspaceManager).equals(BALLERINAX_ORG_NAME);
-                response.setCategories(generator.getAvailableNodes(disableBallerinaAiNodes, request.position()));
+                response.setCategories(generator.getAvailableNodes(disableBallerinaAiNodes, request.position(),
+                        request.queryMap()));
             } catch (Throwable e) {
                 response.setError(e);
             }
@@ -352,6 +350,13 @@ public class FlowModelGeneratorService implements ExtendedLanguageServerService 
     }
 
     @JsonRequest
+    public CompletableFuture<FlowModelAvailableNodesResponse> getAvailableAgents(
+            FlowModelAvailableNodesRequest request) {
+        return handleAvailableNodesRequest(request,
+                generator -> generator.getAvailableAgents(request.position()));
+    }
+
+    @JsonRequest
     public CompletableFuture<FlowModelAvailableNodesResponse> getAvailableModelProviders(
             FlowModelAvailableNodesRequest request) {
         return handleAvailableNodesRequest(request,
@@ -375,7 +380,7 @@ public class FlowModelGeneratorService implements ExtendedLanguageServerService 
                 }
 
                 AvailableNodesGenerator generator = new AvailableNodesGenerator(semanticModel.get(),
-                        document.get(), project.currentPackage());
+                        document.get(), project.currentPackage(), filePath);
                 response.setCategories(categoryProvider.apply(generator));
             } catch (Throwable e) {
                 response.setError(e);
@@ -390,10 +395,12 @@ public class FlowModelGeneratorService implements ExtendedLanguageServerService 
         return CompletableFuture.supplyAsync(() -> {
             FlowModelNodeTemplateResponse response = new FlowModelNodeTemplateResponse();
             try {
-                NodeTemplateGenerator generator = new NodeTemplateGenerator(lsClientLogger);
                 Path filePath = Path.of(request.filePath());
+                workspaceManagerProxy.get().loadProject(filePath);
+                NodeTemplateGenerator generator = new NodeTemplateGenerator(lsClientLogger);
                 JsonElement nodeTemplate = generator.getNodeTemplate(this.workspaceManagerProxy.get(),
                         filePath, request.position(), request.id());
+                propagateCodedataDataToTemplate(request.id(), nodeTemplate);
                 response.setFlowNode(nodeTemplate);
             } catch (Throwable e) {
                 response.setError(e);
@@ -517,25 +524,6 @@ public class FlowModelGeneratorService implements ExtendedLanguageServerService 
     }
 
     @JsonRequest
-    public CompletableFuture<OpenApiServiceGenerationResponse> generateServiceFromOpenApiContract(
-            OpenAPIServiceGenerationRequest request) {
-
-        return CompletableFuture.supplyAsync(() -> {
-            OpenApiServiceGenerationResponse response = new OpenApiServiceGenerationResponse();
-            try {
-                Path openApiContractPath = Path.of(request.openApiContractPath());
-                Path projectPath = Path.of(request.projectPath());
-                OpenApiServiceGenerator openApiServiceGenerator = new OpenApiServiceGenerator(openApiContractPath,
-                        projectPath, workspaceManagerProxy.get());
-                response.setTextEdits(openApiServiceGenerator.generateService(request.name(), request.listeners()));
-            } catch (Throwable e) {
-                response.setError(e);
-            }
-            return response;
-        });
-    }
-
-    @JsonRequest
     public CompletableFuture<FlowModelSourceGeneratorResponse> addErrorHandler(FilePathRequest request) {
 
         return CompletableFuture.supplyAsync(() -> {
@@ -556,8 +544,8 @@ public class FlowModelGeneratorService implements ExtendedLanguageServerService 
         return CompletableFuture.supplyAsync(() -> {
             EnclosedFuncDefResponse response = new EnclosedFuncDefResponse();
             try {
-                Path path = Path.of(request.filePath());
-                WorkspaceManager workspaceManager = this.workspaceManagerProxy.get();
+                Path path = PathUtil.convertUriStringToPath(request.filePath());
+                WorkspaceManager workspaceManager = this.workspaceManagerProxy.get(request.filePath());
                 Project project = workspaceManager.loadProject(path);
                 Optional<Document> document = workspaceManager.document(path);
                 if (document.isEmpty()) {
@@ -640,19 +628,30 @@ public class FlowModelGeneratorService implements ExtendedLanguageServerService 
                 Path filePath = Path.of(request.filePath());
                 WorkspaceManager workspaceManager = this.workspaceManagerProxy.get();
 
-                // Obtain the semantic model and the document
                 Project project = workspaceManager.loadProject(filePath);
-                SemanticModel semanticModel = FileSystemUtils.getSemanticModel(workspaceManager, filePath);
-                Optional<Document> document = workspaceManager.document(filePath);
-                if (document.isEmpty()) {
-                    return response;
+                SemanticModel semanticModel;
+                Document document = null;
+                LinePosition position = request.position();
+
+                if (Files.isDirectory(filePath)) {
+                    // For project paths, use the default module's semantic model
+                    semanticModel = PackageUtil.getCompilation(project.currentPackage())
+                            .getSemanticModel(project.currentPackage().getDefaultModule().moduleId());
+                    position = null;
+                } else {
+                    semanticModel = FileSystemUtils.getSemanticModel(workspaceManager, filePath);
+                    Optional<Document> optDocument = workspaceManager.document(filePath);
+                    if (optDocument.isEmpty()) {
+                        return response;
+                    }
+                    document = optDocument.get();
                 }
 
                 // Generate the flow nodes based on search criteria
                 ModelGenerator modelGenerator = new ModelGenerator(project, semanticModel, filePath, workspaceManager);
                 Gson gson = new Gson();
                 JsonElement jsonElement = gson.toJsonTree(
-                        modelGenerator.searchNodes(document.get(), request.position(), request.queryMap()));
+                        modelGenerator.searchNodes(document, position, request.queryMap()));
                 response.setOutput(jsonElement.getAsJsonArray());
             } catch (Throwable e) {
                 response.setError(e);
@@ -683,7 +682,16 @@ public class FlowModelGeneratorService implements ExtendedLanguageServerService 
 
                 SearchCommand command = SearchCommand.from(searchKind, project, position, request.queryMap(),
                         functionsDoc.orElse(null));
-                response.setCategories(command.execute());
+                JsonArray categories = command.execute();
+                if (request.position() != null) {
+                    Optional<Document> document = workspaceManager.document(filePath);
+                    LinePosition cursorPosition = request.position().startLine();
+                    if (document.isPresent() &&
+                            AvailableNodesGenerator.isInsideTestFunction(document.get(), cursorPosition)) {
+                        AvailableNodesGenerator.addFilePathToNodes(categories, filePath.toString());
+                    }
+                }
+                response.setCategories(categories);
             } catch (Throwable e) {
                 response.setError(e);
             }
@@ -709,5 +717,32 @@ public class FlowModelGeneratorService implements ExtendedLanguageServerService 
         } catch (Throwable e) {
             return Optional.empty();
         }
+    }
+
+    private void propagateCodedataDataToTemplate(JsonObject requestId, JsonElement nodeTemplate) {
+        if (!requestId.has("data") || !requestId.get("data").isJsonObject()) {
+            return;
+        }
+        JsonObject requestData = requestId.getAsJsonObject("data");
+        if (!requestData.has("filePath")) {
+            return;
+        }
+        String testFilePath = requestData.get("filePath").getAsString();
+        if (!nodeTemplate.isJsonObject()) {
+            return;
+        }
+        JsonObject templateObj = nodeTemplate.getAsJsonObject();
+        if (!templateObj.has("codedata")) {
+            return;
+        }
+        JsonObject codedata = templateObj.getAsJsonObject("codedata");
+        JsonObject data;
+        if (codedata.has("data") && codedata.get("data").isJsonObject()) {
+            data = codedata.getAsJsonObject("data");
+        } else {
+            data = new JsonObject();
+            codedata.add("data", data);
+        }
+        data.addProperty("filePath", testFilePath);
     }
 }

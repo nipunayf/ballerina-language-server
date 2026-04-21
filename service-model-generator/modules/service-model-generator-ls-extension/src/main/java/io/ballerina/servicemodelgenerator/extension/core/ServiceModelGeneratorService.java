@@ -33,6 +33,7 @@ import io.ballerina.compiler.syntax.tree.ServiceDeclarationNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.compiler.syntax.tree.SyntaxTree;
 import io.ballerina.modelgenerator.commons.CommonUtils;
+import io.ballerina.modelgenerator.commons.ModuleInfo;
 import io.ballerina.modelgenerator.commons.PackageUtil;
 import io.ballerina.modelgenerator.commons.ServiceDatabaseManager;
 import io.ballerina.modelgenerator.commons.ServiceDeclaration;
@@ -47,6 +48,7 @@ import io.ballerina.servicemodelgenerator.extension.builder.ServiceBuilderRouter
 import io.ballerina.servicemodelgenerator.extension.model.Codedata;
 import io.ballerina.servicemodelgenerator.extension.model.Function;
 import io.ballerina.servicemodelgenerator.extension.model.Listener;
+import io.ballerina.servicemodelgenerator.extension.model.Option;
 import io.ballerina.servicemodelgenerator.extension.model.Service;
 import io.ballerina.servicemodelgenerator.extension.model.ServiceClass;
 import io.ballerina.servicemodelgenerator.extension.model.TriggerBasicInfo;
@@ -84,6 +86,7 @@ import io.ballerina.servicemodelgenerator.extension.model.response.ServiceInitMo
 import io.ballerina.servicemodelgenerator.extension.model.response.ServiceModelResponse;
 import io.ballerina.servicemodelgenerator.extension.model.response.TriggerListResponse;
 import io.ballerina.servicemodelgenerator.extension.model.response.TriggerResponse;
+import io.ballerina.servicemodelgenerator.extension.util.FTPListenerUtil;
 import io.ballerina.servicemodelgenerator.extension.util.ListenerUtil;
 import io.ballerina.servicemodelgenerator.extension.util.ServiceClassUtil;
 import io.ballerina.servicemodelgenerator.extension.util.TypeCompletionGenerator;
@@ -119,6 +122,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import static io.ballerina.servicemodelgenerator.extension.util.Constants.DEFAULT;
+import static io.ballerina.servicemodelgenerator.extension.util.Constants.FTP;
 import static io.ballerina.servicemodelgenerator.extension.util.Constants.HTTP;
 import static io.ballerina.servicemodelgenerator.extension.util.Constants.NEW_LINE;
 import static io.ballerina.servicemodelgenerator.extension.util.Constants.NEW_LINE_WITH_TAB;
@@ -203,6 +207,10 @@ public class ServiceModelGeneratorService implements ExtendedLanguageServerServi
                 SemanticModel semanticModel = PackageUtil.getCompilation(currentPackage).getSemanticModel(moduleId);
                 Set<String> listeners = ListenerUtil.getCompatibleListeners(request.moduleName(),
                         semanticModel, project);
+                if (FTP.equals(request.moduleName()) && request.removeDeprecated() != null) {
+                    listeners = FTPListenerUtil.filterFtpListenersByDeprecatedMode(listeners,
+                            request.removeDeprecated(), semanticModel, project);
+                }
                 return new ListenerDiscoveryResponse(listeners);
             } catch (Throwable e) {
                 return new ListenerDiscoveryResponse(e);
@@ -220,8 +228,30 @@ public class ServiceModelGeneratorService implements ExtendedLanguageServerServi
     public CompletableFuture<ListenerModelResponse> getListenerModel(ListenerModelRequest request) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                return ListenerUtil.getListenerModelByName(request.orgName(),
-                                request.moduleName()).map(ListenerModelResponse::new)
+                Path filePath = Path.of(request.filePath());
+
+                this.workspaceManager.loadProject(filePath);
+                Optional<SemanticModel> semanticModel = this.workspaceManager.semanticModel(filePath);
+                Optional<Document> documentOpt = this.workspaceManager.document(filePath);
+
+                if (documentOpt.isEmpty() || semanticModel.isEmpty()) {
+                    throw new RuntimeException("Unable to load the document or semantic model for the " +
+                            "provided file path: " + filePath);
+                }
+
+                Document document = documentOpt.get();
+                ModuleInfo moduleInfo = ModuleInfo.from(document.module().descriptor());
+
+                boolean removeDeprecated = request.removeDeprecated() == null || request.removeDeprecated();
+                return ListenerUtil.getListenerModelByName(request.codedata(), semanticModel.get(), moduleInfo,
+                                removeDeprecated)
+                        .map(listenerModel -> {
+                            if (FTP.equals(request.codedata().getModuleName()) && request.removeDeprecated() != null) {
+                                FTPListenerUtil.adjustFtpListenerModelForDeprecatedMode(
+                                        listenerModel, request.removeDeprecated(), semanticModel.get(), document);
+                            }
+                            return new ListenerModelResponse(listenerModel);
+                        })
                         .orElseGet(ListenerModelResponse::new);
             } catch (Throwable e) {
                 return new ListenerModelResponse(e);
@@ -322,6 +352,7 @@ public class ServiceModelGeneratorService implements ExtendedLanguageServerServi
      * @param request Service model request
      * @return {@link ServiceModelResponse} of the service model response
      */
+    @Deprecated
     @JsonRequest
     public CompletableFuture<ServiceModelResponse> getServiceModel(ServiceModelRequest request) {
         return CompletableFuture.supplyAsync(() -> {
@@ -344,7 +375,7 @@ public class ServiceModelGeneratorService implements ExtendedLanguageServerServi
                 }
                 Set<String> listenersList = ListenerUtil.getCompatibleListeners(request.moduleName(), semanticModel,
                         project);
-                serviceModel.getListener().setItems(listenersList.stream().map(l -> (Object) l).toList());
+                serviceModel.getListener().getTypes().getFirst().options().addAll(Option.of(listenersList));
                 return new ServiceModelResponse(serviceModel);
             } catch (Throwable e) {
                 return new ServiceModelResponse(e);
@@ -359,6 +390,7 @@ public class ServiceModelGeneratorService implements ExtendedLanguageServerServi
      * @return {@link CommonSourceResponse} of the common source response
      */
     @JsonRequest
+    @Deprecated
     public CompletableFuture<CommonSourceResponse> addService(ServiceSourceRequest request) {
         return CompletableFuture.supplyAsync(() -> {
             try {
@@ -389,7 +421,7 @@ public class ServiceModelGeneratorService implements ExtendedLanguageServerServi
         return CompletableFuture.supplyAsync(() -> {
             List<TriggerBasicInfo> triggerBasicInfoList = triggerProperties.values().stream()
                     .filter(triggerProperty -> filterTriggers(triggerProperty, request))
-                    .map(trigger -> getTriggerBasicInfoByName(trigger.orgName(), trigger.name()))
+                    .map(this::getTriggerBasicInfoByName)
                     .flatMap(Optional::stream)
                     .toList();
             return new TriggerListResponse(triggerBasicInfoList);
@@ -536,14 +568,11 @@ public class ServiceModelGeneratorService implements ExtendedLanguageServerServi
             try {
                 Path filePath = Path.of(request.filePath());
 
-                Project project = this.workspaceManager.loadProject(filePath);
-                Package currentPackage = project.currentPackage();
-                Module module = currentPackage.module(ModuleName.from(currentPackage.packageName()));
-                SemanticModel semanticModel = PackageUtil.getCompilation(currentPackage)
-                        .getSemanticModel(module.moduleId());
-
+                this.workspaceManager.loadProject(filePath);
+                Optional<SemanticModel> semanticModel = this.workspaceManager.semanticModel(filePath);
                 Optional<Document> documentOpt = this.workspaceManager.document(filePath);
-                if (documentOpt.isEmpty()) {
+
+                if (documentOpt.isEmpty() || semanticModel.isEmpty()) {
                     return new ListenerFromSourceResponse();
                 }
 
@@ -551,7 +580,8 @@ public class ServiceModelGeneratorService implements ExtendedLanguageServerServi
                 NonTerminalNode node = findNonTerminalNode(request.codedata(), document);
                 String orgName = request.codedata().getOrgName();
 
-                return processListenerNode(node, orgName, semanticModel);
+                ModuleInfo moduleInfo = ModuleInfo.from(document.module().descriptor());
+                return processListenerNode(node, orgName, semanticModel.get(), moduleInfo);
             } catch (Exception e) {
                 return new ListenerFromSourceResponse(e);
             }
@@ -723,8 +753,15 @@ public class ServiceModelGeneratorService implements ExtendedLanguageServerServi
 
                 LineRange lineRange = listener.getCodedata().getLineRange();
                 String listenerDeclaration = listener.getListenerDefinition();
-                TextEdit basePathEdit = new TextEdit(Utils.toRange(lineRange), listenerDeclaration);
-                return new CommonSourceResponse(Map.of(request.filePath(), List.of(basePathEdit)));
+
+                List<TextEdit> edits = new ArrayList<>();
+                edits.add(new TextEdit(Utils.toRange(lineRange), listenerDeclaration));
+
+                // Add imports required by the FTP coordination config type cast
+                ModulePartNode modulePartNode = document.get().syntaxTree().rootNode();
+                FTPListenerUtil.addCoordinationConfigImports(listenerDeclaration, modulePartNode, edits);
+
+                return new CommonSourceResponse(Map.of(request.filePath(), edits));
             } catch (Throwable e) {
                 return new CommonSourceResponse(e);
             }
@@ -979,5 +1016,17 @@ public class ServiceModelGeneratorService implements ExtendedLanguageServerServi
                 protocol, icon);
 
         return Optional.of(triggerBasicInfo);
+    }
+
+    private Optional<TriggerBasicInfo> getTriggerBasicInfoByName(TriggerProperty triggerProperty) {
+        if (triggerProperty.triggerName() == null) {
+            return getTriggerBasicInfoByName(triggerProperty.orgName(), triggerProperty.name());
+        }
+
+        return getTriggerBasicInfoByName(triggerProperty.orgName(), triggerProperty.name())
+                .map(original -> new TriggerBasicInfo(original.id(), triggerProperty.triggerName(), original.orgName(),
+                        original.packageName(), original.moduleName(), original.version(), original.type(),
+                        original.displayName(), original.documentation(), original.listenerProtocol(),
+                        original.icon()));
     }
 }

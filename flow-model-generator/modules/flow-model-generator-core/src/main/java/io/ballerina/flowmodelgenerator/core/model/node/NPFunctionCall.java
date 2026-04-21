@@ -1,6 +1,5 @@
 package io.ballerina.flowmodelgenerator.core.model.node;
 
-import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.flowmodelgenerator.core.Constants;
 import io.ballerina.flowmodelgenerator.core.model.Codedata;
 import io.ballerina.flowmodelgenerator.core.model.FormBuilder;
@@ -12,9 +11,8 @@ import io.ballerina.modelgenerator.commons.CommonUtils;
 import io.ballerina.modelgenerator.commons.FunctionData;
 import io.ballerina.modelgenerator.commons.FunctionDataBuilder;
 import io.ballerina.modelgenerator.commons.ModuleInfo;
-import io.ballerina.modelgenerator.commons.PackageUtil;
 import io.ballerina.modelgenerator.commons.ParameterData;
-import org.ballerinalang.langserver.commons.workspace.WorkspaceManager;
+import io.ballerina.projects.Module;
 
 public class NPFunctionCall extends FunctionCall {
 
@@ -31,8 +29,11 @@ public class NPFunctionCall extends FunctionCall {
         return super.getFunctionResultKind();
     }
 
+    // module is intentionally unused: PARAM_FOR_TYPE_INFER and INCLUDED_RECORD parameters are skipped
+    // for NP functions, so the record-field-selector logic that requires a Module is never reached here.
+    // The parameter is kept to match the parent-class API.
     @Override
-    protected void setParameterProperties(FunctionData function) {
+    protected void setParameterProperties(FunctionData function, Module module) {
         boolean hasOnlyRestParams = function.parameters().size() == 1;
         for (ParameterData paramResult : function.parameters().values()) {
             if (paramResult.kind().equals(ParameterData.Kind.PARAM_FOR_TYPE_INFER)
@@ -57,7 +58,6 @@ public class NPFunctionCall extends FunctionCall {
                         .stepOut()
                     .placeholder(paramResult.placeholder())
                     .defaultValue(paramResult.defaultValue())
-                    .typeConstraint(paramResult.type())
                     .imports(paramResult.importStatements())
                     .editable()
                     .defaultable(paramResult.optional());
@@ -68,15 +68,29 @@ public class NPFunctionCall extends FunctionCall {
                         customPropBuilder.defaultable(false);
                     }
                     unescapedParamName = "additionalValues";
-                    customPropBuilder.type(Property.ValueType.MAPPING_EXPRESSION_SET);
+                    Property template = customPropBuilder.buildRepeatableTemplates(paramResult.typeSymbol(),
+                            semanticModel, moduleInfo);
+                    customPropBuilder.type()
+                            .fieldType(Property.ValueType.REPEATABLE_MAP)
+                            .ballerinaType(paramResult.type())
+                            .template(template)
+                            .selected(true)
+                            .stepOut();
                 }
                 case REST_PARAMETER -> {
                     if (hasOnlyRestParams) {
                         customPropBuilder.defaultable(false);
                     }
-                    customPropBuilder.type(Property.ValueType.EXPRESSION_SET);
+                    Property template = customPropBuilder.buildRepeatableTemplates(paramResult.typeSymbol(),
+                            semanticModel, moduleInfo);
+                    customPropBuilder.type()
+                            .fieldType(Property.ValueType.REPEATABLE_LIST)
+                            .ballerinaType(paramResult.type())
+                            .template(template)
+                            .selected(true)
+                            .stepOut();
                 }
-                default -> customPropBuilder.type(Property.ValueType.EXPRESSION);
+                default -> customPropBuilder.typeWithExpression(paramResult.typeSymbol(), moduleInfo);
             }
 
             customPropBuilder
@@ -89,23 +103,15 @@ public class NPFunctionCall extends FunctionCall {
     public void setConcreteTemplateData(TemplateContext context) {
         Codedata codedata = context.codedata();
 
+        ModuleInfo targetModuleInfo = new ModuleInfo(codedata.org(), codedata.packageName(), codedata.module(),
+                codedata.version());
         FunctionDataBuilder functionDataBuilder = new FunctionDataBuilder()
                 .name(codedata.symbol())
-                .moduleInfo(new ModuleInfo(codedata.org(), codedata.module(), codedata.module(), codedata.version()))
+                .moduleInfo(targetModuleInfo)
                 .functionResultKind(getFunctionResultKind())
-                .userModuleInfo(moduleInfo);
-
-        // Set the semantic model if the function is local
-        boolean isLocalFunction = isLocalFunction(context.workspaceManager(), context.filePath(), codedata);
-        if (isLocalFunction) {
-            WorkspaceManager workspaceManager = context.workspaceManager();
-            PackageUtil.loadProject(context.workspaceManager(), context.filePath());
-            context.workspaceManager().module(context.filePath())
-                    .map(module -> ModuleInfo.from(module.descriptor()))
-                    .ifPresent(functionDataBuilder::userModuleInfo);
-            SemanticModel semanticModel = workspaceManager.semanticModel(context.filePath()).orElseThrow();
-            functionDataBuilder.semanticModel(semanticModel);
-        }
+                .userModuleInfo(moduleInfo)
+                .workspaceManager(context.workspaceManager())
+                .filePath(context.filePath());
         FunctionData functionData = functionDataBuilder.build();
 
         metadata()
@@ -119,14 +125,15 @@ public class NPFunctionCall extends FunctionCall {
                 .object(codedata.object())
                 .version(codedata.version())
                 .symbol(codedata.symbol());
-        setParameterProperties(functionData);
+        Module module = context.workspaceManager().module(context.filePath()).orElse(null);
+        setParameterProperties(functionData, module);
 
         String returnTypeName = functionData.returnType();
         if (CommonUtils.hasReturn(functionData.returnType())) {
             properties()
                     .type(returnTypeName, functionData.inferredReturnType(), functionData.importStatements(), false)
                     .data(returnTypeName, context.getAllVisibleSymbolNames(), Property.RESULT_NAME,
-                            Property.RESULT_DOC);
+                            Property.RESULT_DOC, false);
         }
 
         if (functionData.returnError()) {

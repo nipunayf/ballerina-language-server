@@ -84,12 +84,12 @@ public class DataMapperDefinitionBuilder extends NodeBuilder {
                     .label(OUTPUT_LABEL)
                     .description(OUTPUT_DOC)
                     .stepOut()
-                .value(returnType)
-                .type(Property.ValueType.TYPE)
-                .typeConstraint(RETURN_TYPE)
+                .value(returnType == null ? "" : returnType)
+                .type(Property.ValueType.TYPE, RETURN_TYPE)
                 .editable()
                 .stepOut()
                 .addProperty(Property.TYPE_KEY)
+                .isPublic(false, false, true, false)
                 .nestedProperty();
     }
 
@@ -105,6 +105,11 @@ public class DataMapperDefinitionBuilder extends NodeBuilder {
 
     @Override
     public Map<Path, List<TextEdit>> toSource(SourceBuilder sourceBuilder) {
+        Optional<Property> visibilityProperty = sourceBuilder.getProperty(Property.IS_PUBLIC_KEY);
+        if (visibilityProperty.isPresent() && Boolean.parseBoolean(visibilityProperty.get().value().toString())) {
+            sourceBuilder.token().keyword(SyntaxKind.PUBLIC_KEYWORD);
+        }
+
         sourceBuilder.token().keyword(SyntaxKind.FUNCTION_KEYWORD);
 
         // Write the data mapper name

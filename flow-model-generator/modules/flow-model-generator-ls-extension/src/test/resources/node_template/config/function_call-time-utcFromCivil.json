@@ -18,7 +18,7 @@
     "metadata": {
       "label": "utcFromCivil",
       "description": "Converts a given `Civil` value to an `Utc` timestamp.\n```ballerina\ntime:Civil civil = time:utcToCivil(time:utcNow());\ntime:Utc utc = time:utcFromCivil(civil);\n```",
-      "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_time_2.7.0.png"
+      "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_time_2.5.0.png"
     },
     "codedata": {
       "node": "FUNCTION_CALL",
@@ -36,8 +36,27 @@
           "label": "Civil Time",
           "description": "`time:Civil` time"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "time:Civil",
+        "types": [
+          {
+            "fieldType": "RECORD_MAP_EXPRESSION",
+            "ballerinaType": "time:Civil",
+            "typeMembers": [
+              {
+                "type": "Civil",
+                "packageInfo": "ballerina:time:2.5.0",
+                "packageName": "time",
+                "kind": "RECORD_TYPE",
+                "selected": false
+              }
+            ],
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "time:Civil",
+            "selected": false
+          }
+        ],
         "placeholder": "{year: 0, month: 0, day: 0, hour: 0, minute: 0}",
         "optional": false,
         "editable": true,
@@ -46,23 +65,19 @@
         "codedata": {
           "kind": "REQUIRED",
           "originalName": "civilTime"
-        },
-        "typeMembers": [
-          {
-            "type": "Civil",
-            "packageInfo": "ballerina:time:2.7.0",
-            "packageName": "time",
-            "kind": "RECORD_TYPE",
-            "selected": false
-          }
-        ]
+        }
       },
       "type": {
         "metadata": {
           "label": "Result Type",
           "description": "Type of the variable"
         },
-        "valueType": "TYPE",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "selected": true
+          }
+        ],
         "value": "time:Utc",
         "placeholder": "var",
         "optional": false,
@@ -76,7 +91,12 @@
           "label": "Result",
           "description": "Name of the result variable"
         },
-        "valueType": "IDENTIFIER",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
         "value": "timeUtc",
         "optional": false,
         "editable": true,
@@ -88,7 +108,12 @@
           "label": "Check Error",
           "description": "Trigger error flow"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": true,
         "optional": false,
         "editable": true,

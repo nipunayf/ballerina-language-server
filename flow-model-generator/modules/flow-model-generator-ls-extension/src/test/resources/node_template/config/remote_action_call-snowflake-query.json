@@ -40,8 +40,13 @@
           "label": "Connection",
           "description": "Connection to use"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "snowflake:Client",
+        "types": [
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "snowflake:Client",
+            "selected": false
+          }
+        ],
         "value": "snowflakeCl",
         "optional": false,
         "editable": false,
@@ -53,9 +58,19 @@
           "label": "SQL Query",
           "description": "The SQL query such as `` `SELECT * from Album WHERE name=${albumName}` ``"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "sql:ParameterizedQuery",
-        "placeholder": "``",
+        "types": [
+          {
+            "fieldType": "SQL_QUERY",
+            "ballerinaType": "sql:ParameterizedQuery",
+            "selected": true
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "sql:ParameterizedQuery",
+            "selected": false
+          }
+        ],
+        "placeholder": "object {}",
         "optional": false,
         "editable": true,
         "advanced": false,
@@ -64,27 +79,23 @@
           "kind": "REQUIRED",
           "originalName": "sqlQuery"
         },
-        "typeMembers": [
-          {
-            "type": "ParameterizedQuery",
-            "packageInfo": "ballerina:sql:1.15.0",
-            "packageName": "sql",
-            "kind": "OBJECT_TYPE",
-            "selected": false
-          }
-        ],
         "imports": {
           "sql": "ballerina/sql"
-        },
-        "defaultValue": "``"
+        }
       },
       "rowType": {
         "metadata": {
           "label": "Row Type",
           "description": "The `typedesc` of the record to which the result needs to be returned"
         },
-        "valueType": "TYPE",
-        "valueTypeConstraint": "record {|anydata...;|}",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "ballerinaType": "record {|anydata...;|}",
+            "selected": false
+          }
+        ],
+        "value": "record {|anydata...;|}",
         "placeholder": "record {|anydata...;|}",
         "optional": false,
         "editable": true,
@@ -101,7 +112,12 @@
           "label": "Result Type",
           "description": "Type of the variable"
         },
-        "valueType": "TYPE",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "selected": true
+          }
+        ],
         "value": "stream<rowType, sql:Error?>",
         "placeholder": "var",
         "optional": false,
@@ -118,7 +134,12 @@
           "label": "Result",
           "description": "Name of the result variable"
         },
-        "valueType": "IDENTIFIER",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
         "value": "streamRowtypeSqlError",
         "optional": false,
         "editable": true,

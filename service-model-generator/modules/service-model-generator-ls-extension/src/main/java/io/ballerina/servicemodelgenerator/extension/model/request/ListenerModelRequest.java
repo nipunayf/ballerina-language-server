@@ -18,9 +18,11 @@
 
 package io.ballerina.servicemodelgenerator.extension.model.request;
 
-public record ListenerModelRequest(String orgName, String pkgName, String moduleName) {
+import io.ballerina.servicemodelgenerator.extension.model.Codedata;
 
-    public ListenerModelRequest(String orgName, String moduleName) {
-        this(orgName, moduleName, moduleName);
+public record ListenerModelRequest(Codedata codedata, String filePath, Boolean removeDeprecated) {
+
+    public ListenerModelRequest(Codedata codedata, String filePath) {
+        this(codedata, filePath, null);
     }
 }

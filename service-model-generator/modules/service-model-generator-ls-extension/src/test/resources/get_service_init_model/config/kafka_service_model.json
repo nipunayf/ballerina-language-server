@@ -24,12 +24,43 @@
           "codedata": {
             "argType": "LISTENER_PARAM_REQUIRED"
           },
-          "placeholder": "\"localhost:9092\"",
-          "valueType": "EXPRESSION",
-          "valueTypeConstraint": "string|string[]",
-          "value": "",
-          "items": [],
-          "typeMembers": [],
+          "placeholder": "localhost:9092",
+          "value": "\"localhost:9092\"",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "ballerinaType": "string",
+              "selected": true
+            },
+            {
+              "fieldType": "REPEATABLE_LIST",
+              "ballerinaType": "string[]",
+              "template": {
+                "types": [
+                  {
+                    "fieldType": "TEXT",
+                    "ballerinaType": "string",
+                    "selected": false
+                  },
+                  {
+                    "fieldType": "EXPRESSION",
+                    "ballerinaType": "string",
+                    "selected": false
+                  }
+                ],
+                "enabled": false,
+                "editable": false,
+                "optional": false,
+                "advanced": false
+              },
+              "selected": false
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "string|string[]",
+              "selected": false
+            }
+          ],
           "enabled": true,
           "editable": true,
           "optional": false,
@@ -43,12 +74,43 @@
           "codedata": {
             "argType": "LISTENER_PARAM_INCLUDED_FIELD"
           },
-          "placeholder": "\"myTopic\"",
-          "valueType": "EXPRESSION",
-          "valueTypeConstraint": "string|string[]",
-          "value": "",
-          "items": [],
-          "typeMembers": [],
+          "placeholder": "myTopic",
+          "value": "\"myTopic\"",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "ballerinaType": "string",
+              "selected": true
+            },
+            {
+              "fieldType": "REPEATABLE_LIST",
+              "ballerinaType": "string[]",
+              "template": {
+                "types": [
+                  {
+                    "fieldType": "TEXT",
+                    "ballerinaType": "string",
+                    "selected": false
+                  },
+                  {
+                    "fieldType": "EXPRESSION",
+                    "ballerinaType": "string",
+                    "selected": false
+                  }
+                ],
+                "enabled": false,
+                "editable": false,
+                "optional": false,
+                "advanced": false
+              },
+              "selected": false
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "string|string[]",
+              "selected": false
+            }
+          ],
           "enabled": true,
           "editable": true,
           "optional": false,
@@ -62,9 +124,13 @@
           "codedata": {
             "type": "LISTENER_VAR_NAME"
           },
-          "valueType": "IDENTIFIER",
-          "valueTypeConstraint": "Global",
-          "value": "kafkaListenerResult",
+          "value": "kafkaListener1",
+          "types": [
+            {
+              "fieldType": "IDENTIFIER",
+              "selected": true
+            }
+          ],
           "enabled": true,
           "editable": true,
           "optional": false,

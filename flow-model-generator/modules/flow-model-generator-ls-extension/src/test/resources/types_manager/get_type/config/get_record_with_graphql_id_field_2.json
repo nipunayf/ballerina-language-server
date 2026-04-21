@@ -32,7 +32,12 @@
           "label": "Type name",
           "description": "Unique name to identify the type"
         },
-        "valueType": "IDENTIFIER",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
         "value": "Employee",
         "optional": false,
         "editable": false,
@@ -42,9 +47,14 @@
       "isPublic": {
         "metadata": {
           "label": "public",
-          "description": "Is this public"
+          "description": "Make visible across the project"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": "false",
         "optional": true,
         "editable": true,
@@ -56,7 +66,12 @@
           "label": "Type description",
           "description": "Detailed description about the type"
         },
-        "valueType": "STRING",
+        "types": [
+          {
+            "fieldType": "TEXT",
+            "selected": true
+          }
+        ],
         "value": "",
         "optional": false,
         "editable": true,
@@ -68,7 +83,12 @@
           "label": "Is array type",
           "description": "Is this type an array or list value"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": "false",
         "optional": true,
         "editable": true,
@@ -80,7 +100,12 @@
           "label": "Size of the array",
           "description": "Array dimensions"
         },
-        "valueType": "STRING",
+        "types": [
+          {
+            "fieldType": "TEXT",
+            "selected": true
+          }
+        ],
         "value": "",
         "optional": true,
         "editable": true,
@@ -93,17 +118,20 @@
         "kind": "FIELD",
         "refs": [],
         "type": "string",
+        "typeName": "string",
         "name": "name",
         "optional": false,
         "readonly": false,
         "isGraphqlId": false,
         "docs": "",
-        "annotationAttachments": []
+        "annotationAttachments": [],
+        "selected": false
       },
       {
         "kind": "FIELD",
         "refs": [],
         "type": "int",
+        "typeName": "int",
         "name": "id",
         "optional": false,
         "readonly": false,
@@ -113,12 +141,30 @@
           {
             "modulePrefix": "graphql",
             "name": "ID",
+            "codedata": {
+              "node": "ANNOTATION_ATTACHMENT",
+              "org": "ballerina",
+              "module": "graphql",
+              "version": "1.17.0",
+              "lineRange": {
+                "fileName": "types.bal",
+                "startLine": {
+                  "line": 10,
+                  "offset": 4
+                },
+                "endLine": {
+                  "line": 10,
+                  "offset": 15
+                }
+              }
+            },
             "properties": {}
           }
         ],
         "imports": {
           "graphql": "ballerina/graphql"
-        }
+        },
+        "selected": false
       }
     ],
     "includes": [],

@@ -44,7 +44,7 @@
         "displayName": "userInfo",
         "typeName": "UserInfo[]",
         "kind": "array",
-        "category": "variable",
+        "category": "local-variable",
         "ref": "-1418772512"
       },
       {
@@ -53,8 +53,10 @@
         "displayName": "user",
         "typeName": "UserInfo",
         "kind": "record",
+        "category": "local-variable",
         "focusExpression": "userInfo",
-        "ref": "1889977605"
+        "ref": "1889977605",
+        "isIterationVariable": true
       }
     ],
     "output": {
@@ -160,6 +162,7 @@
         "typeName": "UserInfo",
         "kind": "record"
       }
-    }
+    },
+    "hasInvalidOutput": false
   }
 }

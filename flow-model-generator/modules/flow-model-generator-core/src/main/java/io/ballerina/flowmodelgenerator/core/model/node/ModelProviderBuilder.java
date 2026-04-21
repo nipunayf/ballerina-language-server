@@ -32,6 +32,7 @@ import io.ballerina.modelgenerator.commons.FunctionData;
 import io.ballerina.modelgenerator.commons.FunctionDataBuilder;
 import io.ballerina.modelgenerator.commons.ModuleInfo;
 import io.ballerina.modelgenerator.commons.ParameterData;
+import io.ballerina.projects.Module;
 import org.eclipse.lsp4j.TextEdit;
 
 import java.nio.file.Path;
@@ -47,6 +48,7 @@ import static io.ballerina.modelgenerator.commons.FunctionDataBuilder.GET_DEFAUL
  * @since 1.1.0
  */
 public class ModelProviderBuilder extends CallBuilder {
+
     public static final String LABEL = "Model Provider";
     public static final String DESCRIPTION = "Model providers available within the integration " +
             "for connecting to an LLM";
@@ -102,6 +104,8 @@ public class ModelProviderBuilder extends CallBuilder {
         FunctionData functionData = new FunctionDataBuilder().moduleInfo(codedataModuleInfo).userModuleInfo(moduleInfo)
                 .parentSymbolType(codedata.object()).name(codedata.symbol())
                 .lsClientLogger(context.lsClientLogger()).functionResultKind(FunctionData.Kind.MODEL_PROVIDER)
+                .workspaceManager(context.workspaceManager())
+                .filePath(context.filePath())
                 .build();
 
         metadata().label(functionData.packageName()).description(functionData.description())
@@ -120,17 +124,18 @@ public class ModelProviderBuilder extends CallBuilder {
             setReturnTypeProperties(functionData, context, MODEL_PROVIDER_NAME_LABEL, MODEL_PROVIDER_NAME_LABEL_DOC,
                     false);
         }
-        setParameterProperties(functionData);
+        Module module = context.workspaceManager().module(context.filePath()).orElse(null);
+        setParameterProperties(functionData, module);
         properties().scope(Property.GLOBAL_SCOPE).checkError(true, CHECK_ERROR_DOC, false);
     }
 
     @Override
-    protected void setParameterProperties(FunctionData function) {
+    protected void setParameterProperties(FunctionData function, Module module) {
         boolean hasOnlyRestParams = function.parameters().size() == 1;
 
         for (ParameterData paramResult : function.parameters().values()) {
             if (paramResult.kind() == ParameterData.Kind.PARAM_FOR_TYPE_INFER) {
-                buildInferredTypeProperty(this, paramResult, null);
+                buildInferredTypeProperty(this, paramResult, null, module);
                 continue;
             }
 
@@ -152,8 +157,6 @@ public class ModelProviderBuilder extends CallBuilder {
                         .stepOut()
                     .placeholder(paramResult.placeholder())
                     .defaultValue(paramResult.defaultValue())
-                    .typeConstraint(paramResult.type())
-                    .typeMembers(paramResult.typeMembers())
                     .editable()
                     .defaultable(paramResult.optional());
 
@@ -163,20 +166,30 @@ public class ModelProviderBuilder extends CallBuilder {
                         customPropBuilder.defaultable(false);
                     }
                     unescapedParamName = "additionalValues";
-                    customPropBuilder.type(Property.ValueType.MAPPING_EXPRESSION_SET);
+                    Property template = customPropBuilder.buildRepeatableTemplates(paramResult.typeSymbol(),
+                            semanticModel, moduleInfo);
+                    customPropBuilder.type()
+                            .fieldType(Property.ValueType.REPEATABLE_MAP)
+                            .ballerinaType(paramResult.type())
+                            .template(template)
+                            .selected(true)
+                            .stepOut();
                 }
                 case REST_PARAMETER -> {
                     if (hasOnlyRestParams) {
                         customPropBuilder.defaultable(false);
                     }
-                    customPropBuilder.type(Property.ValueType.EXPRESSION_SET);
+                    Property template = customPropBuilder.buildRepeatableTemplates(paramResult.typeSymbol(),
+                            semanticModel, moduleInfo);
+                    customPropBuilder.type()
+                            .fieldType(Property.ValueType.REPEATABLE_LIST)
+                            .ballerinaType(paramResult.type())
+                            .template(template)
+                            .selected(true)
+                            .stepOut();
                 }
                 default -> {
-                    if (paramResult.type() instanceof List<?>) {
-                        customPropBuilder.type(Property.ValueType.SINGLE_SELECT);
-                    } else {
-                        customPropBuilder.type(Property.ValueType.EXPRESSION);
-                    }
+                    customPropBuilder.typeWithExpression(paramResult.typeSymbol(), moduleInfo);
                 }
             }
 

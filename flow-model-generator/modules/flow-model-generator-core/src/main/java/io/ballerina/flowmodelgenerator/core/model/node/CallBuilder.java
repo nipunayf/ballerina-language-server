@@ -19,11 +19,25 @@
 package io.ballerina.flowmodelgenerator.core.model.node;
 
 import io.ballerina.compiler.api.SemanticModel;
+import io.ballerina.compiler.api.symbols.ArrayTypeSymbol;
+import io.ballerina.compiler.api.symbols.Symbol;
+import io.ballerina.compiler.api.symbols.TypeDescKind;
+import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
+import io.ballerina.compiler.api.symbols.TypeSymbol;
+import io.ballerina.compiler.api.symbols.VariableSymbol;
+import io.ballerina.compiler.syntax.tree.Node;
+import io.ballerina.flowmodelgenerator.core.AiUtils;
+import io.ballerina.flowmodelgenerator.core.TypeParameterReplacer;
+import io.ballerina.flowmodelgenerator.core.TypesManager;
 import io.ballerina.flowmodelgenerator.core.model.Codedata;
+import io.ballerina.flowmodelgenerator.core.model.FlowNode;
 import io.ballerina.flowmodelgenerator.core.model.FormBuilder;
 import io.ballerina.flowmodelgenerator.core.model.NodeBuilder;
 import io.ballerina.flowmodelgenerator.core.model.NodeKind;
 import io.ballerina.flowmodelgenerator.core.model.Property;
+import io.ballerina.flowmodelgenerator.core.model.PropertyType;
+import io.ballerina.flowmodelgenerator.core.model.RecordSelectorType;
+import io.ballerina.flowmodelgenerator.core.utils.FileSystemUtils;
 import io.ballerina.flowmodelgenerator.core.utils.FlowNodeUtil;
 import io.ballerina.flowmodelgenerator.core.utils.ParamUtils;
 import io.ballerina.modelgenerator.commons.CommonUtils;
@@ -32,14 +46,21 @@ import io.ballerina.modelgenerator.commons.FunctionDataBuilder;
 import io.ballerina.modelgenerator.commons.ModuleInfo;
 import io.ballerina.modelgenerator.commons.PackageUtil;
 import io.ballerina.modelgenerator.commons.ParameterData;
-import io.ballerina.projects.PackageDescriptor;
-import io.ballerina.projects.Project;
+import io.ballerina.projects.Document;
+import io.ballerina.projects.Module;
+import io.ballerina.projects.ProjectException;
+import io.ballerina.tools.text.LinePosition;
+import org.ballerinalang.langserver.common.utils.CommonUtil;
 import org.ballerinalang.langserver.commons.eventsync.exceptions.EventSyncException;
 import org.ballerinalang.langserver.commons.workspace.WorkspaceDocumentException;
 import org.ballerinalang.langserver.commons.workspace.WorkspaceManager;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static io.ballerina.flowmodelgenerator.core.TypesManager.mergeWithTargetVarRecordSelectorType;
 
 /**
  * Abstract base class for function-like builders (functions, methods, resource actions).
@@ -61,32 +82,26 @@ public abstract class CallBuilder extends NodeBuilder {
     public void setConcreteTemplateData(TemplateContext context) {
         Codedata codedata = context.codedata();
 
+        ModuleInfo targetModuleInfo = new ModuleInfo(codedata.org(), codedata.packageName(), codedata.module(),
+                codedata.version());
         FunctionDataBuilder functionDataBuilder = new FunctionDataBuilder()
                 .name(codedata.symbol())
-                .moduleInfo(new ModuleInfo(codedata.org(), codedata.packageName(), codedata.module(),
-                        codedata.version()))
+                .moduleInfo(targetModuleInfo)
                 .lsClientLogger(context.lsClientLogger())
                 .functionResultKind(getFunctionResultKind())
                 .project(PackageUtil.loadProject(context.workspaceManager(), context.filePath()))
-                .userModuleInfo(moduleInfo);
+                .userModuleInfo(moduleInfo)
+                .workspaceManager(context.workspaceManager())
+                .filePath(context.filePath());
 
         NodeKind functionNodeKind = getFunctionNodeKind();
-        if (functionNodeKind != NodeKind.FUNCTION_CALL) {
+        if (functionNodeKind != NodeKind.FUNCTION_CALL && functionNodeKind != NodeKind.ACTIVITY_CALL) {
             functionDataBuilder.parentSymbolType(codedata.object());
         }
-
-        // Set the semantic model if the function is local
-        boolean isLocalFunction = isLocalFunction(context.workspaceManager(), context.filePath(), codedata);
-        if (isLocalFunction) {
-            WorkspaceManager workspaceManager = context.workspaceManager();
-            PackageUtil.loadProject(context.workspaceManager(), context.filePath());
-            context.workspaceManager().module(context.filePath())
-                    .map(module -> ModuleInfo.from(module.descriptor()))
-                    .ifPresent(functionDataBuilder::userModuleInfo);
-            SemanticModel semanticModel = workspaceManager.semanticModel(context.filePath()).orElseThrow();
-            functionDataBuilder.semanticModel(semanticModel);
-        }
         FunctionData functionData = functionDataBuilder.build();
+
+        // Store the module for PARAM_FOR_TYPE_INFER processing
+        Module module = context.workspaceManager().module(context.filePath()).orElse(null);
 
         metadata()
                 .label(functionData.name())
@@ -106,21 +121,21 @@ public abstract class CallBuilder extends NodeBuilder {
                 .inferredReturnType(functionData.inferredReturnType() ? functionData.returnType() : null);
 
         if (functionNodeKind != NodeKind.FUNCTION_CALL && functionNodeKind != NodeKind.AGENT &&
-                functionNodeKind != NodeKind.CLASS_INIT) {
+                functionNodeKind != NodeKind.CLASS_INIT && functionNodeKind != NodeKind.ACTIVITY_CALL) {
             properties().custom()
                     .metadata()
                     .label(Property.CONNECTION_LABEL)
                     .description(Property.CONNECTION_DOC)
                     .stepOut()
-                    .typeConstraint(isLocalFunction ? codedata.object() :
+                    .type(Property.ValueType.EXPRESSION, PackageUtil.isLocalFunction(context.workspaceManager(),
+                            context.filePath(), codedata.org(), codedata.module()) ? codedata.object() :
                             CommonUtils.getClassType(codedata.module(), codedata.object()))
                     .value(codedata.parentSymbol())
-                    .type(Property.ValueType.EXPRESSION)
                     .hidden()
                     .stepOut()
                     .addProperty(Property.CONNECTION_KEY);
         }
-        setParameterProperties(functionData);
+        setParameterProperties(functionData, module);
 
         if (CommonUtils.hasReturn(functionData.returnType())) {
             setReturnTypeProperties(functionData, context, Property.RESULT_NAME, Property.RESULT_DOC, false);
@@ -131,35 +146,129 @@ public abstract class CallBuilder extends NodeBuilder {
         }
     }
 
-    public static void buildInferredTypeProperty(NodeBuilder nodeBuilder, ParameterData paramData, String value) {
+    /**
+     * Builds a form property for a {@code PARAM_FOR_TYPE_INFER} parameter. When the parameter type is
+     * a Ballerina record, the property is rendered as a {@code RECORD_FIELD_SELECTOR} in the UI, allowing
+     * the user to pick individual fields. If a {@code targetVarType} is provided and is itself a record
+     * (or array of records), the selector is pre-populated by merging the parameter's type model with the
+     * target variable's type model so that already-selected fields are preserved. Non-record types fall back
+     * to a plain {@code TYPE} property.
+     *
+     * @param nodeBuilder    the node builder to attach the property to
+     * @param paramData      the parameter descriptor for the inferred type parameter
+     * @param value          the current value string (may be {@code null})
+     * @param module         the Ballerina {@link Module} used to create the {@link TypesManager} for type resolution
+     * @param targetVarType  the type of the target variable being assigned to, used to pre-select fields
+     *                       (may be {@code null} if no target variable is available)
+     * @param callNode       the syntax tree node of the function call, used for error reporting in type resolution
+     */
+    public static void buildInferredTypeProperty(NodeBuilder nodeBuilder, ParameterData paramData, String value,
+                                                 Module module, TypeSymbol targetVarType, Node callNode) {
         String unescapedParamName = ParamUtils.removeLeadingSingleQuote(paramData.name());
         String label = paramData.label();
-        nodeBuilder.properties().custom()
+        // If the inferredType is a record type, add it as the value of the property if the value is not provided
+        if (value == null && paramData.typeSymbol() != null
+                && CommonUtil.getRawType(paramData.typeSymbol()).typeKind().equals(TypeDescKind.RECORD)) {
+            // The value is same as the default value for inferred type parameter
+            value = paramData.defaultValue();
+        }
+
+        Property.Builder<FormBuilder<NodeBuilder>> customPropBuilder = nodeBuilder.properties().custom()
                 .metadata()
-                    .label(label == null || label.isEmpty() ? unescapedParamName : label)
-                    .description(paramData.description())
-                    .stepOut()
+                .label(label == null || label.isEmpty() ? unescapedParamName : label)
+                .description(paramData.description())
+                .stepOut()
                 .codedata()
-                    .kind(paramData.kind().name())
-                    .originalName(paramData.name())
-                    .stepOut()
+                .kind(paramData.kind().name())
+                .originalName(paramData.name())
+                .stepOut()
                 .value(value)
                 .placeholder(paramData.placeholder())
                 .defaultValue(paramData.defaultValue())
-                .type(Property.ValueType.TYPE)
-                .typeConstraint(paramData.type())
                 .imports(paramData.importStatements())
-                .editable()
-                .stepOut()
-                .addProperty(unescapedParamName);
+                .editable();
+
+        // Check if this is a record type - if so, emit RECORD_FIELD_SELECTOR with type models
+        if (paramData.typeSymbol() != null && module != null
+                && CommonUtil.getRawType(paramData.typeSymbol()).typeKind().equals(TypeDescKind.RECORD)) {
+            addRecordFieldSelector(paramData, module, targetVarType, customPropBuilder);
+        } else {
+            // For non-record types, use the existing TYPE behavior
+            customPropBuilder.type(Property.ValueType.TYPE, paramData.type());
+        }
+
+        customPropBuilder.stepOut().addProperty(unescapedParamName, callNode);
     }
 
-    protected void setParameterProperties(FunctionData function) {
+    private static void addRecordFieldSelector(ParameterData paramData, Module module, TypeSymbol targetVarType,
+                                               Property.Builder<FormBuilder<NodeBuilder>> customPropBuilder) {
+        TypeSymbol rawType = CommonUtil.getRawType(paramData.typeSymbol());
+        if (!rawType.typeKind().equals(TypeDescKind.RECORD) || module.documentIds().isEmpty()) {
+            // If we can't resolve the raw type, fallback to TYPE without field selector or
+            // If we can't access any documents in the module, we won't be able to resolve the type models, so
+            // fallback to TYPE without field selector
+            customPropBuilder.type(Property.ValueType.TYPE, paramData.type());
+            return;
+        }
+
+        // For record types, we want to show the record selector in the UI, so we set the field type to
+        // RECORD_FIELD_SELECTOR and provide the necessary type models for it.
+        TypesManager typesManager = new TypesManager(module.document(module.documentIds().iterator().next()));
+        RecordSelectorType recordSelectorType = typesManager.getRecordSelectorType(paramData.typeSymbol(),
+                module, true);
+
+        if (recordSelectorType != null && targetVarType != null) {
+            TypeSymbol recordTargetVarType = targetVarType;
+            if (CommonUtil.getRawType(targetVarType).typeKind().equals(TypeDescKind.ARRAY)) {
+                recordTargetVarType = ((ArrayTypeSymbol) CommonUtil.getRawType(recordTargetVarType))
+                        .memberTypeDescriptor();
+            }
+            if (CommonUtil.getRawType(recordTargetVarType).typeKind().equals(TypeDescKind.RECORD)) {
+                RecordSelectorType targetVarRecordSelectorType = typesManager.getRecordSelectorType(
+                        recordTargetVarType, module, false);
+                if (targetVarRecordSelectorType != null) {
+                    recordSelectorType = mergeWithTargetVarRecordSelectorType(targetVarRecordSelectorType,
+                            recordSelectorType);
+                }
+            }
+        }
+
+        if (recordSelectorType != null && !recordSelectorType.rootType().members().isEmpty()) {
+            customPropBuilder.type()
+                    .fieldType(Property.ValueType.RECORD_FIELD_SELECTOR)
+                    .ballerinaType(paramData.type())
+                    .recordSelectorType(recordSelectorType)
+                    .selected(true)
+                    .stepOut();
+        } else {
+            // Fallback to TYPE if type models couldn't be resolved
+            customPropBuilder.type(Property.ValueType.TYPE, paramData.type());
+        }
+    }
+
+    /**
+     * Builds an inferred-type property for a {@code PARAM_FOR_TYPE_INFER} parameter without a target variable
+     * type constraint. Delegates to the full overload with {@code targetVarType = null}.
+     *
+     * <p>NOTE: This overload is kept for persist-client call sites where no target variable type is
+     * available. See issue: https://github.com/wso2/product-ballerina-integrator/issues/2042
+     *
+     * @param nodeBuilder the node builder to attach the property to
+     * @param paramData   the parameter descriptor for the inferred type parameter
+     * @param value       the current value string (may be {@code null})
+     * @param module      the Ballerina {@link Module} used for type resolution
+     */
+    public static void buildInferredTypeProperty(NodeBuilder nodeBuilder, ParameterData paramData, String value,
+                                                 Module module) {
+        buildInferredTypeProperty(nodeBuilder, paramData, value, module, null, null);
+    }
+
+    protected void setParameterProperties(FunctionData function, io.ballerina.projects.Module module) {
         boolean hasOnlyRestParams = function.parameters().size() == 1;
 
         for (ParameterData paramResult : function.parameters().values()) {
             if (paramResult.kind() == ParameterData.Kind.PARAM_FOR_TYPE_INFER) {
-                buildInferredTypeProperty(this, paramResult, null);
+                buildInferredTypeProperty(this, paramResult, null, module);
                 continue;
             }
 
@@ -181,8 +290,6 @@ public abstract class CallBuilder extends NodeBuilder {
                         .stepOut()
                     .placeholder(paramResult.placeholder())
                     .defaultValue(paramResult.defaultValue())
-                    .typeConstraint(paramResult.type())
-                    .typeMembers(paramResult.typeMembers())
                     .imports(paramResult.importStatements())
                     .editable()
                     .defaultable(paramResult.optional());
@@ -193,20 +300,41 @@ public abstract class CallBuilder extends NodeBuilder {
                         customPropBuilder.defaultable(false);
                     }
                     unescapedParamName = "additionalValues";
-                    customPropBuilder.type(Property.ValueType.MAPPING_EXPRESSION_SET);
+                    Property template = customPropBuilder.buildRepeatableTemplates(paramResult.typeSymbol(),
+                            semanticModel, moduleInfo);
+                    customPropBuilder.type()
+                            .fieldType(Property.ValueType.REPEATABLE_MAP)
+                            .ballerinaType(paramResult.type())
+                            .template(template)
+                            .selected(true)
+                            .stepOut();
                 }
                 case REST_PARAMETER -> {
                     if (hasOnlyRestParams) {
                         customPropBuilder.defaultable(false);
                     }
-                    customPropBuilder.type(Property.ValueType.EXPRESSION_SET);
+                    Property template = customPropBuilder.buildRepeatableTemplates(paramResult.typeSymbol(),
+                            semanticModel, moduleInfo);
+                    customPropBuilder.type()
+                            .fieldType(Property.ValueType.REPEATABLE_LIST)
+                            .ballerinaType(paramResult.type())
+                            .template(template)
+                            .selected(true)
+                            .stepOut();
                 }
                 default -> {
-                    if (paramResult.type() instanceof List<?>) {
-                        customPropBuilder.type(Property.ValueType.SINGLE_SELECT);
-                    } else {
-                        customPropBuilder.type(Property.ValueType.EXPRESSION);
+                    // Add PROMPT field type for ai:Prompt parameters
+                    // TODO: Need an extension pattern to extract the following implementation out of the CallBuilder
+                    String typeSignature = CommonUtils.getTypeSignature(paramResult.typeSymbol(), moduleInfo);
+                    if (AiUtils.AI_PROMPT_TYPE.equals(typeSignature)) {
+                        customPropBuilder.type()
+                                .fieldType(Property.ValueType.PROMPT)
+                                .ballerinaType(AiUtils.AI_PROMPT_TYPE)
+                                .selected(true)
+                                .stepOut();
                     }
+                    customPropBuilder.typeWithExpression(paramResult.typeSymbol(), moduleInfo,
+                            paramResult.defaultValue());
                 }
             }
 
@@ -221,7 +349,7 @@ public abstract class CallBuilder extends NodeBuilder {
         properties()
                 .type(functionData.returnType(), false, functionData.importStatements(), hidden,
                         Property.RESULT_TYPE_LABEL)
-                .data(functionData.returnType(), context.getAllVisibleSymbolNames(), label, doc);
+                .data(functionData.returnType(), context.getAllVisibleSymbolNames(), label, doc, false);
     }
 
     protected void setExpressionProperty(Codedata codedata) {
@@ -230,28 +358,126 @@ public abstract class CallBuilder extends NodeBuilder {
                     .label(Property.CONNECTION_LABEL)
                     .description(Property.CONNECTION_DOC)
                     .stepOut()
-                .typeConstraint(CommonUtils.getClassType(codedata.module(), codedata.object()))
+                .type(Property.ValueType.EXPRESSION, CommonUtils.getClassType(codedata.module(), codedata.object()))
                 .value(codedata.parentSymbol())
-                .type(Property.ValueType.EXPRESSION)
                 .hidden()
                 .stepOut()
                 .addProperty(Property.CONNECTION_KEY);
     }
 
-    protected static boolean isLocalFunction(WorkspaceManager workspaceManager, Path filePath, Codedata codedata) {
-        if (codedata.org() == null || codedata.module() == null) {
-            return false;
-        }
-        try {
-            Project project = workspaceManager.loadProject(filePath);
-            PackageDescriptor descriptor = project.currentPackage().descriptor();
-            String packageOrg = descriptor.org().value();
-            String packageName = descriptor.name().value();
+    private static boolean isLangLibFunction(Codedata codedata) {
+        return codedata != null
+                && CommonUtil.BALLERINA_ORG_NAME.equals(codedata.org())
+                && codedata.module() != null
+                && codedata.module().startsWith("lang.");
+    }
 
-            return packageOrg.equals(codedata.org())
-                    && packageName.equals(codedata.module());
-        } catch (WorkspaceDocumentException | EventSyncException e) {
-            return false;
+    protected static String resolveLangLibReturnType(WorkspaceManager workspaceManager, Path filePath,
+                                                     FlowNode flowNode) {
+        if (!isLangLibFunction(flowNode.codedata())) {
+            return null;
+        }
+
+        Optional<Property> typeProperty = flowNode.getProperty(Property.TYPE_KEY);
+        if (typeProperty.isEmpty()) {
+            return null;
+        }
+
+        String typeName = typeProperty.get().value().toString();
+
+        // Find the first (longest) placeholder present in the return type
+        String matchedPlaceholder = null;
+        for (String placeholder : TypeParameterReplacer.getSortedPlaceholderValues()) {
+            if (typeName.contains(placeholder)) {
+                matchedPlaceholder = placeholder;
+                break;
+            }
+        }
+        if (matchedPlaceholder == null) {
+            return null;
+        }
+
+        // Find a REQUIRED parameter whose ballerinaType template matches the placeholder structure
+        Map<String, Property> properties = flowNode.properties();
+        if (properties == null) {
+            return null;
+        }
+
+        final String placeholder = matchedPlaceholder;
+        for (Property prop : properties.values()) {
+            if (prop.codedata() == null || prop.codedata().kind() == null) {
+                continue;
+            }
+            if (!prop.codedata().kind().equals(ParameterData.Kind.REQUIRED.name())) {
+                continue;
+            }
+            if (prop.value() == null || prop.value().toString().isBlank()) {
+                continue;
+            }
+            if (prop.types() == null) {
+                continue;
+            }
+
+            for (PropertyType pt : prop.types()) {
+                String template = pt.ballerinaType();
+                if (template == null) {
+                    continue;
+                }
+                String varName = prop.value().toString().trim();
+                String resolved = resolveConcreteType(workspaceManager, filePath, flowNode,
+                        varName, template, placeholder);
+                if (resolved != null) {
+                    return typeName.replace(placeholder, resolved);
+                }
+            }
+        }
+        return null;
+    }
+
+    private static String resolveConcreteType(WorkspaceManager workspaceManager, Path filePath,
+                                              FlowNode flowNode, String varName,
+                                              String template, String placeholder) {
+        try {
+            workspaceManager.loadProject(filePath);
+            SemanticModel semanticModel = FileSystemUtils.getSemanticModel(workspaceManager, filePath);
+            Document document = FileSystemUtils.getDocument(workspaceManager, filePath);
+
+            LinePosition position = flowNode.codedata().lineRange().startLine();
+
+            List<Symbol> visibleSymbols = semanticModel.visibleSymbols(document, position);
+            Optional<Symbol> matchingSymbol = visibleSymbols.stream()
+                    .filter(s -> s.getName().map(name -> name.equals(varName)).orElse(false))
+                    .findFirst();
+
+            if (matchingSymbol.isEmpty() || !(matchingSymbol.get() instanceof VariableSymbol variableSymbol)) {
+                return null;
+            }
+
+            TypeSymbol typeSymbol = variableSymbol.typeDescriptor();
+            if (typeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+                typeSymbol = ((TypeReferenceTypeSymbol) typeSymbol).typeDescriptor();
+            }
+
+            ModuleInfo moduleInfo = ModuleInfo.from(document.module().descriptor());
+
+            // Case 1: template IS the placeholder — use the actual type directly
+            if (template.equals(placeholder)) {
+                return CommonUtils.getTypeSignature(semanticModel, typeSymbol, true, moduleInfo);
+            }
+
+            // Case 2: template is placeholder + [] — extract the array element type
+            if (template.equals(placeholder + "[]")) {
+                if (typeSymbol.typeKind() != TypeDescKind.ARRAY) {
+                    return null;
+                }
+                TypeSymbol elementType = ((ArrayTypeSymbol) typeSymbol).memberTypeDescriptor();
+                return CommonUtils.getTypeSignature(semanticModel, elementType, true, moduleInfo);
+            }
+
+            return null;
+        } catch (WorkspaceDocumentException | EventSyncException | ProjectException e) {
+            return null;
         }
     }
+
 }

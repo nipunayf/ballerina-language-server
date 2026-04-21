@@ -32,6 +32,7 @@ import io.ballerina.modelgenerator.commons.FunctionData;
 import io.ballerina.modelgenerator.commons.FunctionDataBuilder;
 import io.ballerina.modelgenerator.commons.ModuleInfo;
 import io.ballerina.modelgenerator.commons.ParameterData;
+import io.ballerina.projects.Module;
 import org.eclipse.lsp4j.TextEdit;
 
 import java.nio.file.Path;
@@ -45,6 +46,7 @@ import java.util.Set;
  * @since 1.1.0
  */
 public class VectorStoreBuilder extends CallBuilder {
+
     public static final String LABEL = "Vector Store";
     public static final String DESCRIPTION = "Vector stores available in the integration";
 
@@ -85,8 +87,11 @@ public class VectorStoreBuilder extends CallBuilder {
 
         FunctionData functionData = new FunctionDataBuilder()
                 .parentSymbolType(codedata.object()).name(codedata.symbol())
-                .moduleInfo(codedataModuleInfo).userModuleInfo(moduleInfo)
+                .moduleInfo(codedataModuleInfo)
                 .lsClientLogger(context.lsClientLogger()).functionResultKind(FunctionData.Kind.VECTOR_STORE)
+                .userModuleInfo(moduleInfo)
+                .workspaceManager(context.workspaceManager())
+                .filePath(context.filePath())
                 .build();
 
         metadata().label(functionData.packageName()).description(functionData.description())
@@ -99,16 +104,17 @@ public class VectorStoreBuilder extends CallBuilder {
             setReturnTypeProperties(functionData, context, VECTOR_STORE_NAME_LABEL, VECTOR_STORE_NAME_LABEL_DOC,
                     false);
         }
-        setParameterProperties(functionData);
+        Module module = context.workspaceManager().module(context.filePath()).orElse(null);
+        setParameterProperties(functionData, module);
         properties().scope(Property.GLOBAL_SCOPE).checkError(true, CHECK_ERROR_DOC, false);
     }
 
-    protected void setParameterProperties(FunctionData function) {
+    protected void setParameterProperties(FunctionData function, Module module) {
         boolean hasOnlyRestParams = function.parameters().size() == 1;
 
         for (ParameterData paramResult : function.parameters().values()) {
             if (paramResult.kind() == ParameterData.Kind.PARAM_FOR_TYPE_INFER) {
-                buildInferredTypeProperty(this, paramResult, null);
+                buildInferredTypeProperty(this, paramResult, null, module);
                 continue;
             }
 
@@ -130,8 +136,6 @@ public class VectorStoreBuilder extends CallBuilder {
                         .stepOut()
                     .placeholder(paramResult.placeholder())
                     .defaultValue(paramResult.defaultValue())
-                    .typeConstraint(paramResult.type())
-                    .typeMembers(paramResult.typeMembers())
                     .editable()
                     .defaultable(paramResult.optional());
 
@@ -141,20 +145,30 @@ public class VectorStoreBuilder extends CallBuilder {
                         customPropBuilder.defaultable(false);
                     }
                     unescapedParamName = "additionalValues";
-                    customPropBuilder.type(Property.ValueType.MAPPING_EXPRESSION_SET);
+                    Property template = customPropBuilder.buildRepeatableTemplates(paramResult.typeSymbol(),
+                            semanticModel, moduleInfo);
+                    customPropBuilder.type()
+                            .fieldType(Property.ValueType.REPEATABLE_MAP)
+                            .ballerinaType(paramResult.type())
+                            .template(template)
+                            .selected(true)
+                            .stepOut();
                 }
                 case REST_PARAMETER -> {
                     if (hasOnlyRestParams) {
                         customPropBuilder.defaultable(false);
                     }
-                    customPropBuilder.type(Property.ValueType.EXPRESSION_SET);
+                    Property template = customPropBuilder.buildRepeatableTemplates(paramResult.typeSymbol(),
+                            semanticModel, moduleInfo);
+                    customPropBuilder.type()
+                            .fieldType(Property.ValueType.REPEATABLE_LIST)
+                            .ballerinaType(paramResult.type())
+                            .template(template)
+                            .selected(true)
+                            .stepOut();
                 }
                 default -> {
-                    if (paramResult.type() instanceof List<?>) {
-                        customPropBuilder.type(Property.ValueType.SINGLE_SELECT);
-                    } else {
-                        customPropBuilder.type(Property.ValueType.EXPRESSION);
-                    }
+                    customPropBuilder.typeWithExpression(paramResult.typeSymbol(), moduleInfo);
                 }
             }
 

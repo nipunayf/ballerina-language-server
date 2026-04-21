@@ -38,8 +38,18 @@
           "label": "API Key",
           "description": "The OpenAI API key"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "string",
+        "types": [
+          {
+            "fieldType": "TEXT",
+            "ballerinaType": "string",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "string",
+            "selected": false
+          }
+        ],
         "placeholder": "\"\"",
         "optional": false,
         "editable": true,
@@ -48,51 +58,133 @@
         "codedata": {
           "kind": "REQUIRED",
           "originalName": "apiKey"
-        },
-        "typeMembers": [
-          {
-            "type": "string",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ]
+        }
       },
       "modelType": {
         "metadata": {
           "label": "Model Type",
           "description": "The OpenAI model name"
         },
-        "valueType": "SINGLE_SELECT",
-        "valueTypeConstraint": [
-          "\"chatgpt-4o-latest\"",
-          "\"gpt-4.1-nano-2025-04-14\"",
-          "\"gpt-4.1-nano\"",
-          "\"gpt-4.1-mini\"",
-          "\"gpt-4.1-mini-2025-04-14\"",
-          "\"gpt-4.1\"",
-          "\"gpt-4.1-2025-04-14\"",
-          "\"gpt-3.5-turbo-0125\"",
-          "\"gpt-3.5-turbo-1106\"",
-          "\"gpt-3.5-turbo-16k\"",
-          "\"gpt-3.5-turbo\"",
-          "\"o1-pro\"",
-          "\"o1-pro-2025-03-19\"",
-          "\"o1-2024-12-17\"",
-          "\"o1\"",
-          "\"gpt-4-0613\"",
-          "\"gpt-4-1106-preview\"",
-          "\"gpt-4-turbo-preview\"",
-          "\"gpt-4-0125-preview\"",
-          "\"gpt-4-turbo-2024-04-09\"",
-          "\"gpt-4-turbo\"",
-          "\"gpt-4o-mini-2024-07-18\"",
-          "\"gpt-4o-mini\"",
-          "\"gpt-4o-2024-05-13\"",
-          "\"gpt-4o-2024-08-06\"",
-          "\"gpt-4o-2024-11-20\"",
-          "\"gpt-4o\""
+        "types": [
+          {
+            "fieldType": "SINGLE_SELECT",
+            "options": [
+              {
+                "label": "chatgpt-4o-latest",
+                "value": "\"chatgpt-4o-latest\""
+              },
+              {
+                "label": "gpt-4.1-nano-2025-04-14",
+                "value": "\"gpt-4.1-nano-2025-04-14\""
+              },
+              {
+                "label": "gpt-4.1-nano",
+                "value": "\"gpt-4.1-nano\""
+              },
+              {
+                "label": "gpt-4.1-mini",
+                "value": "\"gpt-4.1-mini\""
+              },
+              {
+                "label": "gpt-4.1-mini-2025-04-14",
+                "value": "\"gpt-4.1-mini-2025-04-14\""
+              },
+              {
+                "label": "gpt-4.1",
+                "value": "\"gpt-4.1\""
+              },
+              {
+                "label": "gpt-4.1-2025-04-14",
+                "value": "\"gpt-4.1-2025-04-14\""
+              },
+              {
+                "label": "gpt-3.5-turbo-0125",
+                "value": "\"gpt-3.5-turbo-0125\""
+              },
+              {
+                "label": "gpt-3.5-turbo-1106",
+                "value": "\"gpt-3.5-turbo-1106\""
+              },
+              {
+                "label": "gpt-3.5-turbo-16k",
+                "value": "\"gpt-3.5-turbo-16k\""
+              },
+              {
+                "label": "gpt-3.5-turbo",
+                "value": "\"gpt-3.5-turbo\""
+              },
+              {
+                "label": "o1-pro",
+                "value": "\"o1-pro\""
+              },
+              {
+                "label": "o1-pro-2025-03-19",
+                "value": "\"o1-pro-2025-03-19\""
+              },
+              {
+                "label": "o1-2024-12-17",
+                "value": "\"o1-2024-12-17\""
+              },
+              {
+                "label": "o1",
+                "value": "\"o1\""
+              },
+              {
+                "label": "gpt-4-0613",
+                "value": "\"gpt-4-0613\""
+              },
+              {
+                "label": "gpt-4-1106-preview",
+                "value": "\"gpt-4-1106-preview\""
+              },
+              {
+                "label": "gpt-4-turbo-preview",
+                "value": "\"gpt-4-turbo-preview\""
+              },
+              {
+                "label": "gpt-4-0125-preview",
+                "value": "\"gpt-4-0125-preview\""
+              },
+              {
+                "label": "gpt-4-turbo-2024-04-09",
+                "value": "\"gpt-4-turbo-2024-04-09\""
+              },
+              {
+                "label": "gpt-4-turbo",
+                "value": "\"gpt-4-turbo\""
+              },
+              {
+                "label": "gpt-4o-mini-2024-07-18",
+                "value": "\"gpt-4o-mini-2024-07-18\""
+              },
+              {
+                "label": "gpt-4o-mini",
+                "value": "\"gpt-4o-mini\""
+              },
+              {
+                "label": "gpt-4o-2024-05-13",
+                "value": "\"gpt-4o-2024-05-13\""
+              },
+              {
+                "label": "gpt-4o-2024-08-06",
+                "value": "\"gpt-4o-2024-08-06\""
+              },
+              {
+                "label": "gpt-4o-2024-11-20",
+                "value": "\"gpt-4o-2024-11-20\""
+              },
+              {
+                "label": "gpt-4o",
+                "value": "\"gpt-4o\""
+              }
+            ],
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "openai:OPEN_AI_MODEL_NAMES",
+            "selected": false
+          }
         ],
         "placeholder": "\"chatgpt-4o-latest\"",
         "optional": false,
@@ -102,24 +194,25 @@
         "codedata": {
           "kind": "REQUIRED",
           "originalName": "modelType"
-        },
-        "typeMembers": [
-          {
-            "type": "OPEN_AI_MODEL_NAMES",
-            "packageInfo": "ballerinax:ai.openai:1.1.0",
-            "packageName": "ai.openai",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ]
+        }
       },
       "serviceUrl": {
         "metadata": {
           "label": "Service URL",
           "description": "The base URL of OpenAI API endpoint"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "string",
+        "types": [
+          {
+            "fieldType": "TEXT",
+            "ballerinaType": "string",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "string",
+            "selected": false
+          }
+        ],
         "placeholder": "\"\"",
         "optional": true,
         "editable": true,
@@ -129,24 +222,25 @@
           "kind": "DEFAULTABLE",
           "originalName": "serviceUrl"
         },
-        "typeMembers": [
-          {
-            "type": "string",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
-        "defaultValue": "\"\""
+        "defaultValue": "https://api.openai.com/v1"
       },
       "maxTokens": {
         "metadata": {
           "label": "Maximum Tokens",
           "description": "The upper limit for the number of tokens in the response generated by the model"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "int",
+        "types": [
+          {
+            "fieldType": "NUMBER",
+            "ballerinaType": "int",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "int",
+            "selected": false
+          }
+        ],
         "placeholder": "0",
         "optional": true,
         "editable": true,
@@ -156,24 +250,25 @@
           "kind": "DEFAULTABLE",
           "originalName": "maxTokens"
         },
-        "typeMembers": [
-          {
-            "type": "int",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
-        "defaultValue": "0"
+        "defaultValue": "512"
       },
       "temperature": {
         "metadata": {
           "label": "Temperature",
           "description": "The temperature for controlling randomness in the model's output  "
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "decimal",
+        "types": [
+          {
+            "fieldType": "NUMBER",
+            "ballerinaType": "decimal",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "decimal",
+            "selected": false
+          }
+        ],
         "placeholder": "0.0d",
         "optional": true,
         "editable": true,
@@ -183,24 +278,38 @@
           "kind": "DEFAULTABLE",
           "originalName": "temperature"
         },
-        "typeMembers": [
-          {
-            "type": "decimal",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
-        "defaultValue": "0.0d"
+        "defaultValue": "0.7"
       },
       "httpVersion": {
         "metadata": {
           "label": "HTTP Version",
           "description": "The HTTP version understood by the client"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "http:HttpVersion",
+        "types": [
+          {
+            "fieldType": "SINGLE_SELECT",
+            "options": [
+              {
+                "label": "2.0",
+                "value": "\"2.0\""
+              },
+              {
+                "label": "1.1",
+                "value": "\"1.1\""
+              },
+              {
+                "label": "1.0",
+                "value": "\"1.0\""
+              }
+            ],
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "http:HttpVersion",
+            "selected": false
+          }
+        ],
         "placeholder": "\"2.0\"",
         "optional": true,
         "editable": true,
@@ -210,27 +319,37 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "httpVersion"
         },
-        "typeMembers": [
-          {
-            "type": "HttpVersion",
-            "packageInfo": "ballerina:http:2.14.2",
-            "packageName": "http",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
         "imports": {
           "http": "ballerina/http"
         },
-        "defaultValue": "\"2.0\""
+        "defaultValue": "http:HTTP_2_0"
       },
       "http1Settings": {
         "metadata": {
           "label": "HTTP1 Settings",
           "description": "Configurations related to HTTP/1.x protocol"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "http:ClientHttp1Settings",
+        "types": [
+          {
+            "fieldType": "RECORD_MAP_EXPRESSION",
+            "ballerinaType": "http:ClientHttp1Settings",
+            "typeMembers": [
+              {
+                "type": "ClientHttp1Settings",
+                "packageInfo": "ballerina:http:2.14.2",
+                "packageName": "http",
+                "kind": "RECORD_TYPE",
+                "selected": false
+              }
+            ],
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "http:ClientHttp1Settings",
+            "selected": false
+          }
+        ],
         "placeholder": "{}",
         "optional": true,
         "editable": true,
@@ -240,15 +359,6 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "http1Settings"
         },
-        "typeMembers": [
-          {
-            "type": "ClientHttp1Settings",
-            "packageInfo": "ballerina:http:2.14.2",
-            "packageName": "http",
-            "kind": "RECORD_TYPE",
-            "selected": false
-          }
-        ],
         "imports": {
           "http": "ballerina/http"
         },
@@ -259,8 +369,27 @@
           "label": "HTTP2 Settings",
           "description": "Configurations related to HTTP/2 protocol"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "http:ClientHttp2Settings",
+        "types": [
+          {
+            "fieldType": "RECORD_MAP_EXPRESSION",
+            "ballerinaType": "http:ClientHttp2Settings",
+            "typeMembers": [
+              {
+                "type": "ClientHttp2Settings",
+                "packageInfo": "ballerina:http:2.14.2",
+                "packageName": "http",
+                "kind": "RECORD_TYPE",
+                "selected": false
+              }
+            ],
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "http:ClientHttp2Settings",
+            "selected": false
+          }
+        ],
         "placeholder": "{}",
         "optional": true,
         "editable": true,
@@ -270,15 +399,6 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "http2Settings"
         },
-        "typeMembers": [
-          {
-            "type": "ClientHttp2Settings",
-            "packageInfo": "ballerina:http:2.14.2",
-            "packageName": "http",
-            "kind": "RECORD_TYPE",
-            "selected": false
-          }
-        ],
         "imports": {
           "http": "ballerina/http"
         },
@@ -289,8 +409,18 @@
           "label": "Timeout",
           "description": "The maximum time to wait (in seconds) for a response before closing the connection"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "decimal",
+        "types": [
+          {
+            "fieldType": "NUMBER",
+            "ballerinaType": "decimal",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "decimal",
+            "selected": false
+          }
+        ],
         "placeholder": "0.0d",
         "optional": true,
         "editable": true,
@@ -300,24 +430,25 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "timeout"
         },
-        "typeMembers": [
-          {
-            "type": "decimal",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
-        "defaultValue": "0.0d"
+        "defaultValue": "60"
       },
       "forwarded": {
         "metadata": {
           "label": "Forwarded",
           "description": "The choice of setting `forwarded`/`x-forwarded` header"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "string",
+        "types": [
+          {
+            "fieldType": "TEXT",
+            "ballerinaType": "string",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "string",
+            "selected": false
+          }
+        ],
         "placeholder": "\"\"",
         "optional": true,
         "editable": true,
@@ -327,24 +458,34 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "forwarded"
         },
-        "typeMembers": [
-          {
-            "type": "string",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
-        "defaultValue": "\"\""
+        "defaultValue": "\"disable\""
       },
       "poolConfig": {
         "metadata": {
           "label": "Pool Configuration",
           "description": "Configurations associated with request pooling"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "http:PoolConfiguration",
+        "types": [
+          {
+            "fieldType": "RECORD_MAP_EXPRESSION",
+            "ballerinaType": "http:PoolConfiguration",
+            "typeMembers": [
+              {
+                "type": "PoolConfiguration",
+                "packageInfo": "ballerina:http:2.14.2",
+                "packageName": "http",
+                "kind": "RECORD_TYPE",
+                "selected": false
+              }
+            ],
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "http:PoolConfiguration",
+            "selected": false
+          }
+        ],
         "placeholder": "{}",
         "optional": true,
         "editable": true,
@@ -354,15 +495,6 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "poolConfig"
         },
-        "typeMembers": [
-          {
-            "type": "PoolConfiguration",
-            "packageInfo": "ballerina:http:2.14.2",
-            "packageName": "http",
-            "kind": "RECORD_TYPE",
-            "selected": false
-          }
-        ],
         "imports": {
           "http": "ballerina/http"
         },
@@ -373,8 +505,27 @@
           "label": "Cache Configuration",
           "description": "HTTP caching related configurations"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "http:CacheConfig",
+        "types": [
+          {
+            "fieldType": "RECORD_MAP_EXPRESSION",
+            "ballerinaType": "http:CacheConfig",
+            "typeMembers": [
+              {
+                "type": "CacheConfig",
+                "packageInfo": "ballerina:http:2.14.2",
+                "packageName": "http",
+                "kind": "RECORD_TYPE",
+                "selected": false
+              }
+            ],
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "http:CacheConfig",
+            "selected": false
+          }
+        ],
         "placeholder": "{}",
         "optional": true,
         "editable": true,
@@ -384,15 +535,6 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "cache"
         },
-        "typeMembers": [
-          {
-            "type": "CacheConfig",
-            "packageInfo": "ballerina:http:2.14.2",
-            "packageName": "http",
-            "kind": "RECORD_TYPE",
-            "selected": false
-          }
-        ],
         "imports": {
           "http": "ballerina/http"
         },
@@ -403,8 +545,31 @@
           "label": "Compression",
           "description": "Specifies the way of handling compression (`accept-encoding`) header"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "http:Compression",
+        "types": [
+          {
+            "fieldType": "SINGLE_SELECT",
+            "options": [
+              {
+                "label": "AUTO",
+                "value": "\"AUTO\""
+              },
+              {
+                "label": "ALWAYS",
+                "value": "\"ALWAYS\""
+              },
+              {
+                "label": "NEVER",
+                "value": "\"NEVER\""
+              }
+            ],
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "http:Compression",
+            "selected": false
+          }
+        ],
         "placeholder": "\"AUTO\"",
         "optional": true,
         "editable": true,
@@ -414,27 +579,37 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "compression"
         },
-        "typeMembers": [
-          {
-            "type": "Compression",
-            "packageInfo": "ballerina:http:2.14.2",
-            "packageName": "http",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
         "imports": {
           "http": "ballerina/http"
         },
-        "defaultValue": "\"AUTO\""
+        "defaultValue": "AUTO"
       },
       "circuitBreaker": {
         "metadata": {
           "label": "Circuit Breaker Configuration",
           "description": "Configurations associated with the behaviour of the Circuit Breaker"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "http:CircuitBreakerConfig",
+        "types": [
+          {
+            "fieldType": "RECORD_MAP_EXPRESSION",
+            "ballerinaType": "http:CircuitBreakerConfig",
+            "typeMembers": [
+              {
+                "type": "CircuitBreakerConfig",
+                "packageInfo": "ballerina:http:2.14.2",
+                "packageName": "http",
+                "kind": "RECORD_TYPE",
+                "selected": false
+              }
+            ],
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "http:CircuitBreakerConfig",
+            "selected": false
+          }
+        ],
         "placeholder": "{}",
         "optional": true,
         "editable": true,
@@ -444,15 +619,6 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "circuitBreaker"
         },
-        "typeMembers": [
-          {
-            "type": "CircuitBreakerConfig",
-            "packageInfo": "ballerina:http:2.14.2",
-            "packageName": "http",
-            "kind": "RECORD_TYPE",
-            "selected": false
-          }
-        ],
         "imports": {
           "http": "ballerina/http"
         },
@@ -463,8 +629,27 @@
           "label": "Retry Configuration",
           "description": "Configurations associated with retrying"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "http:RetryConfig",
+        "types": [
+          {
+            "fieldType": "RECORD_MAP_EXPRESSION",
+            "ballerinaType": "http:RetryConfig",
+            "typeMembers": [
+              {
+                "type": "RetryConfig",
+                "packageInfo": "ballerina:http:2.14.2",
+                "packageName": "http",
+                "kind": "RECORD_TYPE",
+                "selected": false
+              }
+            ],
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "http:RetryConfig",
+            "selected": false
+          }
+        ],
         "placeholder": "{}",
         "optional": true,
         "editable": true,
@@ -474,15 +659,6 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "retryConfig"
         },
-        "typeMembers": [
-          {
-            "type": "RetryConfig",
-            "packageInfo": "ballerina:http:2.14.2",
-            "packageName": "http",
-            "kind": "RECORD_TYPE",
-            "selected": false
-          }
-        ],
         "imports": {
           "http": "ballerina/http"
         },
@@ -493,8 +669,27 @@
           "label": "Response Limit Configuration",
           "description": "Configurations associated with inbound response size limits"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "http:ResponseLimitConfigs",
+        "types": [
+          {
+            "fieldType": "RECORD_MAP_EXPRESSION",
+            "ballerinaType": "http:ResponseLimitConfigs",
+            "typeMembers": [
+              {
+                "type": "ResponseLimitConfigs",
+                "packageInfo": "ballerina:http:2.14.2",
+                "packageName": "http",
+                "kind": "RECORD_TYPE",
+                "selected": false
+              }
+            ],
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "http:ResponseLimitConfigs",
+            "selected": false
+          }
+        ],
         "placeholder": "{}",
         "optional": true,
         "editable": true,
@@ -504,15 +699,6 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "responseLimits"
         },
-        "typeMembers": [
-          {
-            "type": "ResponseLimitConfigs",
-            "packageInfo": "ballerina:http:2.14.2",
-            "packageName": "http",
-            "kind": "RECORD_TYPE",
-            "selected": false
-          }
-        ],
         "imports": {
           "http": "ballerina/http"
         },
@@ -523,8 +709,27 @@
           "label": "Secure Socket Configuration",
           "description": "SSL/TLS-related options"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "http:ClientSecureSocket",
+        "types": [
+          {
+            "fieldType": "RECORD_MAP_EXPRESSION",
+            "ballerinaType": "http:ClientSecureSocket",
+            "typeMembers": [
+              {
+                "type": "ClientSecureSocket",
+                "packageInfo": "ballerina:http:2.14.2",
+                "packageName": "http",
+                "kind": "RECORD_TYPE",
+                "selected": false
+              }
+            ],
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "http:ClientSecureSocket",
+            "selected": false
+          }
+        ],
         "placeholder": "{}",
         "optional": true,
         "editable": true,
@@ -534,15 +739,6 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "secureSocket"
         },
-        "typeMembers": [
-          {
-            "type": "ClientSecureSocket",
-            "packageInfo": "ballerina:http:2.14.2",
-            "packageName": "http",
-            "kind": "RECORD_TYPE",
-            "selected": false
-          }
-        ],
         "imports": {
           "http": "ballerina/http"
         },
@@ -553,8 +749,27 @@
           "label": "Proxy Configuration",
           "description": "Proxy server related options"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "http:ProxyConfig",
+        "types": [
+          {
+            "fieldType": "RECORD_MAP_EXPRESSION",
+            "ballerinaType": "http:ProxyConfig",
+            "typeMembers": [
+              {
+                "type": "ProxyConfig",
+                "packageInfo": "ballerina:http:2.14.2",
+                "packageName": "http",
+                "kind": "RECORD_TYPE",
+                "selected": false
+              }
+            ],
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "http:ProxyConfig",
+            "selected": false
+          }
+        ],
         "placeholder": "{}",
         "optional": true,
         "editable": true,
@@ -564,15 +779,6 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "proxy"
         },
-        "typeMembers": [
-          {
-            "type": "ProxyConfig",
-            "packageInfo": "ballerina:http:2.14.2",
-            "packageName": "http",
-            "kind": "RECORD_TYPE",
-            "selected": false
-          }
-        ],
         "imports": {
           "http": "ballerina/http"
         },
@@ -583,8 +789,18 @@
           "label": "Payload Validation",
           "description": "Enables the inbound payload validation functionality which provided by the constraint package. Enabled by default"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "boolean",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "ballerinaType": "boolean",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "boolean",
+            "selected": false
+          }
+        ],
         "placeholder": "false",
         "optional": true,
         "editable": true,
@@ -594,23 +810,19 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "validation"
         },
-        "typeMembers": [
-          {
-            "type": "boolean",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
-        "defaultValue": "false"
+        "defaultValue": "true"
       },
       "type": {
         "metadata": {
           "label": "Result Type",
           "description": "Type of the variable"
         },
-        "valueType": "TYPE",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "selected": true
+          }
+        ],
         "value": "openai:ModelProvider",
         "placeholder": "var",
         "optional": false,
@@ -627,7 +839,12 @@
           "label": "Result",
           "description": "Name of the result variable"
         },
-        "valueType": "IDENTIFIER",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
         "value": "openaiModelprovider",
         "optional": false,
         "editable": true,
@@ -639,7 +856,12 @@
           "label": "Check Error",
           "description": "Trigger error flow"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": true,
         "optional": false,
         "editable": true,

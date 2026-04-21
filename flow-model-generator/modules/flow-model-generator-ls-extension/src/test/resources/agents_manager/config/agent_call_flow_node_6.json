@@ -16,7 +16,7 @@
         "id": "116255",
         "metadata": {
           "label": "run",
-          "description": "Executes the agent for a given user query.\n",
+          "description": "Executes the agent for a given user query.",
           "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_ai_1.1.1.png",
           "data": {
             "tools": [
@@ -1165,7 +1165,7 @@
           "variable": {
             "metadata": {
               "label": "Connection Name",
-              "description": "Name of the variable"
+              "description": "Name of the connection"
             },
             "valueType": "IDENTIFIER",
             "value": "httpClient",
@@ -1897,7 +1897,7 @@
           "variable": {
             "metadata": {
               "label": "Connection Name",
-              "description": "Name of the variable"
+              "description": "Name of the connection"
             },
             "valueType": "IDENTIFIER",
             "value": "httpClientResult",
@@ -3024,7 +3024,7 @@
           "variable": {
             "metadata": {
               "label": "Connection Name",
-              "description": "Name of the variable"
+              "description": "Name of the connection"
             },
             "valueType": "IDENTIFIER",
             "value": "redisClient",

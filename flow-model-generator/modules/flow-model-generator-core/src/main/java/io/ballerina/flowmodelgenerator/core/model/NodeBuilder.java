@@ -23,8 +23,13 @@ import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.api.symbols.ModuleSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.flowmodelgenerator.core.DiagnosticHandler;
+import io.ballerina.flowmodelgenerator.core.model.node.ActivityBuilder;
+import io.ballerina.flowmodelgenerator.core.model.node.ActivityCallBuilder;
+import io.ballerina.flowmodelgenerator.core.model.node.ActivityCreationBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.AgentBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.AgentCallBuilder;
+import io.ballerina.flowmodelgenerator.core.model.node.AgentIdAuthConfigBuilder;
+import io.ballerina.flowmodelgenerator.core.model.node.AgentRunBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.AssignBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.AutomationBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.BinaryBuilder;
@@ -38,6 +43,7 @@ import io.ballerina.flowmodelgenerator.core.model.node.ContinueBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.DataLoaderBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.DataMapperBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.DataMapperCallBuilder;
+import io.ballerina.flowmodelgenerator.core.model.node.DataMapperCreationBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.DataMapperDefinitionBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.EmbeddingProviderBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.ErrorHandlerBuilder;
@@ -47,6 +53,7 @@ import io.ballerina.flowmodelgenerator.core.model.node.FailBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.ForeachBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.ForkBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.FunctionCall;
+import io.ballerina.flowmodelgenerator.core.model.node.FunctionCreationBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.FunctionDefinitionBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.IfBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.JsonPayloadBuilder;
@@ -54,8 +61,8 @@ import io.ballerina.flowmodelgenerator.core.model.node.KnowledgeBaseBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.KnowledgeBaseCallBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.LockBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.MatchBuilder;
+import io.ballerina.flowmodelgenerator.core.model.node.McpToolKitBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.MemoryBuilder;
-import io.ballerina.flowmodelgenerator.core.model.node.MemoryStoreBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.MethodCall;
 import io.ballerina.flowmodelgenerator.core.model.node.ModelProviderBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.NPFunctionCall;
@@ -68,13 +75,18 @@ import io.ballerina.flowmodelgenerator.core.model.node.ResourceActionCallBuilder
 import io.ballerina.flowmodelgenerator.core.model.node.RetryBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.ReturnBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.RollbackBuilder;
+import io.ballerina.flowmodelgenerator.core.model.node.SendDataBuilder;
+import io.ballerina.flowmodelgenerator.core.model.node.ShortTermMemoryStoreBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.StartBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.StopBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.TransactionBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.VariableBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.VectorStoreBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.WaitBuilder;
+import io.ballerina.flowmodelgenerator.core.model.node.WaitDataBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.WhileBuilder;
+import io.ballerina.flowmodelgenerator.core.model.node.WorkflowBuilder;
+import io.ballerina.flowmodelgenerator.core.model.node.WorkflowRunBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.XmlPayloadBuilder;
 import io.ballerina.modelgenerator.commons.CommonUtils;
 import io.ballerina.modelgenerator.commons.ModuleInfo;
@@ -144,7 +156,9 @@ public abstract class NodeBuilder implements DiagnosticHandler.DiagnosticCapable
         put(NodeKind.FOREACH, ForeachBuilder::new);
         put(NodeKind.DATA_MAPPER, DataMapperBuilder::new);
         put(NodeKind.DATA_MAPPER_DEFINITION, DataMapperDefinitionBuilder::new);
+        put(NodeKind.DATA_MAPPER_CREATION, DataMapperCreationBuilder::new);
         put(NodeKind.FUNCTION_DEFINITION, FunctionDefinitionBuilder::new);
+        put(NodeKind.FUNCTION_CREATION, FunctionCreationBuilder::new);
         put(NodeKind.AUTOMATION, AutomationBuilder::new);
         put(NodeKind.VARIABLE, VariableBuilder::new);
         put(NodeKind.ASSIGN, AssignBuilder::new);
@@ -157,9 +171,10 @@ public abstract class NodeBuilder implements DiagnosticHandler.DiagnosticCapable
         put(NodeKind.WAIT, WaitBuilder::new);
         put(NodeKind.AGENT, AgentBuilder::new);
         put(NodeKind.AGENT_CALL, AgentCallBuilder::new);
+        put(NodeKind.AGENT_RUN, AgentRunBuilder::new);
         put(NodeKind.CLASS_INIT, ClassInitBuilder::new);
         put(NodeKind.MEMORY, MemoryBuilder::new);
-        put(NodeKind.MEMORY_STORE, MemoryStoreBuilder::new);
+        put(NodeKind.SHORT_TERM_MEMORY_STORE, ShortTermMemoryStoreBuilder::new);
         put(NodeKind.MODEL_PROVIDER, ModelProviderBuilder::new);
         put(NodeKind.EMBEDDING_PROVIDER, EmbeddingProviderBuilder::new);
         put(NodeKind.VECTOR_STORE, VectorStoreBuilder::new);
@@ -168,6 +183,14 @@ public abstract class NodeBuilder implements DiagnosticHandler.DiagnosticCapable
         put(NodeKind.DATA_LOADER, DataLoaderBuilder::new);
         put(NodeKind.CHUNKER, ChunkerBuilder::new);
         put(NodeKind.MCP_TOOL_KIT, McpToolKitBuilder::new);
+        put(NodeKind.AGENT_ID_AUTH_CONFIG, AgentIdAuthConfigBuilder::new);
+        put(NodeKind.WORKFLOW, WorkflowBuilder::new);
+        put(NodeKind.ACTIVITY, ActivityBuilder::new);
+        put(NodeKind.ACTIVITY_CALL, ActivityCallBuilder::new);
+        put(NodeKind.ACTIVITY_CREATION, ActivityCreationBuilder::new);
+        put(NodeKind.WAIT_DATA, WaitDataBuilder::new);
+        put(NodeKind.SEND_DATA, SendDataBuilder::new);
+        put(NodeKind.WORKFLOW_RUN, WorkflowRunBuilder::new);
     }};
 
     public static NodeBuilder getNodeFromKind(NodeKind kind) {
@@ -312,6 +335,20 @@ public abstract class NodeBuilder implements DiagnosticHandler.DiagnosticCapable
                         workspaceManager.semanticModel(filePath).orElseThrow();
                 Document document = workspaceManager.document(filePath).orElseThrow();
                 return semanticModel.visibleSymbols(document, position).parallelStream()
+                        .filter(s -> s.getName().isPresent())
+                        .map(s -> s.getName().get())
+                        .collect(Collectors.toSet());
+            } catch (Throwable e) {
+                return new HashSet<>();
+            }
+        }
+
+        public Set<String> getAllModuleSymbolNames() {
+            try {
+                workspaceManager.loadProject(filePath);
+                SemanticModel semanticModel =
+                        workspaceManager.semanticModel(filePath).orElseThrow();
+                return semanticModel.moduleSymbols().parallelStream()
                         .filter(s -> s.getName().isPresent())
                         .map(s -> s.getName().get())
                         .collect(Collectors.toSet());

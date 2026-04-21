@@ -1,4 +1,5 @@
 {
+  "source": "empty.bal",
   "description": "Sample diagram node",
   "codedata": {
     "node": "FOREACH"
@@ -37,7 +38,12 @@
               "label": "Ignore",
               "description": "Ignore the error value"
             },
-            "valueType": "EXPRESSION",
+            "types": [
+              {
+                "fieldType": "EXPRESSION",
+                "selected": true
+              }
+            ],
             "value": "true",
             "optional": false,
             "editable": true,
@@ -49,7 +55,12 @@
               "label": "Error Variable",
               "description": "Name of the error variable"
             },
-            "valueType": "IDENTIFIER",
+            "types": [
+              {
+                "fieldType": "IDENTIFIER",
+                "selected": true
+              }
+            ],
             "value": "",
             "placeholder": "err",
             "optional": false,
@@ -62,7 +73,12 @@
               "label": "Error Type",
               "description": "Type of the error"
             },
-            "valueType": "TYPE",
+            "types": [
+              {
+                "fieldType": "TYPE",
+                "selected": true
+              }
+            ],
             "value": "",
             "placeholder": "error",
             "optional": false,
@@ -80,7 +96,12 @@
           "label": "Variable Name",
           "description": "Name of the variable"
         },
-        "valueType": "IDENTIFIER",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
         "value": "var1",
         "optional": false,
         "editable": true,
@@ -92,7 +113,12 @@
           "label": "Variable Type",
           "description": "Type of the variable"
         },
-        "valueType": "TYPE",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "selected": true
+          }
+        ],
         "value": "",
         "placeholder": "var",
         "optional": false,
@@ -106,8 +132,13 @@
           "label": "Collection",
           "description": "Collection to iterate"
         },
-        "valueType": "ACTION_OR_EXPRESSION",
-        "valueTypeConstraint": "(any|error)[]|stream<any|error, ()>|string|map<any|error>|json",
+        "types": [
+          {
+            "fieldType": "ACTION_OR_EXPRESSION",
+            "ballerinaType": "(any|error)[]|stream<any|error, ()>|string|map<any|error>|json",
+            "selected": true
+          }
+        ],
         "value": "",
         "placeholder": "[]",
         "optional": false,

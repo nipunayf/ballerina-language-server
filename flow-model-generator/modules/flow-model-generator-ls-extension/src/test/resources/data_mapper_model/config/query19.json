@@ -44,7 +44,7 @@
         "displayName": "arr3",
         "typeName": "RecType[][]",
         "kind": "array",
-        "category": "variable",
+        "category": "local-variable",
         "ref": "-1897494121"
       },
       {
@@ -60,7 +60,7 @@
         "displayName": "arr3Item",
         "typeName": "RecType[]",
         "kind": "array",
-        "category": "variable",
+        "category": "local-variable",
         "focusExpression": "arr3",
         "ref": "-1897494121"
       },
@@ -84,7 +84,7 @@
         "displayName": "arr4",
         "typeName": "RecType[][]",
         "kind": "array",
-        "category": "variable",
+        "category": "local-variable",
         "ref": "-1897494121"
       },
       {
@@ -93,8 +93,10 @@
         "displayName": "arr3ItemItem",
         "typeName": "RecType",
         "kind": "record",
+        "category": "local-variable",
         "focusExpression": "arr3Item",
-        "ref": "-788289410"
+        "ref": "-788289410",
+        "isIterationVariable": true
       }
     ],
     "output": {
@@ -160,6 +162,7 @@
         "typeName": "RecType",
         "kind": "record"
       }
-    }
+    },
+    "hasInvalidOutput": false
   }
 }

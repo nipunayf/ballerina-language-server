@@ -36,8 +36,26 @@
           "label": "Values",
           "description": "The value(s) to be printed"
         },
-        "valueType": "EXPRESSION_SET",
-        "valueTypeConstraint": "io:Printable",
+        "types": [
+          {
+            "fieldType": "REPEATABLE_LIST",
+            "ballerinaType": "io:Printable",
+            "template": {
+              "types": [
+                {
+                  "fieldType": "EXPRESSION",
+                  "ballerinaType": "io:Printable",
+                  "selected": false
+                }
+              ],
+              "optional": false,
+              "editable": false,
+              "advanced": false,
+              "hidden": false
+            },
+            "selected": true
+          }
+        ],
         "placeholder": "()",
         "optional": false,
         "editable": true,
@@ -46,16 +64,7 @@
         "codedata": {
           "kind": "REST_PARAMETER",
           "originalName": "values"
-        },
-        "typeMembers": [
-          {
-            "type": "Printable",
-            "packageInfo": "ballerina:io:1.8.0",
-            "packageName": "io",
-            "kind": "ARRAY_TYPE",
-            "selected": false
-          }
-        ]
+        }
       }
     },
     "flags": 0

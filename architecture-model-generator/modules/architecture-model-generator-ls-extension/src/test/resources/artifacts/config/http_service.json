@@ -1,6 +1,7 @@
 {
   "description": "",
   "source": "http_service.bal",
+  "packageName": ".",
   "output": {
     "Connections": {
       "httpClient": {
@@ -19,7 +20,8 @@
         "type": "CONNECTION",
         "name": "httpClient",
         "scope": "Global",
-        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.15.0.png",
+        "visibility": "module",
+        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.16.1.png",
         "module": "http",
         "children": {}
       }
@@ -41,7 +43,8 @@
         "type": "LISTENER",
         "name": "refListener",
         "scope": "Global",
-        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.15.0.png",
+        "visibility": "module",
+        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.16.1.png",
         "module": "http",
         "children": {}
       },
@@ -61,7 +64,8 @@
         "type": "LISTENER",
         "name": "securedEP",
         "scope": "Global",
-        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.15.0.png",
+        "visibility": "public",
+        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.16.1.png",
         "module": "http",
         "children": {}
       }
@@ -83,7 +87,8 @@
         "type": "SERVICE",
         "name": "HTTP Service - /root/path-id",
         "scope": "Global",
-        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.15.0.png",
+        "visibility": "module",
+        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.16.1.png",
         "module": "http",
         "children": {
           "post#data": {
@@ -103,6 +108,7 @@
             "name": "data",
             "accessor": "post",
             "scope": "Global",
+            "visibility": "module",
             "children": {}
           },
           "post#greeting": {
@@ -122,6 +128,7 @@
             "name": "greeting",
             "accessor": "post",
             "scope": "Global",
+            "visibility": "module",
             "children": {}
           },
           "get#gre\\#eting": {
@@ -141,6 +148,7 @@
             "name": "gre#eting",
             "accessor": "get",
             "scope": "Global",
+            "visibility": "module",
             "children": {}
           },
           "get#echo/[string message]": {
@@ -160,6 +168,7 @@
             "name": "echo/[string message]",
             "accessor": "get",
             "scope": "Global",
+            "visibility": "module",
             "children": {}
           },
           "get\\#gre#eting": {
@@ -179,6 +188,7 @@
             "name": "eting",
             "accessor": "get#gre",
             "scope": "Global",
+            "visibility": "module",
             "children": {}
           }
         }
@@ -199,7 +209,8 @@
         "type": "SERVICE",
         "name": "HTTP Service - /",
         "scope": "Global",
-        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.15.0.png",
+        "visibility": "module",
+        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.16.1.png",
         "module": "http",
         "children": {
           "init": {
@@ -218,6 +229,7 @@
             "type": "FUNCTION",
             "name": "init",
             "scope": "Global",
+            "visibility": "module",
             "children": {}
           },
           "get#greeting": {
@@ -237,6 +249,7 @@
             "name": "greeting",
             "accessor": "get",
             "scope": "Global",
+            "visibility": "module",
             "children": {}
           }
         }
@@ -257,7 +270,8 @@
         "type": "SERVICE",
         "name": "HTTP Service - /api/v1",
         "scope": "Global",
-        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.15.0.png",
+        "visibility": "module",
+        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.16.1.png",
         "module": "http",
         "children": {
           "get#path": {
@@ -277,6 +291,7 @@
             "name": "path",
             "accessor": "get",
             "scope": "Global",
+            "visibility": "module",
             "children": {}
           }
         }

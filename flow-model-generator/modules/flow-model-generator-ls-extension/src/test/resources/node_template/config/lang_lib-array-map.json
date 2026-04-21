@@ -36,8 +36,31 @@
           "label": "Arr",
           "description": "the array"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "(any|error)[]",
+        "types": [
+          {
+            "fieldType": "REPEATABLE_LIST",
+            "ballerinaType": "(any|error)[]",
+            "template": {
+              "types": [
+                {
+                  "fieldType": "EXPRESSION",
+                  "ballerinaType": "(any|error)",
+                  "selected": false
+                }
+              ],
+              "optional": false,
+              "editable": false,
+              "advanced": false,
+              "hidden": false
+            },
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "(any|error)[]",
+            "selected": false
+          }
+        ],
         "placeholder": "[]",
         "optional": false,
         "editable": true,
@@ -46,24 +69,20 @@
         "codedata": {
           "kind": "REQUIRED",
           "originalName": "arr"
-        },
-        "typeMembers": [
-          {
-            "type": "Type",
-            "packageInfo": "ballerina:lang.array:0.0.0",
-            "packageName": "lang.array",
-            "kind": "ARRAY_TYPE",
-            "selected": false
-          }
-        ]
+        }
       },
       "func": {
         "metadata": {
           "label": "Func",
           "description": "a function to apply to each member"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "function ((any|error) val) returns (any|error)",
+        "types": [
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "function ((any|error) val) returns (any|error)",
+            "selected": false
+          }
+        ],
         "placeholder": "",
         "optional": false,
         "editable": true,
@@ -72,29 +91,25 @@
         "codedata": {
           "kind": "REQUIRED",
           "originalName": "func"
-        },
-        "typeMembers": [
-          {
-            "type": "Type val) returns array",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "FUNCTION_TYPE",
-            "selected": false
-          }
-        ]
+        }
       },
       "type": {
         "metadata": {
           "label": "Result Type",
           "description": "Type of the variable"
         },
-        "valueType": "TYPE",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "selected": true
+          }
+        ],
         "value": "(any|error)[]",
         "placeholder": "var",
         "optional": false,
         "editable": false,
         "advanced": false,
-        "hidden": false,
+        "hidden": true,
         "codedata": {}
       },
       "variable": {
@@ -102,8 +117,13 @@
           "label": "Result",
           "description": "Name of the result variable"
         },
-        "valueType": "IDENTIFIER",
-        "value": "anyError",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
+        "value": "arrayType1",
         "optional": false,
         "editable": true,
         "advanced": false,

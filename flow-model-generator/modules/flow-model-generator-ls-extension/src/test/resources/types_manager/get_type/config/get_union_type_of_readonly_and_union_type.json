@@ -32,7 +32,12 @@
           "label": "Type name",
           "description": "Unique name to identify the type"
         },
-        "valueType": "IDENTIFIER",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
         "value": "User5",
         "optional": false,
         "editable": false,
@@ -42,9 +47,14 @@
       "isPublic": {
         "metadata": {
           "label": "public",
-          "description": "Is this public"
+          "description": "Make visible across the project"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": "false",
         "optional": true,
         "editable": true,
@@ -56,7 +66,12 @@
           "label": "Type description",
           "description": "Detailed description about the type"
         },
-        "valueType": "STRING",
+        "types": [
+          {
+            "fieldType": "TEXT",
+            "selected": true
+          }
+        ],
         "value": "Readonly and union type",
         "optional": false,
         "editable": true,
@@ -68,7 +83,12 @@
           "label": "readonly",
           "description": "Is this readonly"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": "true",
         "optional": true,
         "editable": true,
@@ -80,7 +100,12 @@
           "label": "Is array type",
           "description": "Is this type an array or list value"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": "false",
         "optional": true,
         "editable": true,
@@ -92,7 +117,12 @@
           "label": "Size of the array",
           "description": "Array dimensions"
         },
-        "valueType": "STRING",
+        "types": [
+          {
+            "fieldType": "TEXT",
+            "selected": true
+          }
+        ],
         "value": "",
         "optional": false,
         "editable": false,
@@ -107,10 +137,15 @@
           "User1"
         ],
         "type": "User1",
+        "typeName": "User1",
         "name": "User1",
         "optional": false,
         "readonly": false,
-        "isGraphqlId": false
+        "isGraphqlId": false,
+        "imports": {
+          "test_pack1": "testorg/test_pack1:0.1.0"
+        },
+        "selected": false
       },
       {
         "kind": "TYPE",
@@ -118,10 +153,15 @@
           "Person"
         ],
         "type": "Person",
+        "typeName": "Person",
         "name": "Person",
         "optional": false,
         "readonly": false,
-        "isGraphqlId": false
+        "isGraphqlId": false,
+        "imports": {
+          "test_pack1": "testorg/test_pack1:0.1.0"
+        },
+        "selected": false
       }
     ],
     "annotationAttachments": [],
@@ -155,7 +195,12 @@
             "label": "Type name",
             "description": "Unique name to identify the type"
           },
-          "valueType": "IDENTIFIER",
+          "types": [
+            {
+              "fieldType": "IDENTIFIER",
+              "selected": true
+            }
+          ],
           "value": "Address",
           "optional": false,
           "editable": false,
@@ -165,9 +210,14 @@
         "isPublic": {
           "metadata": {
             "label": "public",
-            "description": "Is this public"
+            "description": "Make visible across the project"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": "false",
           "optional": true,
           "editable": true,
@@ -179,7 +229,12 @@
             "label": "Type description",
             "description": "Detailed description about the type"
           },
-          "valueType": "STRING",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "selected": true
+            }
+          ],
           "value": "",
           "optional": false,
           "editable": true,
@@ -191,7 +246,12 @@
             "label": "Is array type",
             "description": "Is this type an array or list value"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": "false",
           "optional": true,
           "editable": true,
@@ -203,7 +263,12 @@
             "label": "Size of the array",
             "description": "Array dimensions"
           },
-          "valueType": "STRING",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "selected": true
+            }
+          ],
           "value": "",
           "optional": true,
           "editable": true,
@@ -216,56 +281,66 @@
           "kind": "FIELD",
           "refs": [],
           "type": "string",
+          "typeName": "string",
           "name": "houseNo",
           "optional": false,
           "readonly": false,
           "isGraphqlId": false,
           "docs": "",
-          "annotationAttachments": []
+          "annotationAttachments": [],
+          "selected": false
         },
         {
           "kind": "FIELD",
           "refs": [],
           "type": "string",
+          "typeName": "string",
           "name": "line1",
           "optional": false,
           "readonly": false,
           "isGraphqlId": false,
           "docs": "",
-          "annotationAttachments": []
+          "annotationAttachments": [],
+          "selected": false
         },
         {
           "kind": "FIELD",
           "refs": [],
           "type": "string",
+          "typeName": "string",
           "name": "line2",
           "optional": false,
           "readonly": false,
           "isGraphqlId": false,
           "docs": "",
-          "annotationAttachments": []
+          "annotationAttachments": [],
+          "selected": false
         },
         {
           "kind": "FIELD",
           "refs": [],
           "type": "string",
+          "typeName": "string",
           "name": "city",
           "optional": false,
           "readonly": false,
           "isGraphqlId": false,
           "docs": "",
-          "annotationAttachments": []
+          "annotationAttachments": [],
+          "selected": false
         },
         {
           "kind": "FIELD",
           "refs": [],
           "type": "string",
+          "typeName": "string",
           "name": "country",
           "optional": false,
           "readonly": false,
           "isGraphqlId": false,
           "docs": "",
-          "annotationAttachments": []
+          "annotationAttachments": [],
+          "selected": false
         }
       ],
       "includes": [],
@@ -299,7 +374,12 @@
             "label": "Type name",
             "description": "Unique name to identify the type"
           },
-          "valueType": "IDENTIFIER",
+          "types": [
+            {
+              "fieldType": "IDENTIFIER",
+              "selected": true
+            }
+          ],
           "value": "User1",
           "optional": false,
           "editable": false,
@@ -309,9 +389,14 @@
         "isPublic": {
           "metadata": {
             "label": "public",
-            "description": "Is this public"
+            "description": "Make visible across the project"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": "false",
           "optional": true,
           "editable": true,
@@ -323,7 +408,12 @@
             "label": "Type description",
             "description": "Detailed description about the type"
           },
-          "valueType": "STRING",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "selected": true
+            }
+          ],
           "value": "Record with readonly field",
           "optional": false,
           "editable": true,
@@ -335,7 +425,12 @@
             "label": "Is array type",
             "description": "Is this type an array or list value"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": "false",
           "optional": true,
           "editable": true,
@@ -347,7 +442,12 @@
             "label": "Size of the array",
             "description": "Array dimensions"
           },
-          "valueType": "STRING",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "selected": true
+            }
+          ],
           "value": "",
           "optional": true,
           "editable": true,
@@ -360,23 +460,27 @@
           "kind": "FIELD",
           "refs": [],
           "type": "int",
+          "typeName": "int",
           "name": "uuid",
           "optional": false,
           "readonly": true,
           "isGraphqlId": false,
           "docs": "",
-          "annotationAttachments": []
+          "annotationAttachments": [],
+          "selected": false
         },
         {
           "kind": "FIELD",
           "refs": [],
           "type": "string",
+          "typeName": "string",
           "name": "name",
           "optional": false,
           "readonly": true,
           "isGraphqlId": false,
           "docs": "",
-          "annotationAttachments": []
+          "annotationAttachments": [],
+          "selected": false
         }
       ],
       "includes": [],
@@ -410,7 +514,12 @@
             "label": "Type name",
             "description": "Unique name to identify the type"
           },
-          "valueType": "IDENTIFIER",
+          "types": [
+            {
+              "fieldType": "IDENTIFIER",
+              "selected": true
+            }
+          ],
           "value": "ballerina/time:Utc",
           "optional": false,
           "editable": false,
@@ -420,9 +529,14 @@
         "isPublic": {
           "metadata": {
             "label": "public",
-            "description": "Is this public"
+            "description": "Make visible across the project"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": "true",
           "optional": true,
           "editable": true,
@@ -434,7 +548,12 @@
             "label": "Type description",
             "description": "Detailed description about the type"
           },
-          "valueType": "STRING",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "selected": true
+            }
+          ],
           "value": "Point on UTC time-scale.\nThis is represented by a tuple of length 2.\nThe tuple is an ordered type and so the values can be\ncompared using the Ballerina <, <=, >, >= operators.\nThe first member of the tuple is int representing an integral number of\nseconds from the epoch.\nEpoch is the traditional UNIX epoch of `1970-01-01T00:00:00Z`.\nThe second member of the tuple is a decimal giving the fraction of\na second.\nFor times before the epoch, n is negative and f is\nnon-negative. In other words, the UTC time represented\nis on or after the second specified by n.\nLeap seconds are handled as follows. The first member\nof the tuple ignores leap seconds: it assumes that every day\nhas 86400 seconds. The second member of the tuple is >= 0.\nand is < 1 except during positive leaps seconds in which it\nis >= 1 and < 2. So given a tuple [n,f] after the epoch,\nn / 86400 gives the day number, and (n % 86400) + f gives the\ntime in seconds since midnight UTC (for which the limit is\n86401 on day with a positive leap second).",
           "optional": false,
           "editable": true,
@@ -446,7 +565,12 @@
             "label": "readonly",
             "description": "Is this readonly"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": "true",
           "optional": true,
           "editable": true,
@@ -458,7 +582,12 @@
             "label": "Is array type",
             "description": "Is this type an array or list value"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": "false",
           "optional": true,
           "editable": true,
@@ -470,7 +599,12 @@
             "label": "Size of the array",
             "description": "Array dimensions"
           },
-          "valueType": "STRING",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "selected": true
+            }
+          ],
           "value": "",
           "optional": false,
           "editable": false,
@@ -483,19 +617,23 @@
           "kind": "TYPE",
           "refs": [],
           "type": "int",
+          "typeName": "int",
           "name": "int",
           "optional": false,
           "readonly": false,
-          "isGraphqlId": false
+          "isGraphqlId": false,
+          "selected": false
         },
         {
           "kind": "TYPE",
           "refs": [],
           "type": "decimal",
+          "typeName": "decimal",
           "name": "decimal",
           "optional": false,
           "readonly": false,
-          "isGraphqlId": false
+          "isGraphqlId": false,
+          "selected": false
         }
       ],
       "annotationAttachments": [],
@@ -528,7 +666,12 @@
             "label": "Type name",
             "description": "Unique name to identify the type"
           },
-          "valueType": "IDENTIFIER",
+          "types": [
+            {
+              "fieldType": "IDENTIFIER",
+              "selected": true
+            }
+          ],
           "value": "Person",
           "optional": false,
           "editable": false,
@@ -538,9 +681,14 @@
         "isPublic": {
           "metadata": {
             "label": "public",
-            "description": "Is this public"
+            "description": "Make visible across the project"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": "false",
           "optional": true,
           "editable": true,
@@ -552,7 +700,12 @@
             "label": "Type description",
             "description": "Detailed description about the type"
           },
-          "valueType": "STRING",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "selected": true
+            }
+          ],
           "value": "Person record\nUsed to represent person object",
           "optional": false,
           "editable": true,
@@ -564,7 +717,12 @@
             "label": "Is array type",
             "description": "Is this type an array or list value"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": "false",
           "optional": true,
           "editable": true,
@@ -576,7 +734,12 @@
             "label": "Size of the array",
             "description": "Array dimensions"
           },
-          "valueType": "STRING",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "selected": true
+            }
+          ],
           "value": "",
           "optional": true,
           "editable": true,
@@ -589,25 +752,29 @@
           "kind": "FIELD",
           "refs": [],
           "type": "int",
+          "typeName": "int",
           "name": "id",
           "defaultValue": "12",
           "optional": false,
           "readonly": false,
           "isGraphqlId": false,
           "docs": "id of the person",
-          "annotationAttachments": []
+          "annotationAttachments": [],
+          "selected": false
         },
         {
           "kind": "FIELD",
           "refs": [],
           "type": "string",
+          "typeName": "string",
           "name": "name",
           "defaultValue": "\"John\"",
           "optional": false,
           "readonly": false,
           "isGraphqlId": false,
           "docs": "name of the person",
-          "annotationAttachments": []
+          "annotationAttachments": [],
+          "selected": false
         },
         {
           "kind": "FIELD",
@@ -623,7 +790,12 @@
                   "label": "Is array type",
                   "description": "Is this type an array or list value"
                 },
-                "valueType": "FLAG",
+                "types": [
+                  {
+                    "fieldType": "FLAG",
+                    "selected": true
+                  }
+                ],
                 "value": "true",
                 "optional": true,
                 "editable": true,
@@ -635,7 +807,12 @@
                   "label": "Size of the array",
                   "description": "Array dimensions"
                 },
-                "valueType": "STRING",
+                "types": [
+                  {
+                    "fieldType": "TEXT",
+                    "selected": true
+                  }
+                ],
                 "value": "",
                 "optional": true,
                 "editable": true,
@@ -650,21 +827,31 @@
                   "Address"
                 ],
                 "type": "Address",
+                "typeName": "Address",
                 "name": "Address",
                 "optional": false,
                 "readonly": false,
-                "isGraphqlId": false
+                "isGraphqlId": false,
+                "imports": {
+                  "test_pack1": "testorg/test_pack1:0.1.0"
+                },
+                "selected": false
               }
             ],
             "allowAdditionalFields": false
           },
+          "typeName": "Address[]",
           "name": "addresses",
           "defaultValue": "[\n        {\n            houseNo: \"10\",\n            line1: \"5th Ave\",\n            line2: \"4th St\",\n            city: \"New York City\",\n            country: \"USA\"\n        }\n    ]",
           "optional": false,
           "readonly": false,
           "isGraphqlId": false,
           "docs": "addresses of the person",
-          "annotationAttachments": []
+          "annotationAttachments": [],
+          "imports": {
+            "test_pack1": "testorg/test_pack1:0.1.0"
+          },
+          "selected": false
         },
         {
           "kind": "FIELD",
@@ -672,13 +859,18 @@
             "ballerina/time:Utc"
           ],
           "type": "time:Utc",
+          "typeName": "time:Utc",
           "name": "dob",
           "defaultValue": "getDefaultDob()",
           "optional": false,
           "readonly": false,
           "isGraphqlId": false,
           "docs": "date of birth",
-          "annotationAttachments": []
+          "annotationAttachments": [],
+          "imports": {
+            "time": "ballerina/time:2.8.0"
+          },
+          "selected": false
         }
       ],
       "includes": [],

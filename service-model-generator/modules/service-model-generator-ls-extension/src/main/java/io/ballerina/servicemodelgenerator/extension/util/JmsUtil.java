@@ -31,6 +31,7 @@ import io.ballerina.servicemodelgenerator.extension.model.Codedata;
 import io.ballerina.servicemodelgenerator.extension.model.Function;
 import io.ballerina.servicemodelgenerator.extension.model.MetaData;
 import io.ballerina.servicemodelgenerator.extension.model.Parameter;
+import io.ballerina.servicemodelgenerator.extension.model.PropertyType;
 import io.ballerina.servicemodelgenerator.extension.model.PropertyTypeMemberInfo;
 import io.ballerina.servicemodelgenerator.extension.model.Service;
 import io.ballerina.servicemodelgenerator.extension.model.ServiceInitModel;
@@ -42,20 +43,12 @@ import org.eclipse.lsp4j.TextEdit;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.BiFunction;
 
-import static io.ballerina.servicemodelgenerator.extension.model.ServiceInitModel.KEY_EXISTING_LISTENER;
 import static io.ballerina.servicemodelgenerator.extension.util.Constants.ARG_TYPE_LISTENER_PARAM_INCLUDED_FIELD;
-import static io.ballerina.servicemodelgenerator.extension.util.Constants.VALUE_TYPE_CHOICE;
-import static io.ballerina.servicemodelgenerator.extension.util.Constants.VALUE_TYPE_EXPRESSION;
-import static io.ballerina.servicemodelgenerator.extension.util.Constants.VALUE_TYPE_FLAG;
-import static io.ballerina.servicemodelgenerator.extension.util.Constants.VALUE_TYPE_FORM;
-import static io.ballerina.servicemodelgenerator.extension.util.Constants.VALUE_TYPE_SINGLE_SELECT;
 
 /**
  * Utility class for JMS-based service model generation.
@@ -64,84 +57,24 @@ import static io.ballerina.servicemodelgenerator.extension.util.Constants.VALUE_
  */
 public final class JmsUtil {
 
-    private static final String EXISTING_LISTENER_CHOICE_DESCRIPTION = "Select from the existing %s listeners";
-    private static final String VALUE_TYPE_STRING = "string";
-    private static final String CREATE_NEW_LISTENER_CHOICE_DESCRIPTION = "Create a new %s listener";
     private static final String CALLER_PARAM_DESCRIPTION = "%s caller object for message acknowledgment";
     public static final String CALLER_PARAM_NAME = "caller";
 
     // Constants for acknowledgment mode handling
     public static final String PROPERTY_SESSION_ACK_MODE = "sessionAckMode";
     public static final String ON_MESSAGE_FUNCTION_NAME = "onMessage";
-    private static final String LABEL_SESSION_ACK_MODE = "Session Acknowledgment Mode";
-    private static final String DESC_SESSION_ACK_MODE = "How messages received should be acknowledged.";
-
-    private static Value buildUseExistingListenerChoice(Set<String> listeners, String moduleName) {
-        Map<String, Value> existingListenerProps = new LinkedHashMap<>();
-        List<String> items = listeners.stream().toList();
-        List<Object> itemsAsObject = listeners.stream().map(item -> (Object) item).toList();
-        Value existingListenerOptions = new Value.ValueBuilder()
-                .metadata("Select Listener", String.format(EXISTING_LISTENER_CHOICE_DESCRIPTION, moduleName))
-                .value(items.getFirst())
-                .valueType(VALUE_TYPE_SINGLE_SELECT)
-                .setItems(itemsAsObject)
-                .enabled(true)
-                .editable(true)
-                .setAdvanced(false)
-                .build();
-        existingListenerProps.put(KEY_EXISTING_LISTENER, existingListenerOptions);
-
-        return new Value.ValueBuilder()
-                .metadata("Use Existing Listener", "Use Existing Listener")
-                .value("true")
-                .valueType(VALUE_TYPE_FORM)
-                .enabled(false).
-                editable(false)
-                .setAdvanced(false)
-                .setProperties(existingListenerProps)
-                .build();
-    }
-
-    private static Value buildCreateNewListenerChoice(Map<String, Value> existingListenerProps, String moduleName) {
-        return new Value.ValueBuilder()
-                .metadata("Create New Listener", String.format(CREATE_NEW_LISTENER_CHOICE_DESCRIPTION, moduleName))
-                .value("true")
-                .valueType(VALUE_TYPE_FORM)
-                .enabled(false)
-                .editable(false)
-                .setAdvanced(false)
-                .setProperties(existingListenerProps)
-                .build();
-    }
-
-    public static Value buildListenerChoice(Map<String, Value> existingListenerProps, Set<String> listeners,
-                                            String moduleName) {
-        Value choicesProperty = new Value.ValueBuilder()
-                .metadata("Use Existing Listener", "Use Existing Listener or Create New Listener")
-                .value(true)
-                .valueType(VALUE_TYPE_CHOICE)
-                .enabled(true)
-                .editable(true)
-                .setAdvanced(true)
-                .build();
-
-        choicesProperty.setChoices(List.of(buildUseExistingListenerChoice(listeners, moduleName),
-                buildCreateNewListenerChoice(existingListenerProps, moduleName)));
-        return choicesProperty;
-
-    }
 
     public static void addCallerParameter(Function onMessageFunction, String callerTypeStr, String moduleName) {
         Value callerType = new Value.ValueBuilder()
                 .value(callerTypeStr)
-                .valueType(VALUE_TYPE_EXPRESSION)
+                .types(List.of(PropertyType.types(Value.FieldType.EXPRESSION)))
                 .enabled(true)
                 .editable(false)
                 .build();
 
         Value callerName = new Value.ValueBuilder()
                 .value(CALLER_PARAM_NAME)
-                .valueType(VALUE_TYPE_STRING)
+                .types(List.of(PropertyType.types(Value.FieldType.TEXT)))
                 .enabled(true)
                 .editable(false)
                 .build();
@@ -157,31 +90,6 @@ public final class JmsUtil {
                 .build();
 
         onMessageFunction.getParameters().add(1, callerParameter);
-    }
-
-    /**
-     * Builds a Value property for session acknowledgment mode selection.
-     *
-     * @return Value configured for session ack mode selection.
-     */
-    public static Value buildSessionAckModeProperty() {
-        List<Object> ackModeOptions = List.of(
-                AcknowledgmentMode.AUTO_ACKNOWLEDGE.getValue(),
-                AcknowledgmentMode.CLIENT_ACKNOWLEDGE.getValue(),
-                AcknowledgmentMode.DUPS_OK_ACKNOWLEDGE.getValue(),
-                AcknowledgmentMode.SESSION_TRANSACTED.getValue()
-        );
-
-        return new Value.ValueBuilder()
-                .metadata(LABEL_SESSION_ACK_MODE, DESC_SESSION_ACK_MODE)
-                .value(AcknowledgmentMode.AUTO_ACKNOWLEDGE.getValue())
-                .valueType(VALUE_TYPE_SINGLE_SELECT)
-                .setValueTypeConstraint(VALUE_TYPE_STRING)
-                .setPlaceholder(AcknowledgmentMode.AUTO_ACKNOWLEDGE.getValue())
-                .setItems(ackModeOptions)
-                .enabled(true)
-                .editable(true)
-                .build();
     }
 
     /**
@@ -328,117 +236,6 @@ public final class JmsUtil {
     }
 
     /**
-     * Builds a destination choice property for Queue/Topic selection with protocol-specific defaults.
-     *
-     * @param queueDefaultValue         Default queue name value.
-     * @param topicDefaultValue         Default topic name value.
-     * @param queueLabel                Label for queue choice.
-     * @param topicLabel                Label for topic choice.
-     * @param queueNameLabel            Label for queue name field.
-     * @param queueNameDesc             Description for queue name field.
-     * @param topicNameLabel            Label for topic name field.
-     * @param topicNameDesc             Description for topic name field.
-     * @param destinationLabel          Label for destination choice.
-     * @param destinationDesc           Description for destination choice.
-     * @param queueDesc                 Description for queue choice.
-     * @param topicDesc                 Description for topic choice.
-     * @param additionalTopicProperties Additional properties to add to topic choice (e.g., "shared").
-     * @return Value configured for destination choice.
-     */
-    public static Value buildDestinationChoice(String queueDefaultValue,
-                                               String topicDefaultValue,
-                                               String queueLabel,
-                                               String topicLabel,
-                                               String queueNameLabel,
-                                               String queueNameDesc,
-                                               String topicNameLabel,
-                                               String topicNameDesc,
-                                               String destinationLabel,
-                                               String destinationDesc,
-                                               String queueDesc,
-                                               String topicDesc,
-                                               Map<String, Value> additionalTopicProperties) {
-        // Build Queue choice
-        Map<String, Value> queueProps = new LinkedHashMap<>();
-        queueProps.put("queueName", new Value.ValueBuilder()
-                .metadata(queueNameLabel, queueNameDesc)
-                .value(queueDefaultValue)
-                .valueType(VALUE_TYPE_EXPRESSION)
-                .setValueTypeConstraint(VALUE_TYPE_STRING)
-                .setPlaceholder("")
-                .enabled(true)
-                .editable(true)
-                .build());
-
-        Value queueChoice = new Value.ValueBuilder()
-                .metadata(queueLabel, queueDesc)
-                .value("true")
-                .valueType(VALUE_TYPE_FORM)
-                .enabled(true)
-                .editable(false)
-                .setProperties(queueProps)
-                .build();
-
-        // Build Topic choice
-        Map<String, Value> topicProps = new LinkedHashMap<>();
-        topicProps.put("topicName", new Value.ValueBuilder()
-                .metadata(topicNameLabel, topicNameDesc)
-                .value(topicDefaultValue)
-                .valueType(VALUE_TYPE_EXPRESSION)
-                .setValueTypeConstraint(VALUE_TYPE_STRING)
-                .setPlaceholder("")
-                .enabled(true)
-                .editable(true)
-                .build());
-
-        topicProps.put("subscriberName", new Value.ValueBuilder()
-                .metadata("Subscriber Name", "The name to be used for the subscription.")
-                .value("\"default\"")
-                .valueType(VALUE_TYPE_EXPRESSION)
-                .setValueTypeConstraint(VALUE_TYPE_STRING)
-                .setPlaceholder("")
-                .enabled(true)
-                .editable(true)
-                .optional(true)
-                .build());
-
-        topicProps.put("durable", new Value.ValueBuilder()
-                .metadata("Durable Subscriber", "Persist subscription when disconnected.")
-                .value(false)
-                .valueType(VALUE_TYPE_FLAG)
-                .setValueTypeConstraint("BOOLEAN")
-                .enabled(true)
-                .editable(true)
-                .optional(true)
-                .build());
-
-        if (additionalTopicProperties != null) {
-            topicProps.putAll(additionalTopicProperties);
-        }
-
-        Value topicChoice = new Value.ValueBuilder()
-                .metadata(topicLabel, topicDesc)
-                .value("true")
-                .valueType(VALUE_TYPE_FORM)
-                .enabled(false)
-                .editable(false)
-                .setProperties(topicProps)
-                .build();
-
-        // Build main choice property
-        Value destinationChoice = new Value.ValueBuilder()
-                .metadata(destinationLabel, destinationDesc)
-                .value(0)
-                .valueType(VALUE_TYPE_CHOICE)
-                .enabled(true)
-                .editable(true)
-                .build();
-        destinationChoice.setChoices(List.of(queueChoice, topicChoice));
-
-        return destinationChoice;
-    }
-
-    /**
      * Builds a service annotation string for JMS-based services.
      *
      * @param serviceConfigType    The service config type annotation (e.g., "@solace:ServiceConfig").
@@ -539,176 +336,6 @@ public final class JmsUtil {
         return allEdits;
     }
 
-    /**
-     * Builds an authentication choice property for Solace broker connection. Supports Basic, Kerberos, and OAuth 2.0
-     * authentication mechanisms.
-     *
-     * @return Value configured for authentication choice.
-     */
-    public static Value buildAuthenticationChoice() {
-        // Build Basic Authentication choice
-        Map<String, Value> basicAuthProps = new LinkedHashMap<>();
-        basicAuthProps.put("username", new Value.ValueBuilder()
-                .metadata("Username", "Username for broker authentication")
-                .value("\"default\"")
-                .valueType(VALUE_TYPE_EXPRESSION)
-                .setValueTypeConstraint(VALUE_TYPE_STRING)
-                .setPlaceholder("default")
-                .enabled(true)
-                .editable(true)
-                .build());
-
-        basicAuthProps.put("password", new Value.ValueBuilder()
-                .metadata("Password", "Password for broker authentication")
-                .value("")
-                .valueType(VALUE_TYPE_EXPRESSION)
-                .setValueTypeConstraint(VALUE_TYPE_STRING)
-                .setPlaceholder("")
-                .enabled(true)
-                .editable(true)
-                .optional(true)
-                .build());
-
-        Value basicAuthChoice = new Value.ValueBuilder()
-                .metadata("Basic Authentication", "Username and password authentication")
-                .value("true")
-                .valueType(VALUE_TYPE_FORM)
-                .enabled(true)
-                .editable(false)
-                .setProperties(basicAuthProps)
-                .build();
-
-        // Build Kerberos Authentication choice
-        Map<String, Value> kerberosAuthProps = new LinkedHashMap<>();
-        kerberosAuthProps.put("serviceName", new Value.ValueBuilder()
-                .metadata("Service Name", "Kerberos service name.")
-                .value("\"solace\"")
-                .valueType(VALUE_TYPE_EXPRESSION)
-                .setValueTypeConstraint(VALUE_TYPE_STRING)
-                .setPlaceholder("solace")
-                .enabled(true)
-                .editable(true)
-                .optional(true)
-                .build());
-
-        kerberosAuthProps.put("jaasLoginContext", new Value.ValueBuilder()
-                .metadata("JAAS Login Context", "JAAS login context name.")
-                .value("\"SolaceGSS\"")
-                .valueType(VALUE_TYPE_EXPRESSION)
-                .setValueTypeConstraint(VALUE_TYPE_STRING)
-                .setPlaceholder("SolaceGSS")
-                .enabled(true)
-                .editable(true)
-                .optional(true)
-                .build());
-
-        kerberosAuthProps.put("mutualAuthentication", new Value.ValueBuilder()
-                .metadata("Mutual Authentication", "Enable Kerberos mutual authentication.")
-                .value(true)
-                .valueType(VALUE_TYPE_FLAG)
-                .setValueTypeConstraint("BOOLEAN")
-                .enabled(true)
-                .editable(true)
-                .optional(true)
-                .build());
-
-        kerberosAuthProps.put("jaasConfigReloadEnabled", new Value.ValueBuilder()
-                .metadata("JAAS Config Reload", "Enable automatic JAAS configuration reload.")
-                .value(false)
-                .valueType(VALUE_TYPE_FLAG)
-                .setValueTypeConstraint("BOOLEAN")
-                .enabled(true)
-                .editable(true)
-                .optional(true)
-                .build());
-
-        Value kerberosAuthChoice = new Value.ValueBuilder()
-                .metadata("Kerberos Authentication", "Kerberos (GSS-KRB) authentication.")
-                .value("true")
-                .valueType(VALUE_TYPE_FORM)
-                .enabled(false)
-                .editable(false)
-                .setProperties(kerberosAuthProps)
-                .build();
-
-        // Build OAuth 2.0 Authentication choice
-        Map<String, Value> oauth2AuthProps = new LinkedHashMap<>();
-        oauth2AuthProps.put("issuer", new Value.ValueBuilder()
-                .metadata("Issuer", "OAuth 2.0 issuer identifier URI")
-                .value("")
-                .valueType(VALUE_TYPE_EXPRESSION)
-                .setValueTypeConstraint(VALUE_TYPE_STRING)
-                .setPlaceholder("https://auth.example.com")
-                .enabled(true)
-                .editable(true)
-                .build());
-
-        oauth2AuthProps.put("accessToken", new Value.ValueBuilder()
-                .metadata("Access Token", "OAuth 2.0 access token for authentication")
-                .value("")
-                .valueType(VALUE_TYPE_EXPRESSION)
-                .setValueTypeConstraint(VALUE_TYPE_STRING)
-                .setPlaceholder("")
-                .enabled(true)
-                .editable(true)
-                .optional(true)
-                .build());
-
-        oauth2AuthProps.put("oidcToken", new Value.ValueBuilder()
-                .metadata("OIDC Token", "OpenID Connect ID token for authentication")
-                .value("")
-                .valueType(VALUE_TYPE_EXPRESSION)
-                .setValueTypeConstraint(VALUE_TYPE_STRING)
-                .setPlaceholder("")
-                .enabled(true)
-                .editable(true)
-                .optional(true)
-                .build());
-
-        Value oauth2AuthChoice = new Value.ValueBuilder()
-                .metadata("OAuth 2.0 Authentication", "OAuth 2.0 token-based authentication")
-                .value("true")
-                .valueType(VALUE_TYPE_FORM)
-                .enabled(false)
-                .editable(false)
-                .setProperties(oauth2AuthProps)
-                .build();
-
-        // Build main choice property
-        Value authenticationChoice = new Value.ValueBuilder()
-                .metadata("Authentication", "Select the authentication method for Solace broker connection")
-                .value(0)
-                .valueType(VALUE_TYPE_CHOICE)
-                .enabled(true)
-                .editable(true)
-                .setAdvanced(true)
-                .build();
-        authenticationChoice.setChoices(List.of(basicAuthChoice, kerberosAuthChoice, oauth2AuthChoice));
-
-        return authenticationChoice;
-    }
-
-    /**
-     * Builds a secure socket property with type members for the frontend.
-     *
-     * @param orgName     the organization name of the package
-     * @param packageName the package name
-     * @param version     the version of the package
-     * @return Value configured for secure socket configuration with type members
-     */
-    public static Value buildSecureSocketChoice(String orgName, String packageName, String version) {
-        return buildPropertyWithTypeMembers(
-                "Secure Socket",
-                "Configure SSL/TLS configuration for secure connection",
-                "solace:SecureSocket",
-                "SecureSocket",
-                orgName + ":" + packageName + ":" + version,
-                "RECORD_TYPE",
-                "",
-                true
-        );
-    }
-
     public static void cleanSecureSocketProperty(Map<String, Value> properties) {
         Value secureSocketValue = properties.get("secureSocket");
         if (secureSocketValue != null && secureSocketValue.getValue() != null) {
@@ -732,23 +359,34 @@ public final class JmsUtil {
      * @return Value configured with type members
      */
     public static Value buildPropertyWithTypeMembers(String label, String description, String typeConstraint,
-                                                     String typeName, String packageInfo, String kind, String value,
-                                                     boolean optional) {
+                                                     String typeName, String packageInfo, String packageName,
+                                                     String kind, String value, boolean optional) {
         List<PropertyTypeMemberInfo> typeMembers = List.of(
-                new PropertyTypeMemberInfo(typeName, packageInfo, kind, false)
+                new PropertyTypeMemberInfo(typeName, packageInfo, packageName, kind, true)
         );
+
+        PropertyType propertyType = new PropertyType.Builder()
+                .fieldType(Value.FieldType.RECORD_MAP_EXPRESSION)
+                .ballerinaType(typeConstraint)
+                .setMembers(typeMembers)
+                .selected(true)
+                .build();
+
+        PropertyType expressionType = new PropertyType.Builder()
+                .fieldType(Value.FieldType.EXPRESSION)
+                .ballerinaType(typeConstraint)
+                .selected(false)
+                .build();
 
         return new Value.ValueBuilder()
                 .metadata(label, description)
                 .value(value)
-                .valueType(VALUE_TYPE_EXPRESSION)
-                .setValueTypeConstraint(typeConstraint)
+                .types(List.of(propertyType, expressionType))
                 .setCodedata(new Codedata(null, ARG_TYPE_LISTENER_PARAM_INCLUDED_FIELD))
                 .enabled(true)
                 .editable(true)
                 .optional(optional)
                 .setAdvanced(true)
-                .setMembers(typeMembers)
                 .build();
     }
 

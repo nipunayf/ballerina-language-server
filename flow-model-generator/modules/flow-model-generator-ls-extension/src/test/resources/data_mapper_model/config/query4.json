@@ -30,7 +30,7 @@
         "displayName": "u",
         "typeName": "User",
         "kind": "record",
-        "category": "variable",
+        "category": "local-variable",
         "ref": "1373151159"
       },
       {
@@ -39,8 +39,19 @@
         "displayName": "secondaryPhonesItem",
         "typeName": "SecondaryPhones",
         "kind": "record",
+        "category": "local-variable",
         "focusExpression": "u.info.secondaryPhones",
-        "ref": "-782972947"
+        "ref": "-782972947",
+        "isIterationVariable": true
+      },
+      {
+        "name": "email",
+        "displayName": "email",
+        "typeName": "string",
+        "kind": "string",
+        "category": "local-variable",
+        "focusExpression": "u.info.emails",
+        "isIterationVariable": true
       }
     ],
     "output": {
@@ -96,7 +107,8 @@
     "query": {
       "output": "phoneNumbers",
       "inputs": [
-        "u.info.secondaryPhones"
+        "u.info.secondaryPhones",
+        "u.info.emails"
       ],
       "fromClause": {
         "type": "from",
@@ -250,6 +262,7 @@
         "typeName": "User",
         "kind": "record"
       }
-    }
+    },
+    "hasInvalidOutput": false
   }
 }

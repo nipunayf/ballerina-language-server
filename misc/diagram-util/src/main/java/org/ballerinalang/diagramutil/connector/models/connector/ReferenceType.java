@@ -26,6 +26,7 @@ import io.ballerina.compiler.api.symbols.MapTypeSymbol;
 import io.ballerina.compiler.api.symbols.ParameterSymbol;
 import io.ballerina.compiler.api.symbols.RecordFieldSymbol;
 import io.ballerina.compiler.api.symbols.RecordTypeSymbol;
+import io.ballerina.compiler.api.symbols.StreamTypeSymbol;
 import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.api.symbols.TupleTypeSymbol;
@@ -40,6 +41,7 @@ import org.ballerinalang.diagramutil.connector.models.connector.reftypes.RefCons
 import org.ballerinalang.diagramutil.connector.models.connector.reftypes.RefEnumType;
 import org.ballerinalang.diagramutil.connector.models.connector.reftypes.RefMapType;
 import org.ballerinalang.diagramutil.connector.models.connector.reftypes.RefRecordType;
+import org.ballerinalang.diagramutil.connector.models.connector.reftypes.RefStreamType;
 import org.ballerinalang.diagramutil.connector.models.connector.reftypes.RefTupleType;
 import org.ballerinalang.diagramutil.connector.models.connector.reftypes.RefType;
 import org.ballerinalang.diagramutil.connector.models.connector.reftypes.RefUnionType;
@@ -50,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class ReferenceType {
     private static final Map<String, RefType> visitedTypeMap = new ConcurrentHashMap<>();
@@ -119,7 +122,7 @@ public class ReferenceType {
     public static RefType fromSemanticSymbol(TypeSymbol symbol, String name, ModuleID moduleID,
                                              List<Symbol> typeDefSymbols) {
         TypeDescKind kind = symbol.typeKind();
-        RefType primitiveType = getPrimitiveType(kind);
+        RefType primitiveType = getPrimitiveType(kind, name);
         if (primitiveType != null) {
             return primitiveType;
         }
@@ -195,14 +198,51 @@ public class ReferenceType {
                     typeDefSymbols);
             mapType.valueType = processMemberType(valueType, mapType);
             return mapType;
+        } else if (kind == TypeDescKind.STREAM) {
+            StreamTypeSymbol streamTypeSymbol = (StreamTypeSymbol) symbol;
+            RefStreamType streamType = new RefStreamType(name);
+            streamType.hashCode = typeHash;
+            streamType.key = typeKey;
+            streamType.moduleInfo = moduleID != null ? createTypeInfo(moduleID) : null;
+            TypeSymbol valueTypeSymbol = streamTypeSymbol.typeParameter();
+            String valueTypeName = valueTypeSymbol.getName().orElse("");
+            ModuleID valueModuleId = getModuleID(valueTypeSymbol, moduleID);
+            RefType valueType = fromSemanticSymbol(valueTypeSymbol, valueTypeName, valueModuleId,
+                    typeDefSymbols);
+            streamType.valueType = processMemberType(valueType, streamType);
+            TypeSymbol completionTypeSymbol = streamTypeSymbol.completionValueTypeParameter();
+            String completionTypeName = completionTypeSymbol.getName().orElse("");
+            ModuleID completionModuleId = getModuleID(completionTypeSymbol, moduleID);
+            RefType completionType = fromSemanticSymbol(completionTypeSymbol, completionTypeName, completionModuleId,
+                    typeDefSymbols);
+            streamType.completionType = processMemberType(completionType, streamType);
+            return streamType;
         } else if (kind == TypeDescKind.UNION) {
             UnionTypeSymbol unionTypeSymbol = (UnionTypeSymbol) symbol;
             List<TypeSymbol> typeSymbols = filterNilOrError(unionTypeSymbol);
             if (typeSymbols.size() == 1) {
                 TypeSymbol soleTypeSymbol = typeSymbols.getFirst();
                 ModuleID soleModuleId = getModuleID(soleTypeSymbol, moduleID);
-                return fromSemanticSymbol(soleTypeSymbol, unionTypeSymbol.signature(), soleModuleId, typeDefSymbols);
+                String soleTypeName = soleTypeSymbol.getName().orElse(soleTypeSymbol.signature()) + "?";
+                return fromSemanticSymbol(soleTypeSymbol, soleTypeName, soleModuleId, typeDefSymbols);
             }
+
+            // Check if all members are singletons - if so, treat as enum
+            boolean allSingletons = !typeSymbols.isEmpty() && typeSymbols.stream()
+                    .allMatch(member -> member.typeKind() == TypeDescKind.SINGLETON);
+            if (allSingletons) {
+                List<RefType> enumMembers = typeSymbols.stream()
+                        .map(memberSymbol -> {
+                            String memberTypeName = memberSymbol.getName().orElse("");
+                            ModuleID memberModuleId = getModuleID(memberSymbol, moduleID);
+                            return fromSemanticSymbol(memberSymbol, memberTypeName, memberModuleId, typeDefSymbols);
+                        })
+                        .collect(Collectors.toList());
+                RefEnumType enumType = createEnumType(name, enumMembers, typeHash, typeKey, moduleID);
+                visitedTypeMap.put(typeKey, enumType);
+                return enumType;
+            }
+
             RefUnionType unionType = new RefUnionType(name);
             unionType.hashCode = typeHash;
             unionType.key = typeKey;
@@ -327,13 +367,13 @@ public class ReferenceType {
         return filteredMembers;
     }
 
-    private static RefType getPrimitiveType(TypeDescKind kind) {
+    private static RefType getPrimitiveType(TypeDescKind kind, String typeName) {
         String primitiveTypeName = getPrimitiveTypeName(kind);
         if (primitiveTypeName == null) {
             return null;
         }
         RefType refType = new RefType(primitiveTypeName);
-        refType.typeName = primitiveTypeName;
+        refType.typeName = (typeName != null && typeName.contains("?")) ? typeName : primitiveTypeName;
         return refType;
     }
 
@@ -374,6 +414,7 @@ public class ReferenceType {
             case BYTE -> "byte";
             case STRING_CHAR -> "string:Char";
             case NEVER -> "never";
+            case ERROR -> "error";
             default -> null;
         };
     }
@@ -413,6 +454,10 @@ public class ReferenceType {
                 MapTypeSymbol mapType = (MapTypeSymbol) typeSymbol;
                 return resolveModuleIDWithFallback(mapType.typeParam(), fallbackModuleId);
             }
+            case STREAM -> {
+                StreamTypeSymbol streamType = (StreamTypeSymbol) typeSymbol;
+                return resolveModuleIDWithFallback(streamType.typeParameter(), fallbackModuleId);
+            }
             case UNION -> {
                 UnionTypeSymbol unionType = (UnionTypeSymbol) typeSymbol;
                 return unionType.memberTypeDescriptors().stream()
@@ -439,19 +484,24 @@ public class ReferenceType {
     }
 
     private static RefType getEnumType(EnumSymbol enumSymbol, List<Symbol> typeDefSymbols) {
-        RefType type;
-        List<RefType> fields = new ArrayList<>();
+        List<RefType> members = new ArrayList<>();
         enumSymbol.members().forEach(member -> {
             String name = member.getName().orElse("");
             ModuleID moduleId = getModuleID(member);
             RefType semanticSymbol = fromSemanticSymbol(member.typeDescriptor(), name, moduleId, typeDefSymbols);
-            fields.add(semanticSymbol);
-
+            members.add(semanticSymbol);
         });
-        type = new RefEnumType(enumSymbol.getName().orElse(""), fields);
         ModuleID moduleId = getModuleID(enumSymbol);
-        type.moduleInfo = moduleId != null ? createTypeInfo(moduleId) : null;
-        return type;
+        return createEnumType(enumSymbol.getName().orElse(""), members, null, null, moduleId);
+    }
+
+    private static RefEnumType createEnumType(String name, List<RefType> members,
+                                              String typeHash, String typeKey, ModuleID moduleID) {
+        RefEnumType enumType = new RefEnumType(name, members);
+        enumType.hashCode = typeHash;
+        enumType.key = typeKey;
+        enumType.moduleInfo = moduleID != null ? createTypeInfo(moduleID) : null;
+        return enumType;
     }
 
     private static void validateDependentTypes(RefType type, List<Symbol> typeDefSymbols) {
@@ -484,10 +534,13 @@ public class ReferenceType {
             if (depSymbol != null) {
                 TypeDefinitionSymbol typeDefSymbol = (TypeDefinitionSymbol) depSymbol;
                 TypeSymbol typeDesc = typeDefSymbol.typeDescriptor();
-                String moduleId = typeDesc.getModule().isPresent() ?
-                        typeDesc.getModule().get().id().toString() : null;
+                ModuleID moduleId = getModuleID(depSymbol);
+                if (moduleId == null) {
+                    moduleId = getModuleID(typeDesc, null);
+                }
+                String moduleIdString = moduleId != null ? moduleId.toString() : null;
                 String updatedHashCode = String.valueOf(Objects.hash(
-                        moduleId,
+                        moduleIdString,
                         typeDefSymbol.getName().orElse(""),
                         typeDesc.signature()));
 

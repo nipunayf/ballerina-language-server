@@ -30,7 +30,7 @@
         "displayName": "info",
         "typeName": "Info",
         "kind": "record",
-        "category": "variable",
+        "category": "local-variable",
         "ref": "1372788890"
       },
       {
@@ -46,7 +46,7 @@
         "displayName": "newSecondaryPhones",
         "typeName": "SecondaryPhones[]",
         "kind": "array",
-        "category": "variable",
+        "category": "local-variable",
         "ref": "-1392347127"
       },
       {
@@ -55,8 +55,10 @@
         "displayName": "secondaryPhonesItem",
         "typeName": "SecondaryPhones",
         "kind": "record",
+        "category": "local-variable",
         "focusExpression": "newSecondaryPhones",
-        "ref": "-782972947"
+        "ref": "-782972947",
+        "isIterationVariable": true
       }
     ],
     "output": {
@@ -216,6 +218,7 @@
         "typeName": "Info",
         "kind": "record"
       }
-    }
+    },
+    "hasInvalidOutput": false
   }
 }

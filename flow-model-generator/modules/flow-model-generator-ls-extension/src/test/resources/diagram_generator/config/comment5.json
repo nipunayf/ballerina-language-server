@@ -91,8 +91,13 @@
                   "label": "Condition",
                   "description": "Boolean Condition"
                 },
-                "valueType": "EXPRESSION",
-                "valueTypeConstraint": "boolean",
+                "types": [
+                  {
+                    "fieldType": "EXPRESSION",
+                    "ballerinaType": "boolean",
+                    "selected": true
+                  }
+                ],
                 "value": "i == 3 ",
                 "placeholder": "true",
                 "optional": false,
@@ -128,8 +133,13 @@
                   "label": "Condition",
                   "description": "Boolean Condition"
                 },
-                "valueType": "EXPRESSION",
-                "valueTypeConstraint": "boolean",
+                "types": [
+                  {
+                    "fieldType": "EXPRESSION",
+                    "ballerinaType": "boolean",
+                    "selected": true
+                  }
+                ],
                 "value": "i == 5 ",
                 "placeholder": "true",
                 "optional": false,
@@ -167,7 +177,12 @@
                       "label": "Comment",
                       "description": "Comment to describe the flow"
                     },
-                    "valueType": "STRING",
+                    "types": [
+                      {
+                        "fieldType": "TEXT",
+                        "selected": true
+                      }
+                    ],
                     "value": "This is a comment for i = 0",
                     "optional": false,
                     "editable": true,
@@ -181,7 +196,7 @@
                 "id": "66730",
                 "metadata": {
                   "label": "Declare Variable",
-                  "description": "Assign a value to a variable"
+                  "description": "Create a new variable"
                 },
                 "codedata": {
                   "node": "VARIABLE",
@@ -205,7 +220,12 @@
                       "label": "Expression",
                       "description": "Initialize with value"
                     },
-                    "valueType": "ACTION_OR_EXPRESSION",
+                    "types": [
+                      {
+                        "fieldType": "ACTION_OR_EXPRESSION",
+                        "selected": true
+                      }
+                    ],
                     "value": "0",
                     "optional": true,
                     "editable": true,
@@ -217,7 +237,12 @@
                       "label": "Name",
                       "description": "Name of the variable"
                     },
-                    "valueType": "IDENTIFIER",
+                    "types": [
+                      {
+                        "fieldType": "IDENTIFIER",
+                        "selected": true
+                      }
+                    ],
                     "value": "x",
                     "optional": false,
                     "editable": false,
@@ -242,7 +267,12 @@
                       "label": "Type",
                       "description": "Type of the variable"
                     },
-                    "valueType": "TYPE",
+                    "types": [
+                      {
+                        "fieldType": "TYPE",
+                        "selected": true
+                      }
+                    ],
                     "value": "int",
                     "placeholder": "var",
                     "optional": false,
@@ -282,7 +312,12 @@
                       "label": "Comment",
                       "description": "Comment to describe the flow"
                     },
-                    "valueType": "STRING",
+                    "types": [
+                      {
+                        "fieldType": "TEXT",
+                        "selected": true
+                      }
+                    ],
                     "value": "This is a comment for if-else body",
                     "optional": false,
                     "editable": true,
@@ -342,7 +377,12 @@
                       "label": "Comment",
                       "description": "Comment to describe the flow"
                     },
-                    "valueType": "STRING",
+                    "types": [
+                      {
+                        "fieldType": "TEXT",
+                        "selected": true
+                      }
+                    ],
                     "value": "This is a comment for x = 0",
                     "optional": false,
                     "editable": true,
@@ -356,7 +396,7 @@
                 "id": "71690",
                 "metadata": {
                   "label": "Declare Variable",
-                  "description": "Assign a value to a variable"
+                  "description": "Create a new variable"
                 },
                 "codedata": {
                   "node": "VARIABLE",
@@ -380,7 +420,12 @@
                       "label": "Expression",
                       "description": "Initialize with value"
                     },
-                    "valueType": "ACTION_OR_EXPRESSION",
+                    "types": [
+                      {
+                        "fieldType": "ACTION_OR_EXPRESSION",
+                        "selected": true
+                      }
+                    ],
                     "value": "0",
                     "optional": true,
                     "editable": true,
@@ -392,7 +437,12 @@
                       "label": "Name",
                       "description": "Name of the variable"
                     },
-                    "valueType": "IDENTIFIER",
+                    "types": [
+                      {
+                        "fieldType": "IDENTIFIER",
+                        "selected": true
+                      }
+                    ],
                     "value": "x",
                     "optional": false,
                     "editable": false,
@@ -417,7 +467,12 @@
                       "label": "Type",
                       "description": "Type of the variable"
                     },
-                    "valueType": "TYPE",
+                    "types": [
+                      {
+                        "fieldType": "TYPE",
+                        "selected": true
+                      }
+                    ],
                     "value": "int",
                     "placeholder": "var",
                     "optional": false,
@@ -457,7 +512,12 @@
                       "label": "Comment",
                       "description": "Comment to describe the flow"
                     },
-                    "valueType": "STRING",
+                    "types": [
+                      {
+                        "fieldType": "TEXT",
+                        "selected": true
+                      }
+                    ],
                     "value": "This is a comment for else body",
                     "optional": false,
                     "editable": true,

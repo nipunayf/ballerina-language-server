@@ -135,8 +135,13 @@
                           "label": "Condition",
                           "description": "Boolean Condition"
                         },
-                        "valueType": "EXPRESSION",
-                        "valueTypeConstraint": "boolean",
+                        "types": [
+                          {
+                            "fieldType": "EXPRESSION",
+                            "ballerinaType": "boolean",
+                            "selected": true
+                          }
+                        ],
                         "value": "i is () ",
                         "placeholder": "true",
                         "optional": false,
@@ -220,7 +225,12 @@
                               "label": "Expression",
                               "description": "Rollback transaction"
                             },
-                            "valueType": "EXPRESSION",
+                            "types": [
+                              {
+                                "fieldType": "EXPRESSION",
+                                "selected": true
+                              }
+                            ],
                             "value": "error(\"Rollback the transaction\")",
                             "optional": false,
                             "editable": true,

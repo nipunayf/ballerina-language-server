@@ -93,14 +93,24 @@
                   "label": "Patterns",
                   "description": "List of binding patterns"
                 },
-                "valueType": "SINGLE_SELECT",
+                "types": [
+                  {
+                    "fieldType": "SINGLE_SELECT",
+                    "selected": true
+                  }
+                ],
                 "value": [
                   {
                     "metadata": {
                       "label": "Pattern",
                       "description": "Binding pattern"
                     },
-                    "valueType": "EXPRESSION",
+                    "types": [
+                      {
+                        "fieldType": "EXPRESSION",
+                        "selected": true
+                      }
+                    ],
                     "value": "var p",
                     "optional": false,
                     "editable": true,
@@ -119,7 +129,12 @@
                   "label": "Expression",
                   "description": "Guard expression"
                 },
-                "valueType": "EXPRESSION",
+                "types": [
+                  {
+                    "fieldType": "EXPRESSION",
+                    "selected": true
+                  }
+                ],
                 "value": "p > 100 ",
                 "optional": false,
                 "editable": true,
@@ -156,9 +171,14 @@
                       "label": "Expression",
                       "description": "Return value"
                     },
-                    "valueType": "ACTION_OR_EXPRESSION",
+                    "types": [
+                      {
+                        "fieldType": "ACTION_OR_EXPRESSION",
+                        "selected": true
+                      }
+                    ],
                     "value": "\"premium\"",
-                    "optional": false,
+                    "optional": true,
                     "editable": true,
                     "advanced": false,
                     "hidden": false
@@ -193,14 +213,24 @@
                   "label": "Patterns",
                   "description": "List of binding patterns"
                 },
-                "valueType": "SINGLE_SELECT",
+                "types": [
+                  {
+                    "fieldType": "SINGLE_SELECT",
+                    "selected": true
+                  }
+                ],
                 "value": [
                   {
                     "metadata": {
                       "label": "Pattern",
                       "description": "Binding pattern"
                     },
-                    "valueType": "EXPRESSION",
+                    "types": [
+                      {
+                        "fieldType": "EXPRESSION",
+                        "selected": true
+                      }
+                    ],
                     "value": "var p",
                     "optional": false,
                     "editable": true,
@@ -219,7 +249,12 @@
                   "label": "Expression",
                   "description": "Guard expression"
                 },
-                "valueType": "EXPRESSION",
+                "types": [
+                  {
+                    "fieldType": "EXPRESSION",
+                    "selected": true
+                  }
+                ],
                 "value": "p <= 100 ",
                 "optional": false,
                 "editable": true,
@@ -276,14 +311,24 @@
                           "label": "Patterns",
                           "description": "List of binding patterns"
                         },
-                        "valueType": "SINGLE_SELECT",
+                        "types": [
+                          {
+                            "fieldType": "SINGLE_SELECT",
+                            "selected": true
+                          }
+                        ],
                         "value": [
                           {
                             "metadata": {
                               "label": "Pattern",
                               "description": "Binding pattern"
                             },
-                            "valueType": "EXPRESSION",
+                            "types": [
+                              {
+                                "fieldType": "EXPRESSION",
+                                "selected": true
+                              }
+                            ],
                             "value": "0",
                             "optional": false,
                             "editable": true,
@@ -327,9 +372,14 @@
                               "label": "Expression",
                               "description": "Return value"
                             },
-                            "valueType": "ACTION_OR_EXPRESSION",
+                            "types": [
+                              {
+                                "fieldType": "ACTION_OR_EXPRESSION",
+                                "selected": true
+                              }
+                            ],
                             "value": "\"discounted\"",
-                            "optional": false,
+                            "optional": true,
                             "editable": true,
                             "advanced": false,
                             "hidden": false
@@ -364,14 +414,24 @@
                           "label": "Patterns",
                           "description": "List of binding patterns"
                         },
-                        "valueType": "SINGLE_SELECT",
+                        "types": [
+                          {
+                            "fieldType": "SINGLE_SELECT",
+                            "selected": true
+                          }
+                        ],
                         "value": [
                           {
                             "metadata": {
                               "label": "Pattern",
                               "description": "Binding pattern"
                             },
-                            "valueType": "EXPRESSION",
+                            "types": [
+                              {
+                                "fieldType": "EXPRESSION",
+                                "selected": true
+                              }
+                            ],
                             "value": "1",
                             "optional": false,
                             "editable": true,
@@ -435,8 +495,13 @@
                                   "label": "Condition",
                                   "description": "Boolean Condition"
                                 },
-                                "valueType": "EXPRESSION",
-                                "valueTypeConstraint": "boolean",
+                                "types": [
+                                  {
+                                    "fieldType": "EXPRESSION",
+                                    "ballerinaType": "boolean",
+                                    "selected": true
+                                  }
+                                ],
                                 "value": "p < 25 ",
                                 "placeholder": "true",
                                 "optional": false,
@@ -474,9 +539,14 @@
                                       "label": "Expression",
                                       "description": "Return value"
                                     },
-                                    "valueType": "ACTION_OR_EXPRESSION",
+                                    "types": [
+                                      {
+                                        "fieldType": "ACTION_OR_EXPRESSION",
+                                        "selected": true
+                                      }
+                                    ],
                                     "value": "\"clearance\"",
-                                    "optional": false,
+                                    "optional": true,
                                     "editable": true,
                                     "advanced": false,
                                     "hidden": false
@@ -516,14 +586,24 @@
                           "label": "Patterns",
                           "description": "List of binding patterns"
                         },
-                        "valueType": "SINGLE_SELECT",
+                        "types": [
+                          {
+                            "fieldType": "SINGLE_SELECT",
+                            "selected": true
+                          }
+                        ],
                         "value": [
                           {
                             "metadata": {
                               "label": "Pattern",
                               "description": "Binding pattern"
                             },
-                            "valueType": "EXPRESSION",
+                            "types": [
+                              {
+                                "fieldType": "EXPRESSION",
+                                "selected": true
+                              }
+                            ],
                             "value": "_",
                             "optional": false,
                             "editable": true,
@@ -567,9 +647,14 @@
                               "label": "Expression",
                               "description": "Return value"
                             },
-                            "valueType": "ACTION_OR_EXPRESSION",
+                            "types": [
+                              {
+                                "fieldType": "ACTION_OR_EXPRESSION",
+                                "selected": true
+                              }
+                            ],
                             "value": "\"regular price\"",
-                            "optional": false,
+                            "optional": true,
                             "editable": true,
                             "advanced": false,
                             "hidden": false
@@ -586,8 +671,13 @@
                       "label": "Target",
                       "description": "Match target expression"
                     },
-                    "valueType": "EXPRESSION",
-                    "valueTypeConstraint": "any|error",
+                    "types": [
+                      {
+                        "fieldType": "EXPRESSION",
+                        "ballerinaType": "any|error",
+                        "selected": true
+                      }
+                    ],
                     "value": "p % 4 ",
                     "placeholder": "true",
                     "optional": false,
@@ -607,8 +697,13 @@
               "label": "Target",
               "description": "Match target expression"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "any|error",
+            "types": [
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "any|error",
+                "selected": true
+              }
+            ],
             "value": "price ",
             "placeholder": "true",
             "optional": false,
@@ -647,9 +742,14 @@
               "label": "Expression",
               "description": "Return value"
             },
-            "valueType": "ACTION_OR_EXPRESSION",
+            "types": [
+              {
+                "fieldType": "ACTION_OR_EXPRESSION",
+                "selected": true
+              }
+            ],
             "value": "\"unpriced\"",
-            "optional": false,
+            "optional": true,
             "editable": true,
             "advanced": false,
             "hidden": false

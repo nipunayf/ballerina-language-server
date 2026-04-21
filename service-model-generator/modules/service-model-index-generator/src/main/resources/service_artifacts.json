@@ -28,7 +28,7 @@
         "stringLiteralLabel": "Base Path",
         "stringLiteralDescription": "",
         "stringLiteralDefaultValue": "\"/\"",
-        "listenerKind": "MULTIPLE_SELECT",
+        "listenerKind": "MULTIPLE_SELECT_LISTENER",
         "kind": "http"
       },
       "serviceTypes": {
@@ -89,7 +89,7 @@
         "stringLiteralLabel": "Service Base Path",
         "stringLiteralDescription": "",
         "stringLiteralDefaultValue": "\"/graphql\"",
-        "listenerKind": "MULTIPLE_SELECT",
+        "listenerKind": "MULTIPLE_SELECT_LISTENER",
         "kind": "graphql"
       },
       "serviceTypes": {
@@ -123,22 +123,30 @@
           "description": "The base path of the GraphQL service",
           "defaultValue": "/graphql",
           "placeholder": "/graphql",
-          "valueType": "EXPRESSION",
-          "typeConstraint": "string",
-          "typeMembers": [],
-          "sourceKind": "SERVICE_BASE_PATH",
-          "selections": []
+          "types": [
+            {
+              "fieldType": "SERVICE_PATH",
+              "ballerinaType": "string"
+            }
+          ],
+          "sourceKind": "SERVICE_BASE_PATH"
         },
         "port": {
           "label": "Port",
           "description": "The port on which the GraphQL service listens",
           "defaultValue": "8080",
           "placeholder": "8080",
-          "valueType": "EXPRESSION",
-          "typeConstraint": "int",
-          "typeMembers": [],
-          "sourceKind": "LISTENER_PARAM_REQUIRED",
-          "selections": []
+          "types": [
+            {
+              "fieldType": "NUMBER",
+              "ballerinaType": "int"
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "int"
+            }
+          ],
+          "sourceKind": "LISTENER_PARAM_REQUIRED"
         }
       }
     },
@@ -164,7 +172,7 @@
         "stringLiteralLabel": "Service Base Path",
         "stringLiteralDescription": "",
         "stringLiteralDefaultValue": "",
-        "listenerKind": "MULTIPLE_SELECT",
+        "listenerKind": "MULTIPLE_SELECT_LISTENER",
         "kind": "tcp"
       },
       "serviceTypes": {
@@ -205,11 +213,17 @@
           "description": "The port on which the TCP service listens",
           "defaultValue": "80",
           "placeholder": "80",
-          "valueType": "EXPRESSION",
-          "typeConstraint": "int",
-          "typeMembers": [],
-          "sourceKind": "LISTENER_PARAM_REQUIRED",
-          "selections": []
+          "types": [
+            {
+              "fieldType": "NUMBER",
+              "ballerinaType": "int"
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "int"
+            }
+          ],
+          "sourceKind": "LISTENER_PARAM_REQUIRED"
         }
       },
       "readOnlyMetadata": [
@@ -227,7 +241,7 @@
         "Service"
       ],
       "serviceDeclaration": {
-        "displayName": "Directory Service",
+        "displayName": "Local Files",
         "description": "Create a service to monitor a directory for file events",
         "optionalTypeDescriptor": 1,
         "typeDescriptorLabel": "Service Type",
@@ -242,7 +256,7 @@
         "stringLiteralLabel": "Service Base Path",
         "stringLiteralDescription": "",
         "stringLiteralDefaultValue": "",
-        "listenerKind": "MULTIPLE_SELECT",
+        "listenerKind": "MULTIPLE_SELECT_LISTENER",
         "kind": "file"
       },
       "serviceTypes": {
@@ -329,24 +343,36 @@
         "path": {
           "label": "Path",
           "description": "Directory path to be monitored",
-          "defaultValue": "",
-          "placeholder": "\"/tmp\"",
-          "valueType": "EXPRESSION",
-          "typeConstraint": "string",
-          "typeMembers": [],
-          "sourceKind": "LISTENER_PARAM_INCLUDED_FIELD",
-          "selections": []
+          "defaultValue": "/tmp",
+          "placeholder": "/tmp",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "ballerinaType": "string"
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "string"
+            }
+          ],
+          "sourceKind": "LISTENER_PARAM_INCLUDED_FIELD"
         },
         "recursive": {
           "label": "Recursive",
           "description": "Recursively monitor all sub-directories",
           "defaultValue": "false",
           "placeholder": "false",
-          "valueType": "FLAG",
-          "typeConstraint": "boolean",
-          "typeMembers": [],
-          "sourceKind": "LISTENER_PARAM_INCLUDED_DEFAULTABLE_FIELD",
-          "selections": []
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "ballerinaType": "boolean"
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "boolean"
+            }
+          ],
+          "sourceKind": "LISTENER_PARAM_INCLUDED_DEFAULTABLE_FIELD"
         }
       },
       "readOnlyMetadata": [
@@ -359,13 +385,13 @@
     },
     {
       "name": "ftp",
-      "version": "2.13.0",
+      "version": "2.18.0",
       "serviceTypeSkipList": [
         "Service"
       ],
       "serviceDeclaration": {
-        "displayName": "FTP Service",
-        "description": "Create a service to monitor a directory in a FTP server for file events",
+        "displayName": "FTP / SFTP",
+        "description": "Create a service to monitor a directory in a FTP/SFTP server for file events. Supports content-specific handlers for CSV, JSON, XML, text, and raw binary files, with optional data binding to custom record types and streaming for large files.",
         "optionalTypeDescriptor": 1,
         "typeDescriptorLabel": "Service Type",
         "typeDescriptorDescription": "The name of the service contract type",
@@ -379,31 +405,60 @@
         "stringLiteralLabel": "Service Base Path",
         "stringLiteralDescription": "",
         "stringLiteralDefaultValue": "",
-        "listenerKind": "MULTIPLE_SELECT",
+        "listenerKind": "MULTIPLE_SELECT_LISTENER",
         "kind": "file"
+      },
+      "annotations": {
+        "ServiceConfig": {
+          "attachmentPoints": [
+            "SERVICE"
+          ],
+          "displayName": "Service Configuration",
+          "description": "Define service-level configuration such as the FTP directory path to monitor",
+          "typeConstraint": "ftp:FtpServiceConfig"
+        },
+        "FunctionConfig": {
+          "attachmentPoints": [
+            "OBJECT_METHOD"
+          ],
+          "displayName": "Function Configuration",
+          "description": "Configure pre/post processing actions on the file (e.g., move or delete the file after processing)",
+          "typeConstraint": "ftp:FtpFunctionConfig"
+        }
       },
       "serviceTypes": {
         "Service": {
           "name": "Service",
-          "description": "",
+          "description": "FTP service that handles file events from a remote FTP/SFTP location",
           "functions": [
             {
-              "name": "onFileChange",
-              "description": "The `onFileChange` remote method will be triggered when a file change event occurs",
+              "name": "onFileCsv",
+              "description": "Triggered when a CSV file is added to the monitored FTP location. Supports raw 2D string arrays, data binding to custom record types, and streaming for large files",
               "accessor": "",
               "kind": "REMOTE",
               "returnType": "error?",
               "returnError": 1,
               "returnTypeEditable": 0,
               "enable": 0,
-              "optional": 0,
+              "optional": 1,
               "parameters": [
                 {
-                  "name": "event",
-                  "label": "The File watch event",
-                  "description": "The File watch event",
+                  "name": "content",
+                  "label": "CSV Content",
+                  "description": "CSV file content. Can be string[][] for raw rows, record{}[] for data-bound rows, stream<string[]> for streaming raw rows from large files, or stream<record{}> for streaming data-bound rows",
+                  "kind": "DATA_BINDING",
+                  "type": "string[][]",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 1
+                },
+                {
+                  "name": "fileInfo",
+                  "label": "File Metadata",
+                  "description": "Additional file properties such as size, modification time, and permissions",
                   "kind": "REQUIRED",
-                  "type": "ftp:WatchEvent & readonly",
+                  "type": "ftp:FileInfo",
                   "defaultValue": "",
                   "importStatements": "",
                   "nameEditable": 1,
@@ -411,8 +466,262 @@
                 },
                 {
                   "name": "caller",
-                  "label": "Caller",
-                  "description": "The FTP caller object to execute file operations",
+                  "label": "FTP Connection",
+                  "description": "Optional FTP connection for performing additional file operations (move, delete) within this handler",
+                  "kind": "REQUIRED",
+                  "type": "ftp:Caller",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                }
+              ]
+            },
+            {
+              "name": "onFileJson",
+              "description": "Triggered when a JSON file is added to the monitored FTP location. Supports raw json or data binding to custom record types",
+              "accessor": "",
+              "kind": "REMOTE",
+              "returnType": "error?",
+              "returnError": 1,
+              "returnTypeEditable": 0,
+              "enable": 0,
+              "optional": 1,
+              "parameters": [
+                {
+                  "name": "content",
+                  "label": "JSON Content",
+                  "description": "JSON file content. Can be json for raw JSON or a custom record type for data binding",
+                  "kind": "DATA_BINDING",
+                  "type": "json",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 1
+                },
+                {
+                  "name": "fileInfo",
+                  "label": "File Metadata",
+                  "description": "Additional file properties such as size, modification time, and permissions",
+                  "kind": "REQUIRED",
+                  "type": "ftp:FileInfo",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                },
+                {
+                  "name": "caller",
+                  "label": "FTP Connection",
+                  "description": "Optional FTP connection for performing additional file operations (move, delete) within this handler",
+                  "kind": "REQUIRED",
+                  "type": "ftp:Caller",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                }
+              ]
+            },
+            {
+              "name": "onFileXml",
+              "description": "Triggered when an XML file is added to the monitored FTP location",
+              "accessor": "",
+              "kind": "REMOTE",
+              "returnType": "error?",
+              "returnError": 1,
+              "returnTypeEditable": 0,
+              "enable": 0,
+              "optional": 1,
+              "parameters": [
+                {
+                  "name": "content",
+                  "label": "XML Content",
+                  "description": "XML file content",
+                  "kind": "REQUIRED",
+                  "type": "xml",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                },
+                {
+                  "name": "fileInfo",
+                  "label": "File Metadata",
+                  "description": "Additional file properties such as size, modification time, and permissions",
+                  "kind": "REQUIRED",
+                  "type": "ftp:FileInfo",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                },
+                {
+                  "name": "caller",
+                  "label": "FTP Connection",
+                  "description": "Optional FTP connection for performing additional file operations (move, delete) within this handler",
+                  "kind": "REQUIRED",
+                  "type": "ftp:Caller",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                }
+              ]
+            },
+            {
+              "name": "onFileText",
+              "description": "Triggered when a text file is added to the monitored FTP location",
+              "accessor": "",
+              "kind": "REMOTE",
+              "returnType": "error?",
+              "returnError": 1,
+              "returnTypeEditable": 0,
+              "enable": 0,
+              "optional": 1,
+              "parameters": [
+                {
+                  "name": "content",
+                  "label": "Text Content",
+                  "description": "Text file content",
+                  "kind": "REQUIRED",
+                  "type": "string",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                },
+                {
+                  "name": "fileInfo",
+                  "label": "File Metadata",
+                  "description": "Additional file properties such as size, modification time, and permissions",
+                  "kind": "REQUIRED",
+                  "type": "ftp:FileInfo",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                },
+                {
+                  "name": "caller",
+                  "label": "FTP Connection",
+                  "description": "Optional FTP connection for performing additional file operations (move, delete) within this handler",
+                  "kind": "REQUIRED",
+                  "type": "ftp:Caller",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                }
+              ]
+            },
+            {
+              "name": "onFile",
+              "description": "Triggered when any file is added to the monitored FTP location. Supports raw byte arrays and streaming for large binary files",
+              "accessor": "",
+              "kind": "REMOTE",
+              "returnType": "error?",
+              "returnError": 1,
+              "returnTypeEditable": 0,
+              "enable": 0,
+              "optional": 1,
+              "parameters": [
+                {
+                  "name": "content",
+                  "label": "File Content",
+                  "description": "Raw file content as byte[] or stream<byte[]> for large files",
+                  "kind": "REQUIRED",
+                  "type": "byte[]",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 1
+                },
+                {
+                  "name": "fileInfo",
+                  "label": "File Metadata",
+                  "description": "Additional file properties such as size, modification time, and permissions",
+                  "kind": "REQUIRED",
+                  "type": "ftp:FileInfo",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                },
+                {
+                  "name": "caller",
+                  "label": "FTP Connection",
+                  "description": "Optional FTP connection for performing additional file operations (move, delete) within this handler",
+                  "kind": "REQUIRED",
+                  "type": "ftp:Caller",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                }
+              ]
+            },
+            {
+              "name": "onFileDelete",
+              "description": "Triggered when a file is deleted from the monitored FTP location",
+              "accessor": "",
+              "kind": "REMOTE",
+              "returnType": "error?",
+              "returnError": 1,
+              "returnTypeEditable": 0,
+              "enable": 0,
+              "optional": 1,
+              "parameters": [
+                {
+                  "name": "deletedFile",
+                  "label": "Deleted File Path",
+                  "description": "Path of the deleted file",
+                  "kind": "REQUIRED",
+                  "type": "string",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                },
+                {
+                  "name": "caller",
+                  "label": "FTP Connection",
+                  "description": "Optional FTP connection for performing additional file operations (move, delete) within this handler",
+                  "kind": "REQUIRED",
+                  "type": "ftp:Caller",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                }
+              ]
+            },
+            {
+              "name": "onError",
+              "description": "Triggered when an error occurs during file processing. Implement this to handle failures gracefully",
+              "accessor": "",
+              "kind": "REMOTE",
+              "returnType": "error?",
+              "returnError": 1,
+              "returnTypeEditable": 0,
+              "enable": 0,
+              "optional": 1,
+              "parameters": [
+                {
+                  "name": "ftpError",
+                  "label": "FTP Error",
+                  "description": "The error that occurred during file processing",
+                  "kind": "REQUIRED",
+                  "type": "ftp:Error",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                },
+                {
+                  "name": "caller",
+                  "label": "FTP Connection",
+                  "description": "Optional FTP connection for performing additional file operations (move, delete) within this handler",
                   "kind": "REQUIRED",
                   "type": "ftp:Caller",
                   "defaultValue": "",
@@ -431,59 +740,89 @@
           "description": "Target FTP server url",
           "defaultValue": "\"127.0.0.1\"",
           "placeholder": "\"127.0.0.1\"",
-          "valueType": "EXPRESSION",
-          "typeConstraint": "string",
-          "typeMembers": [],
-          "sourceKind": "LISTENER_PARAM_INCLUDED_DEFAULTABLE_FIELD",
-          "selections": []
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "ballerinaType": "string"
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "string"
+            }
+          ],
+          "sourceKind": "LISTENER_PARAM_INCLUDED_DEFAULTABLE_FIELD"
         },
         "port": {
           "label": "Port",
           "description": "Target FTP server port",
           "defaultValue": "21",
           "placeholder": "21",
-          "valueType": "EXPRESSION",
-          "typeConstraint": "int",
-          "typeMembers": [],
-          "sourceKind": "LISTENER_PARAM_INCLUDED_DEFAULTABLE_FIELD",
-          "selections": []
+          "types": [
+            {
+              "fieldType": "NUMBER",
+              "ballerinaType": "int"
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "int"
+            }
+          ],
+          "sourceKind": "LISTENER_PARAM_INCLUDED_DEFAULTABLE_FIELD"
         },
         "protocol": {
           "label": "Protocol",
           "description": "The protocol to connect to the FTP server",
           "defaultValue": "\"ftp\"",
           "placeholder": "\"ftp\"",
-          "valueType": "SINGLE_SELECT",
-          "typeConstraint": "string",
-          "typeMembers": [],
-          "sourceKind": "LISTENER_PARAM_INCLUDED_DEFAULTABLE_FIELD",
-          "selections": [
+          "types": [
             {
-              "label": "ftp",
-              "value": "\"ftp\""
+              "fieldType": "SINGLE_SELECT",
+              "ballerinaType": "string",
+              "options": [
+                {
+                  "label": "ftp",
+                  "value": "\"ftp\""
+                },
+                {
+                  "label": "sftp",
+                  "value": "\"sftp\""
+                }
+              ]
             },
             {
-              "label": "sftp",
-              "value": "\"sftp\""
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "string"
             }
-          ]
+          ],
+          "sourceKind": "LISTENER_PARAM_INCLUDED_DEFAULTABLE_FIELD"
         },
         "path": {
           "label": "Path",
-          "description": "The path to be monitored",
+          "description": "The remote FTP directory path to be monitored",
           "defaultValue": "\"/\"",
           "placeholder": "\"/\"",
-          "valueType": "EXPRESSION",
-          "typeConstraint": "string",
-          "typeMembers": [],
-          "sourceKind": "LISTENER_PARAM_INCLUDED_DEFAULTABLE_FIELD",
-          "selections": []
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "ballerinaType": "string"
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "string"
+            }
+          ],
+          "sourceKind": "SOURCE_ANNOTATION"
         }
       },
       "readOnlyMetadata": [
         {
           "key": "protocol",
           "displayName": "Protocol",
+          "kind": "LISTENER_PARAM"
+        },
+        {
+          "key": "path",
+          "displayName": "Path",
           "kind": "LISTENER_PARAM"
         }
       ]
@@ -508,7 +847,7 @@
         "stringLiteralLabel": "Service Base Path",
         "stringLiteralDescription": "",
         "stringLiteralDefaultValue": "",
-        "listenerKind": "MULTIPLE_SELECT",
+        "listenerKind": "MULTIPLE_SELECT_LISTENER",
         "kind": "event"
       },
       "serviceTypes": {
@@ -548,35 +887,69 @@
         "serviceUri": {
           "label": "Service URI",
           "description": "The URI of the MQTT broker",
-          "defaultValue": "",
-          "placeholder": "\"mqtt://localhost:1883\"",
-          "valueType": "EXPRESSION",
-          "typeConstraint": "string",
-          "typeMembers": [],
-          "sourceKind": "LISTENER_PARAM_REQUIRED",
-          "selections": []
+          "defaultValue": "\"mqtt://localhost:1883\"",
+          "placeholder": "mqtt://localhost:1883",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "ballerinaType": "string"
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "string"
+            }
+          ],
+          "sourceKind": "LISTENER_PARAM_REQUIRED"
         },
         "clientId": {
           "label": "Client ID",
           "description": "A unique identifier to identify by the MQTT broker",
-          "defaultValue": "",
-          "placeholder": "\"unique_client_001\"",
-          "valueType": "EXPRESSION",
-          "typeConstraint": "string",
-          "typeMembers": [],
-          "sourceKind": "LISTENER_PARAM_REQUIRED",
-          "selections": []
+          "defaultValue": "\"unique_client_001\"",
+          "placeholder": "unique_client_001",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "ballerinaType": "string"
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "string"
+            }
+          ],
+          "sourceKind": "LISTENER_PARAM_REQUIRED"
         },
         "subscriptions": {
           "label": "Subscriptions",
           "description": "The topics to subscribe to",
-          "defaultValue": "",
-          "placeholder": "\"topic1\"",
-          "valueType": "EXPRESSION",
-          "typeConstraint": "string|string[]",
-          "typeMembers": [],
-          "sourceKind": "LISTENER_PARAM_REQUIRED",
-          "selections": []
+          "defaultValue": "\"topic1\"",
+          "placeholder": "topic1",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "ballerinaType": "string"
+            },
+            {
+              "fieldType": "REPEATABLE_LIST",
+              "ballerinaType": "string[]",
+              "template": {
+                "types": [
+                  {
+                    "fieldType": "TEXT",
+                    "ballerinaType": "string"
+                  },
+                  {
+                    "fieldType": "EXPRESSION",
+                    "ballerinaType": "string"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "string|string[]"
+            }
+          ],
+          "sourceKind": "LISTENER_PARAM_REQUIRED"
         }
       },
       "readOnlyMetadata": [
@@ -612,7 +985,7 @@
         "stringLiteralLabel": "Service Base Path",
         "stringLiteralDescription": "",
         "stringLiteralDefaultValue": "",
-        "listenerKind": "MULTIPLE_SELECT",
+        "listenerKind": "MULTIPLE_SELECT_LISTENER",
         "kind": "agent"
       },
       "serviceTypes": {
@@ -640,7 +1013,7 @@
         "stringLiteralLabel": "Service Base Path",
         "stringLiteralDescription": "",
         "stringLiteralDefaultValue": "",
-        "listenerKind": "MULTIPLE_SELECT",
+        "listenerKind": "MULTIPLE_SELECT_LISTENER",
         "kind": "mcp"
       },
       "serviceTypes": {
@@ -661,44 +1034,64 @@
           "description": "The name of the mcp service",
           "defaultValue": "",
           "placeholder": "MCP Service",
-          "valueType": "EXPRESSION",
-          "typeConstraint": "string",
-          "typeMembers": [],
-          "sourceKind": "SOURCE_ANNOTATION",
-          "selections": []
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "ballerinaType": "string"
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "string"
+            }
+          ],
+          "sourceKind": "SOURCE_ANNOTATION"
         },
         "version": {
           "label": "Version",
           "description": "The version of the mcp service",
           "defaultValue": "\"1.0.0\"",
           "placeholder": "\"1.0.0\"",
-          "valueType": "EXPRESSION",
-          "typeConstraint": "string",
-          "typeMembers": [],
-          "sourceKind": "SOURCE_ANNOTATION",
-          "selections": []
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "ballerinaType": "string"
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "string"
+            }
+          ],
+          "sourceKind": "SOURCE_ANNOTATION"
         },
         "port": {
           "label": "Port",
           "description": "The port on which the MCP service listens",
           "defaultValue": "8080",
           "placeholder": "8080",
-          "valueType": "EXPRESSION",
-          "typeConstraint": "int",
-          "typeMembers": [],
-          "sourceKind": "LISTENER_PARAM_REQUIRED",
-          "selections": []
+          "types": [
+            {
+              "fieldType": "NUMBER",
+              "ballerinaType": "int"
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "int"
+            }
+          ],
+          "sourceKind": "LISTENER_PARAM_REQUIRED"
         },
         "basePath": {
           "label": "Base Path",
           "description": "The base path of the MCP service",
           "defaultValue": "/mcp",
           "placeholder": "/mcp",
-          "valueType": "EXPRESSION",
-          "typeConstraint": "string",
-          "typeMembers": [],
-          "sourceKind": "SERVICE_BASE_PATH",
-          "selections": []
+          "types": [
+            {
+              "fieldType": "SERVICE_PATH",
+              "ballerinaType": "string"
+            }
+          ],
+          "sourceKind": "SERVICE_BASE_PATH"
         }
       }
     }
@@ -724,7 +1117,7 @@
         "stringLiteralLabel": "Service Base Path",
         "stringLiteralDescription": "",
         "stringLiteralDefaultValue": "",
-        "listenerKind": "MULTIPLE_SELECT",
+        "listenerKind": "MULTIPLE_SELECT_LISTENER",
         "kind": "event"
       },
       "serviceTypes": {
@@ -787,35 +1180,50 @@
         "connectionString": {
           "label": "Connection String",
           "description": "The connection string to connect to the Azure Service Bus namespace",
-          "defaultValue": "",
-          "placeholder": "\"Endpoint=sb://<NAMESPACE>.servicebus.windows.net/;SharedAccessKeyName=<KEY_NAME>;SharedAccessKey=<KEY_VALUE>\"",
-          "valueType": "EXPRESSION",
-          "typeConstraint": "string",
-          "typeMembers": [],
-          "sourceKind": "LISTENER_PARAM_INCLUDED_FIELD",
-          "selections": []
+          "defaultValue": "\"Endpoint=sb://<NAMESPACE>.servicebus.windows.net/;SharedAccessKeyName=<KEY_NAME>;SharedAccessKey=<KEY_VALUE>\"",
+          "placeholder": "Endpoint=sb://<NAMESPACE>.servicebus.windows.net/;SharedAccessKeyName=<KEY_NAME>;SharedAccessKey=<KEY_VALUE>",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "ballerinaType": "string"
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "string"
+            }
+          ],
+          "sourceKind": "LISTENER_PARAM_INCLUDED_FIELD"
         },
         "entityConfig": {
           "label": "Entity Config",
           "description": "The entity configuration to connect to the Azure Service Bus",
-          "defaultValue": "",
+          "defaultValue": "{}",
           "placeholder": "{}",
           "valueType": "EXPRESSION",
           "typeConstraint": "asb:TopicSubsConfig|asb:QueueConfig",
-          "typeMembers": [
+          "types": [
             {
-              "type": "TopicSubsConfig",
-              "packageInfo": "ballerinax:asb:3.9.0",
-              "kind": "RECORD_TYPE"
+              "fieldType": "RECORD_MAP_EXPRESSION",
+              "ballerinaType": "asb:TopicSubsConfig|asb:QueueConfig",
+              "typeMembers": [
+                {
+                  "type": "TopicSubsConfig",
+                  "packageInfo": "ballerinax:asb:3.9.0",
+                  "kind": "RECORD_TYPE"
+                },
+                {
+                  "type": "QueueConfig",
+                  "packageInfo": "ballerinax:asb:3.9.0",
+                  "kind": "RECORD_TYPE"
+                }
+              ]
             },
             {
-              "type": "QueueConfig",
-              "packageInfo": "ballerinax:asb:3.9.0",
-              "kind": "RECORD_TYPE"
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "asb:TopicSubsConfig|asb:QueueConfig"
             }
           ],
-          "sourceKind": "LISTENER_PARAM_INCLUDED_FIELD",
-          "selections": []
+          "sourceKind": "LISTENER_PARAM_INCLUDED_FIELD"
         }
       },
       "readOnlyMetadata": [
@@ -851,7 +1259,7 @@
         "stringLiteralLabel": "Queue Name",
         "stringLiteralDescription": "The name of the queue",
         "stringLiteralDefaultValue": "\"\"",
-        "listenerKind": "MULTIPLE_SELECT",
+        "listenerKind": "MULTIPLE_SELECT_LISTENER",
         "kind": "event"
       },
       "serviceTypes": {
@@ -981,35 +1389,53 @@
         "basePath": {
           "label": "Queue Name",
           "description": "The name of the queue to listen to",
-          "defaultValue": "",
-          "placeholder": "\"myQueue\"",
-          "valueType": "EXPRESSION",
-          "typeConstraint": "string",
-          "typeMembers": [],
-          "sourceKind": "SERVICE_BASE_PATH",
-          "selections": []
+          "defaultValue": "\"myQueue\"",
+          "placeholder": "myQueue",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "ballerinaType": "string"
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "string"
+            }
+          ],
+          "sourceKind": "SERVICE_BASE_PATH"
         },
         "host": {
           "label": "Host",
           "description": "The host used for establishing the connection",
-          "defaultValue": "",
-          "placeholder": "\"localhost\"",
-          "valueType": "EXPRESSION",
-          "typeConstraint": "string",
-          "typeMembers": [],
-          "sourceKind": "LISTENER_PARAM_REQUIRED",
-          "selections": []
+          "defaultValue": "\"localhost\"",
+          "placeholder": "localhost",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "ballerinaType": "string"
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "string"
+            }
+          ],
+          "sourceKind": "LISTENER_PARAM_REQUIRED"
         },
         "port": {
           "label": "Port",
           "description": "The port used for establishing the connection",
-          "defaultValue": "",
+          "defaultValue": "5672",
           "placeholder": "5672",
-          "valueType": "EXPRESSION",
-          "typeConstraint": "int",
-          "typeMembers": [],
-          "sourceKind": "LISTENER_PARAM_REQUIRED",
-          "selections": []
+          "types": [
+            {
+              "fieldType": "NUMBER",
+              "ballerinaType": "int"
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "int"
+            }
+          ],
+          "sourceKind": "LISTENER_PARAM_REQUIRED"
         }
       },
       "readOnlyMetadata": [
@@ -1045,7 +1471,7 @@
         "stringLiteralLabel": "Service Base Path",
         "stringLiteralDescription": "",
         "stringLiteralDefaultValue": "",
-        "listenerKind": "SINGLE_SELECT",
+        "listenerKind": "SINGLE_SELECT_LISTENER",
         "kind": "event"
       },
       "serviceTypes": {
@@ -1119,24 +1545,68 @@
         "bootstrapServers": {
           "label": "Bootstrap Servers",
           "description": "List of remote server endpoints of the Kafka brokers",
-          "defaultValue": "",
-          "placeholder": "\"localhost:9092\"",
-          "valueType": "EXPRESSION",
-          "typeConstraint": "string|string[]",
-          "typeMembers": [],
-          "sourceKind": "LISTENER_PARAM_REQUIRED",
-          "selections": []
+          "defaultValue": "\"localhost:9092\"",
+          "placeholder": "localhost:9092",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "ballerinaType": "string"
+            },
+            {
+              "fieldType": "REPEATABLE_LIST",
+              "ballerinaType": "string[]",
+              "template": {
+                "types": [
+                  {
+                    "fieldType": "TEXT",
+                    "ballerinaType": "string"
+                  },
+                  {
+                    "fieldType": "EXPRESSION",
+                    "ballerinaType": "string"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "string|string[]"
+            }
+          ],
+          "sourceKind": "LISTENER_PARAM_REQUIRED"
         },
         "topics": {
           "label": "Topic(s)",
           "description": "The topic(s) to subscribe to",
-          "defaultValue": "",
-          "placeholder": "\"myTopic\"",
-          "valueType": "EXPRESSION",
-          "typeConstraint": "string|string[]",
-          "typeMembers": [],
-          "sourceKind": "LISTENER_PARAM_INCLUDED_FIELD",
-          "selections": []
+          "defaultValue": "\"myTopic\"",
+          "placeholder": "myTopic",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "ballerinaType": "string"
+            },
+            {
+              "fieldType": "REPEATABLE_LIST",
+              "ballerinaType": "string[]",
+              "template": {
+                "types": [
+                  {
+                    "fieldType": "TEXT",
+                    "ballerinaType": "string"
+                  },
+                  {
+                    "fieldType": "EXPRESSION",
+                    "ballerinaType": "string"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "string|string[]"
+            }
+          ],
+          "sourceKind": "LISTENER_PARAM_INCLUDED_FIELD"
         }
       },
       "readOnlyMetadata": [
@@ -1159,36 +1629,56 @@
         "typeDescriptorDescription": "The name of the service contract type",
         "typeDescriptorDefaultValue": "Service",
         "addDefaultTypeDescriptor": 0,
-        "optionalAbsoluteResourcePath": 1,
-        "absoluteResourcePathLabel": "Service Base Path",
-        "absoluteResourcePathDescription": "",
-        "absoluteResourcePathDefaultValue": "",
+        "optionalAbsoluteResourcePath": 0,
+        "absoluteResourcePathLabel": "Event Channel",
+        "absoluteResourcePathDescription": "The event channel name",
+        "absoluteResourcePathDefaultValue": "/data/ChangeEvents",
         "optionalStringLiteral": 1,
         "stringLiteralLabel": "Service Base Path",
         "stringLiteralDescription": "",
         "stringLiteralDefaultValue": "",
-        "listenerKind": "MULTIPLE_SELECT",
+        "listenerKind": "MULTIPLE_SELECT_LISTENER",
         "kind": "event"
       },
       "serviceTypes": {
       },
       "initForm": {
+        "basePath": {
+          "label": "Event Channel",
+          "description": "The event channel name",
+          "defaultValue": "/data/ChangeEvents",
+          "placeholder": "/data/ChangeEvents",
+          "types": [
+            {
+              "fieldType": "SERVICE_PATH",
+              "ballerinaType": "string"
+            }
+          ],
+          "sourceKind": "SERVICE_BASE_PATH"
+        },
         "auth": {
           "label": "Auth",
           "description": "Configurations related to username/password authentication",
-          "defaultValue": "",
+          "defaultValue": "{username: \"\", password: \"\"}",
           "placeholder": "{username: \"\", password: \"\"}",
-          "valueType": "EXPRESSION",
-          "typeConstraint": "salesforce:CredentialsConfig",
-          "typeMembers": [
+          "types": [
             {
-              "type": "CredentialsConfig",
-              "packageInfo": "ballerinax:salesforce:8.2.0",
-              "kind": "RECORD_TYPE"
+              "fieldType": "RECORD_MAP_EXPRESSION",
+              "ballerinaType": "salesforce:CredentialsConfig",
+              "typeMembers": [
+                {
+                  "type": "CredentialsConfig",
+                  "packageInfo": "ballerinax:salesforce:8.2.0",
+                  "kind": "RECORD_TYPE"
+                }
+              ]
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "salesforce:CredentialsConfig"
             }
           ],
-          "sourceKind": "LISTENER_PARAM_INCLUDED_FIELD",
-          "selections": []
+          "sourceKind": "LISTENER_PARAM_CONFIG_FIELD"
         }
       }
     },
@@ -1212,7 +1702,7 @@
         "stringLiteralLabel": "Service Base Path",
         "stringLiteralDescription": "",
         "stringLiteralDefaultValue": "",
-        "listenerKind": "MULTIPLE_SELECT",
+        "listenerKind": "MULTIPLE_SELECT_LISTENER",
         "kind": "event"
       },
       "serviceTypes": {
@@ -1221,24 +1711,57 @@
         "basePath": {
           "label": "Event Channel",
           "description": "The event channel name",
-          "defaultValue": "",
-          "placeholder": "\"IssuesService\"",
-          "valueType": "SINGLE_SELECT",
-          "typeConstraint": "github:GenericServiceType",
-          "typeMembers": [],
-          "sourceKind": "SERVICE_TYPE_DESCRIPTOR",
-          "selections": [
-            "IssuesService",
-            "IssueCommentService",
-            "PullRequestService",
-            "PullRequestReviewService",
-            "PullRequestReviewCommentService",
-            "ReleaseService",
-            "LabelService",
-            "MilestoneService",
-            "PushService",
-            "ProjectCardService"
-          ]
+          "defaultValue": "IssuesService",
+          "placeholder": "IssuesService",
+          "types": [
+            {
+              "fieldType": "SINGLE_SELECT",
+              "ballerinaType": "github:GenericServiceType",
+              "options": [
+                {
+                  "label": "IssuesService",
+                  "value": "IssuesService"
+                },
+                {
+                  "label": "IssueCommentService",
+                  "value": "IssueCommentService"
+                },
+                {
+                  "label": "PullRequestService",
+                  "value": "PullRequestService"
+                },
+                {
+                  "label": "PullRequestReviewService",
+                  "value": "PullRequestReviewService"
+                },
+                {
+                  "label": "PullRequestReviewCommentService",
+                  "value": "PullRequestReviewCommentService"
+                },
+                {
+                  "label": "ReleaseService",
+                  "value": "ReleaseService"
+                },
+                {
+                  "label": "LabelService",
+                  "value": "LabelService"
+                },
+                {
+                  "label": "MilestoneService",
+                  "value": "MilestoneService"
+                },
+                {
+                  "label": "PushService",
+                  "value": "PushService"
+                },
+                {
+                  "label": "ProjectCardService",
+                  "value": "ProjectCardService"
+                }
+              ]
+            }
+          ],
+          "sourceKind": "SERVICE_TYPE_DESCRIPTOR"
         }
       },
       "readOnlyMetadata": [
@@ -1269,7 +1792,7 @@
         "stringLiteralLabel": "Service Base Path",
         "stringLiteralDescription": "",
         "stringLiteralDefaultValue": "",
-        "listenerKind": "MULTIPLE_SELECT",
+        "listenerKind": "MULTIPLE_SELECT_LISTENER",
         "kind": "agent"
       },
       "serviceTypes": {
@@ -1295,7 +1818,7 @@
         "stringLiteralLabel": "Service Base Path",
         "stringLiteralDescription": "",
         "stringLiteralDefaultValue": "",
-        "listenerKind": "MULTIPLE_SELECT",
+        "listenerKind": "MULTIPLE_SELECT_LISTENER",
         "kind": "event"
       },
       "serviceTypes": {
@@ -1306,14 +1829,40 @@
           "description": "The event channel name",
           "defaultValue": "",
           "placeholder": "\"CallStatusService\"",
-          "valueType": "SINGLE_SELECT",
-          "typeConstraint": "twilio:GenericServiceType",
-          "typeMembers": [],
-          "sourceKind": "SERVICE_TYPE_DESCRIPTOR",
-          "selections": [
-            "CallStatusService",
-            "SmsStatusService"
-          ]
+          "types": [
+            {
+              "fieldType": "SINGLE_SELECT",
+              "ballerinaType": "twilio:GenericServiceType",
+              "options": [
+                {
+                  "label": "CallStatusService",
+                  "value": "CallStatusService"
+                },
+                {
+                  "label": "SmsStatusService",
+                  "value": "SmsStatusService"
+                }
+              ]
+            }
+          ],
+          "sourceKind": "SERVICE_TYPE_DESCRIPTOR"
+        },
+        "listenOn": {
+          "label": "Webhook Listener Port",
+          "description": "The port on which the webhook listener accepts incoming requests",
+          "defaultValue": "8090",
+          "placeholder": "8090",
+          "types": [
+            {
+              "fieldType": "NUMBER",
+              "ballerinaType": "int"
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "int"
+            }
+          ],
+          "sourceKind": "LISTENER_PARAM_INCLUDED_DEFAULTABLE_FIELD"
         }
       }
     },
@@ -1337,7 +1886,7 @@
         "stringLiteralLabel": "Service Base Path",
         "stringLiteralDescription": "",
         "stringLiteralDefaultValue": "",
-        "listenerKind": "SINGLE_SELECT",
+        "listenerKind": "MULTIPLE_SELECT_LISTENER",
         "kind": "event"
       },
       "serviceTypes": {
@@ -1422,22 +1971,34 @@
           "description": "The Solace broker URL",
           "defaultValue": "\"smf://localhost:55554\"",
           "placeholder": "\"smf://localhost:55554\"",
-          "valueType": "EXPRESSION",
-          "typeConstraint": "string",
-          "typeMembers": [],
-          "sourceKind": "LISTENER_PARAM_REQUIRED",
-          "selections": []
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "ballerinaType": "string"
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "string"
+            }
+          ],
+          "sourceKind": "LISTENER_PARAM_REQUIRED"
         },
         "messageVpn": {
           "label": "Message VPN",
           "description": "The message VPN to connect to",
           "defaultValue": "\"default\"",
           "placeholder": "\"default\"",
-          "valueType": "EXPRESSION",
-          "typeConstraint": "string",
-          "typeMembers": [],
-          "sourceKind": "LISTENER_PARAM_INCLUDED_DEFAULTABLE_FIELD",
-          "selections": []
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "ballerinaType": "string"
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "string"
+            }
+          ],
+          "sourceKind": "LISTENER_PARAM_INCLUDED_DEFAULTABLE_FIELD"
         }
       },
       "readOnlyMetadata": [
@@ -1449,6 +2010,458 @@
         {
           "key": "topicName",
           "displayName": "Topic Name",
+          "kind": "ANNOTATION"
+        }
+      ]
+    },
+    {
+      "name": "mssql",
+      "version": "1.17.0",
+      "serviceTypeSkipList": [],
+      "serviceDeclaration": {
+        "displayName": "CDC for Microsoft SQL Server",
+        "description": "Create an integration that captures Microsoft SQL Server database changes in real-time",
+        "optionalTypeDescriptor": 1,
+        "typeDescriptorLabel": "Service Type",
+        "typeDescriptorDescription": "",
+        "typeDescriptorDefaultValue": "Service",
+        "addDefaultTypeDescriptor": 0,
+        "optionalAbsoluteResourcePath": 1,
+        "absoluteResourcePathLabel": "Service Base Path",
+        "absoluteResourcePathDescription": "",
+        "absoluteResourcePathDefaultValue": "",
+        "optionalStringLiteral": 1,
+        "stringLiteralLabel": "Service Base Path",
+        "stringLiteralDescription": "",
+        "stringLiteralDefaultValue": "",
+        "listenerKind": "MULTIPLE_SELECT_LISTENER",
+        "kind": "event"
+      },
+      "serviceTypes": {
+        "Service": {
+          "name": "Service",
+          "description": "",
+          "functions": [
+            {
+              "name": "onRead",
+              "description": "Triggers initially to read existing records from the monitored table",
+              "accessor": "",
+              "kind": "REMOTE",
+              "returnType": "error?",
+              "returnError": 1,
+              "returnTypeEditable": 0,
+              "enable": 0,
+              "optional": 1,
+              "parameters": [
+                {
+                  "name": "afterEntry",
+                  "label": "After Entry",
+                  "description": "The existing record from the monitored table",
+                  "kind": "DATA_BINDING",
+                  "type": "record {}",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 1
+                },
+                {
+                  "name": "tableName",
+                  "label": "Table Name",
+                  "description": "The name of the table where the record was created",
+                  "kind": "OPTIONAL",
+                  "type": "string",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                }
+              ]
+            },
+            {
+              "name": "onCreate",
+              "description": "Triggers when a new record is created in the monitored table",
+              "accessor": "",
+              "kind": "REMOTE",
+              "returnType": "error?",
+              "returnError": 1,
+              "returnTypeEditable": 0,
+              "enable": 0,
+              "optional": 1,
+              "parameters": [
+                {
+                  "name": "afterEntry",
+                  "label": "After Entry",
+                  "description": "The new record created in the monitored table",
+                  "kind": "DATA_BINDING",
+                  "type": "record {}",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 1
+                },
+                {
+                  "name": "tableName",
+                  "label": "Table Name",
+                  "description": "The name of the table where the record was created",
+                  "kind": "OPTIONAL",
+                  "type": "string",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                }
+              ]
+            },
+            {
+              "name": "onUpdate",
+              "description": "Triggers when an existing record is updated in the monitored table",
+              "accessor": "",
+              "kind": "REMOTE",
+              "returnType": "error?",
+              "returnError": 1,
+              "returnTypeEditable": 0,
+              "enable": 0,
+              "optional": 1,
+              "parameters": [
+                {
+                  "name": "beforeEntry",
+                  "label": "Before Entry",
+                  "description": "The record before the update in the monitored table",
+                  "kind": "DATA_BINDING",
+                  "type": "record {}",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 1
+                },
+                {
+                  "name": "afterEntry",
+                  "label": "After Entry",
+                  "description": "The record after the update in the monitored table",
+                  "kind": "DATA_BINDING",
+                  "type": "record {}",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 1
+                },
+                {
+                  "name": "tableName",
+                  "label": "Table Name",
+                  "description": "The name of the table where the record was created",
+                  "kind": "OPTIONAL",
+                  "type": "string",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                }
+              ]
+            },
+            {
+              "name": "onDelete",
+              "description": "Triggers when a record is deleted from the monitored table",
+              "accessor": "",
+              "kind": "REMOTE",
+              "returnType": "error?",
+              "returnError": 1,
+              "returnTypeEditable": 0,
+              "enable": 0,
+              "optional": 1,
+              "parameters": [
+                {
+                  "name": "beforeEntry",
+                  "label": "Before Entry",
+                  "description": "The record before the deletion in the monitored table",
+                  "kind": "DATA_BINDING",
+                  "type": "record {}",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 1
+                },
+                {
+                  "name": "tableName",
+                  "label": "Table Name",
+                  "description": "The name of the table where the record was created",
+                  "kind": "OPTIONAL",
+                  "type": "string",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                }
+              ]
+            },
+            {
+              "name": "onError",
+              "description": "Triggers when an error occurs during event processing before mandatory functions are invoked",
+              "accessor": "",
+              "kind": "REMOTE",
+              "returnType": "",
+              "returnError": 0,
+              "returnTypeEditable": 0,
+              "enable": 0,
+              "optional": 1,
+              "parameters": [
+                {
+                  "name": "cdcError",
+                  "label": "CDC Error",
+                  "description": "The error occurred during message processing",
+                  "kind": "REQUIRED",
+                  "type": "cdc:Error",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "readOnlyMetadata": [
+        {
+          "key": "tables",
+          "displayName": "Table Name",
+          "kind": "ANNOTATION"
+        }
+      ]
+    },
+    {
+      "name": "postgresql",
+      "version": "1.17.0",
+      "serviceTypeSkipList": [],
+      "serviceDeclaration": {
+        "displayName": "CDC for PostgreSQL",
+        "description": "Create an integration that captures PostgreSQL database changes in real-time",
+        "optionalTypeDescriptor": 1,
+        "typeDescriptorLabel": "Service Type",
+        "typeDescriptorDescription": "",
+        "typeDescriptorDefaultValue": "Service",
+        "addDefaultTypeDescriptor": 0,
+        "optionalAbsoluteResourcePath": 1,
+        "absoluteResourcePathLabel": "Service Base Path",
+        "absoluteResourcePathDescription": "",
+        "absoluteResourcePathDefaultValue": "",
+        "optionalStringLiteral": 1,
+        "stringLiteralLabel": "Service Base Path",
+        "stringLiteralDescription": "",
+        "stringLiteralDefaultValue": "",
+        "listenerKind": "MULTIPLE_SELECT_LISTENER",
+        "kind": "event"
+      },
+      "serviceTypes": {
+        "Service": {
+          "name": "Service",
+          "description": "",
+          "functions": [
+            {
+              "name": "onRead",
+              "description": "Triggers initially to read existing records from the monitored table",
+              "accessor": "",
+              "kind": "REMOTE",
+              "returnType": "error?",
+              "returnError": 1,
+              "returnTypeEditable": 0,
+              "enable": 0,
+              "optional": 1,
+              "parameters": [
+                {
+                  "name": "afterEntry",
+                  "label": "After Entry",
+                  "description": "The existing record from the monitored table",
+                  "kind": "DATA_BINDING",
+                  "type": "record {}",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 1
+                },
+                {
+                  "name": "tableName",
+                  "label": "Table Name",
+                  "description": "The name of the table where the record was created",
+                  "kind": "OPTIONAL",
+                  "type": "string",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                }
+              ]
+            },
+            {
+              "name": "onCreate",
+              "description": "Triggers when a new record is created in the monitored table",
+              "accessor": "",
+              "kind": "REMOTE",
+              "returnType": "error?",
+              "returnError": 1,
+              "returnTypeEditable": 0,
+              "enable": 0,
+              "optional": 1,
+              "parameters": [
+                {
+                  "name": "afterEntry",
+                  "label": "After Entry",
+                  "description": "The new record created in the monitored table",
+                  "kind": "DATA_BINDING",
+                  "type": "record {}",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 1
+                },
+                {
+                  "name": "tableName",
+                  "label": "Table Name",
+                  "description": "The name of the table where the record was created",
+                  "kind": "OPTIONAL",
+                  "type": "string",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                }
+              ]
+            },
+            {
+              "name": "onUpdate",
+              "description": "Triggers when an existing record is updated in the monitored table",
+              "accessor": "",
+              "kind": "REMOTE",
+              "returnType": "error?",
+              "returnError": 1,
+              "returnTypeEditable": 0,
+              "enable": 0,
+              "optional": 1,
+              "parameters": [
+                {
+                  "name": "beforeEntry",
+                  "label": "Before Entry",
+                  "description": "The record before the update in the monitored table",
+                  "kind": "DATA_BINDING",
+                  "type": "record {}",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 1
+                },
+                {
+                  "name": "afterEntry",
+                  "label": "After Entry",
+                  "description": "The record after the update in the monitored table",
+                  "kind": "DATA_BINDING",
+                  "type": "record {}",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 1
+                },
+                {
+                  "name": "tableName",
+                  "label": "Table Name",
+                  "description": "The name of the table where the record was created",
+                  "kind": "OPTIONAL",
+                  "type": "string",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                }
+              ]
+            },
+            {
+              "name": "onDelete",
+              "description": "Triggers when a record is deleted from the monitored table",
+              "accessor": "",
+              "kind": "REMOTE",
+              "returnType": "error?",
+              "returnError": 1,
+              "returnTypeEditable": 0,
+              "enable": 0,
+              "optional": 1,
+              "parameters": [
+                {
+                  "name": "beforeEntry",
+                  "label": "Before Entry",
+                  "description": "The record before the deletion in the monitored table",
+                  "kind": "DATA_BINDING",
+                  "type": "record {}",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 1
+                },
+                {
+                  "name": "tableName",
+                  "label": "Table Name",
+                  "description": "The name of the table where the record was created",
+                  "kind": "OPTIONAL",
+                  "type": "string",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                }
+              ]
+            },
+            {
+              "name": "onTruncate",
+              "description": "Triggers when a monitored table is truncated",
+              "accessor": "",
+              "kind": "REMOTE",
+              "returnType": "error?",
+              "returnError": 1,
+              "returnTypeEditable": 0,
+              "enable": 0,
+              "optional": 1,
+              "parameters": [
+                {
+                  "name": "tableName",
+                  "label": "Table Name",
+                  "description": "The name of the table which was truncated",
+                  "kind": "OPTIONAL",
+                  "type": "string",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                }
+              ]
+            },
+            {
+              "name": "onError",
+              "description": "Triggers when an error occurs during event processing before mandatory functions are invoked",
+              "accessor": "",
+              "kind": "REMOTE",
+              "returnType": "",
+              "returnError": 0,
+              "returnTypeEditable": 0,
+              "enable": 0,
+              "optional": 1,
+              "parameters": [
+                {
+                  "name": "cdcError",
+                  "label": "CDC Error",
+                  "description": "The error occurred during message processing",
+                  "kind": "REQUIRED",
+                  "type": "cdc:Error",
+                  "defaultValue": "",
+                  "importStatements": "",
+                  "nameEditable": 1,
+                  "typeEditable": 0
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "readOnlyMetadata": [
+        {
+          "key": "tables",
+          "displayName": "Table Name",
           "kind": "ANNOTATION"
         }
       ]

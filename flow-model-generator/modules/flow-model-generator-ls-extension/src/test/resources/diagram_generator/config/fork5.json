@@ -45,7 +45,7 @@
         "id": "121163",
         "metadata": {
           "label": "Declare Variable",
-          "description": "Assign a value to a variable"
+          "description": "Create a new variable"
         },
         "codedata": {
           "node": "VARIABLE",
@@ -69,7 +69,12 @@
               "label": "Expression",
               "description": "Initialize with value"
             },
-            "valueType": "ACTION_OR_EXPRESSION",
+            "types": [
+              {
+                "fieldType": "ACTION_OR_EXPRESSION",
+                "selected": true
+              }
+            ],
             "value": "12",
             "optional": true,
             "editable": true,
@@ -81,7 +86,12 @@
               "label": "Name",
               "description": "Name of the variable"
             },
-            "valueType": "IDENTIFIER",
+            "types": [
+              {
+                "fieldType": "IDENTIFIER",
+                "selected": true
+              }
+            ],
             "value": "i",
             "optional": false,
             "editable": false,
@@ -106,7 +116,12 @@
               "label": "Type",
               "description": "Type of the variable"
             },
-            "valueType": "TYPE",
+            "types": [
+              {
+                "fieldType": "TYPE",
+                "selected": true
+              }
+            ],
             "value": "int",
             "placeholder": "var",
             "optional": false,
@@ -122,7 +137,7 @@
         "id": "122160",
         "metadata": {
           "label": "Declare Variable",
-          "description": "Assign a value to a variable"
+          "description": "Create a new variable"
         },
         "codedata": {
           "node": "VARIABLE",
@@ -146,7 +161,12 @@
               "label": "Expression",
               "description": "Initialize with value"
             },
-            "valueType": "ACTION_OR_EXPRESSION",
+            "types": [
+              {
+                "fieldType": "ACTION_OR_EXPRESSION",
+                "selected": true
+              }
+            ],
             "value": "\"12\"",
             "optional": true,
             "editable": true,
@@ -158,7 +178,12 @@
               "label": "Name",
               "description": "Name of the variable"
             },
-            "valueType": "IDENTIFIER",
+            "types": [
+              {
+                "fieldType": "IDENTIFIER",
+                "selected": true
+              }
+            ],
             "value": "s",
             "optional": false,
             "editable": false,
@@ -183,7 +208,12 @@
               "label": "Type",
               "description": "Type of the variable"
             },
-            "valueType": "TYPE",
+            "types": [
+              {
+                "fieldType": "TYPE",
+                "selected": true
+              }
+            ],
             "value": "string",
             "placeholder": "var",
             "optional": false,
@@ -243,7 +273,12 @@
                   "label": "Worker Name",
                   "description": "Name of the worker"
                 },
-                "valueType": "IDENTIFIER",
+                "types": [
+                  {
+                    "fieldType": "IDENTIFIER",
+                    "selected": true
+                  }
+                ],
                 "value": "A",
                 "optional": false,
                 "editable": false,
@@ -268,7 +303,12 @@
                   "label": "Return Type",
                   "description": "Type of the return value"
                 },
-                "valueType": "TYPE",
+                "types": [
+                  {
+                    "fieldType": "TYPE",
+                    "selected": true
+                  }
+                ],
                 "value": "string",
                 "optional": true,
                 "editable": true,
@@ -305,9 +345,14 @@
                       "label": "Expression",
                       "description": "Return value"
                     },
-                    "valueType": "ACTION_OR_EXPRESSION",
+                    "types": [
+                      {
+                        "fieldType": "ACTION_OR_EXPRESSION",
+                        "selected": true
+                      }
+                    ],
                     "value": "\"hello\" + s",
-                    "optional": false,
+                    "optional": true,
                     "editable": true,
                     "advanced": false,
                     "hidden": false
@@ -367,7 +412,12 @@
                   "label": "Worker Name",
                   "description": "Name of the worker"
                 },
-                "valueType": "IDENTIFIER",
+                "types": [
+                  {
+                    "fieldType": "IDENTIFIER",
+                    "selected": true
+                  }
+                ],
                 "value": "B",
                 "optional": false,
                 "editable": false,
@@ -392,7 +442,12 @@
                   "label": "Return Type",
                   "description": "Type of the return value"
                 },
-                "valueType": "TYPE",
+                "types": [
+                  {
+                    "fieldType": "TYPE",
+                    "selected": true
+                  }
+                ],
                 "value": "",
                 "optional": true,
                 "editable": true,
@@ -435,10 +490,41 @@
                       "label": "values",
                       "description": "The value(s) to be printed"
                     },
-                    "valueType": "EXPRESSION_SET",
-                    "valueTypeConstraint": "io:Printable",
+                    "types": [
+                      {
+                        "fieldType": "REPEATABLE_LIST",
+                        "ballerinaType": "io:Printable",
+                        "template": {
+                          "types": [
+                            {
+                              "fieldType": "EXPRESSION",
+                              "ballerinaType": "io:Printable",
+                              "selected": false
+                            }
+                          ],
+                          "optional": false,
+                          "editable": false,
+                          "advanced": false,
+                          "hidden": false
+                        },
+                        "selected": true
+                      }
+                    ],
                     "value": [
-                      "\"Worker B\""
+                      {
+                        "types": [
+                          {
+                            "fieldType": "EXPRESSION",
+                            "ballerinaType": "io:Printable",
+                            "selected": true
+                          }
+                        ],
+                        "value": "\"Worker B\"",
+                        "optional": false,
+                        "editable": false,
+                        "advanced": false,
+                        "hidden": false
+                      }
                     ],
                     "placeholder": "()",
                     "optional": false,
@@ -448,16 +534,7 @@
                     "codedata": {
                       "kind": "REST_PARAMETER",
                       "originalName": "values"
-                    },
-                    "typeMembers": [
-                      {
-                        "type": "Printable",
-                        "packageInfo": "ballerina:io:1.8.0",
-                        "packageName": "io",
-                        "kind": "ARRAY_TYPE",
-                        "selected": false
-                      }
-                    ]
+                    }
                   }
                 },
                 "flags": 0
@@ -489,7 +566,12 @@
                   "label": "Worker Name",
                   "description": "Name of the worker"
                 },
-                "valueType": "IDENTIFIER",
+                "types": [
+                  {
+                    "fieldType": "IDENTIFIER",
+                    "selected": true
+                  }
+                ],
                 "value": "C",
                 "optional": false,
                 "editable": false,
@@ -514,7 +596,12 @@
                   "label": "Return Type",
                   "description": "Type of the return value"
                 },
-                "valueType": "TYPE",
+                "types": [
+                  {
+                    "fieldType": "TYPE",
+                    "selected": true
+                  }
+                ],
                 "value": "",
                 "optional": true,
                 "editable": true,
@@ -557,10 +644,41 @@
                       "label": "values",
                       "description": "The value(s) to be printed"
                     },
-                    "valueType": "EXPRESSION_SET",
-                    "valueTypeConstraint": "io:Printable",
+                    "types": [
+                      {
+                        "fieldType": "REPEATABLE_LIST",
+                        "ballerinaType": "io:Printable",
+                        "template": {
+                          "types": [
+                            {
+                              "fieldType": "EXPRESSION",
+                              "ballerinaType": "io:Printable",
+                              "selected": false
+                            }
+                          ],
+                          "optional": false,
+                          "editable": false,
+                          "advanced": false,
+                          "hidden": false
+                        },
+                        "selected": true
+                      }
+                    ],
                     "value": [
-                      "\"Worker C\""
+                      {
+                        "types": [
+                          {
+                            "fieldType": "EXPRESSION",
+                            "ballerinaType": "io:Printable",
+                            "selected": true
+                          }
+                        ],
+                        "value": "\"Worker C\"",
+                        "optional": false,
+                        "editable": false,
+                        "advanced": false,
+                        "hidden": false
+                      }
                     ],
                     "placeholder": "()",
                     "optional": false,
@@ -570,16 +688,7 @@
                     "codedata": {
                       "kind": "REST_PARAMETER",
                       "originalName": "values"
-                    },
-                    "typeMembers": [
-                      {
-                        "type": "Printable",
-                        "packageInfo": "ballerina:io:1.8.0",
-                        "packageName": "io",
-                        "kind": "ARRAY_TYPE",
-                        "selected": false
-                      }
-                    ]
+                    }
                   }
                 },
                 "flags": 0
@@ -592,11 +701,11 @@
       {
         "id": "138047",
         "metadata": {
-          "label": "Wait",
-          "description": "Wait for a set of futures to complete"
+          "label": "Custom Expression",
+          "description": "Represents a custom Ballerina expression"
         },
         "codedata": {
-          "node": "WAIT",
+          "node": "EXPRESSION",
           "lineRange": {
             "fileName": "fork.bal",
             "startLine": {
@@ -612,148 +721,20 @@
         },
         "returning": false,
         "properties": {
-          "waitAll": {
+          "statement": {
             "metadata": {
-              "label": "Wait All",
-              "description": "Wait for all tasks to complete"
+              "label": "Statement",
+              "description": "Ballerina statement"
             },
-            "valueType": "FLAG",
-            "value": false,
+            "types": [
+              {
+                "fieldType": "TEXT",
+                "selected": true
+              }
+            ],
+            "value": "wait A | B | C",
             "optional": false,
             "editable": true,
-            "advanced": false,
-            "hidden": false
-          },
-          "futures": {
-            "metadata": {
-              "label": "Futures",
-              "description": "The futures to wait for"
-            },
-            "valueType": "REPEATABLE_PROPERTY",
-            "value": {
-              "future1": {
-                "metadata": {
-                  "label": "Future",
-                  "description": "The worker/async function to wait for"
-                },
-                "valueType": "FIXED_PROPERTY",
-                "value": {
-                  "variable": {
-                    "metadata": {
-                      "label": "Variable Name",
-                      "description": "Name of the variable"
-                    },
-                    "valueType": "IDENTIFIER",
-                    "value": "",
-                    "optional": false,
-                    "editable": true,
-                    "advanced": false,
-                    "hidden": false,
-                    "codedata": {
-                      "dependentProperty": "waitAll"
-                    }
-                  },
-                  "expression": {
-                    "metadata": {
-                      "label": "Expression",
-                      "description": "Expression"
-                    },
-                    "valueType": "EXPRESSION",
-                    "value": "A ",
-                    "optional": false,
-                    "editable": true,
-                    "advanced": false,
-                    "hidden": false
-                  }
-                },
-                "optional": false,
-                "editable": false,
-                "advanced": false,
-                "hidden": false
-              },
-              "future2": {
-                "metadata": {
-                  "label": "Future",
-                  "description": "The worker/async function to wait for"
-                },
-                "valueType": "FIXED_PROPERTY",
-                "value": {
-                  "variable": {
-                    "metadata": {
-                      "label": "Variable Name",
-                      "description": "Name of the variable"
-                    },
-                    "valueType": "IDENTIFIER",
-                    "value": "",
-                    "optional": false,
-                    "editable": true,
-                    "advanced": false,
-                    "hidden": false,
-                    "codedata": {
-                      "dependentProperty": "waitAll"
-                    }
-                  },
-                  "expression": {
-                    "metadata": {
-                      "label": "Expression",
-                      "description": "Expression"
-                    },
-                    "valueType": "EXPRESSION",
-                    "value": "B ",
-                    "optional": false,
-                    "editable": true,
-                    "advanced": false,
-                    "hidden": false
-                  }
-                },
-                "optional": false,
-                "editable": false,
-                "advanced": false,
-                "hidden": false
-              },
-              "future3": {
-                "metadata": {
-                  "label": "Future",
-                  "description": "The worker/async function to wait for"
-                },
-                "valueType": "FIXED_PROPERTY",
-                "value": {
-                  "variable": {
-                    "metadata": {
-                      "label": "Variable Name",
-                      "description": "Name of the variable"
-                    },
-                    "valueType": "IDENTIFIER",
-                    "value": "",
-                    "optional": false,
-                    "editable": true,
-                    "advanced": false,
-                    "hidden": false,
-                    "codedata": {
-                      "dependentProperty": "waitAll"
-                    }
-                  },
-                  "expression": {
-                    "metadata": {
-                      "label": "Expression",
-                      "description": "Expression"
-                    },
-                    "valueType": "EXPRESSION",
-                    "value": "C",
-                    "optional": false,
-                    "editable": true,
-                    "advanced": false,
-                    "hidden": false
-                  }
-                },
-                "optional": false,
-                "editable": false,
-                "advanced": false,
-                "hidden": false
-              }
-            },
-            "optional": false,
-            "editable": false,
             "advanced": false,
             "hidden": false
           },
@@ -762,7 +743,12 @@
               "label": "Variable Name",
               "description": "Name of the variable"
             },
-            "valueType": "IDENTIFIER",
+            "types": [
+              {
+                "fieldType": "IDENTIFIER",
+                "selected": true
+              }
+            ],
             "value": "value",
             "optional": false,
             "editable": false,
@@ -787,7 +773,12 @@
               "label": "Variable Type",
               "description": "Type of the variable"
             },
-            "valueType": "TYPE",
+            "types": [
+              {
+                "fieldType": "TYPE",
+                "selected": true
+              }
+            ],
             "value": "string|()",
             "placeholder": "var",
             "optional": false,
@@ -827,9 +818,14 @@
               "label": "Expression",
               "description": "Return value"
             },
-            "valueType": "ACTION_OR_EXPRESSION",
+            "types": [
+              {
+                "fieldType": "ACTION_OR_EXPRESSION",
+                "selected": true
+              }
+            ],
             "value": "value",
-            "optional": false,
+            "optional": true,
             "editable": true,
             "advanced": false,
             "hidden": false

@@ -33,7 +33,12 @@
             "label": "Result Type",
             "description": "Type of the variable"
           },
-          "valueType": "TYPE",
+          "types": [
+            {
+              "fieldType": "TYPE",
+              "selected": true
+            }
+          ],
           "value": "pinecone:VectorStore",
           "placeholder": "var",
           "optional": false,
@@ -50,7 +55,12 @@
             "label": "Vector Store Name",
             "description": "Vector store instance name"
           },
-          "valueType": "IDENTIFIER",
+          "types": [
+            {
+              "fieldType": "IDENTIFIER",
+              "selected": true
+            }
+          ],
           "value": "pineconeVectorstore",
           "optional": false,
           "editable": true,
@@ -62,8 +72,18 @@
             "label": "Service URL",
             "description": "URL of the Pinecone API service"
           },
-          "valueType": "EXPRESSION",
-          "valueTypeConstraint": "string",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "ballerinaType": "string",
+              "selected": false
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "string",
+              "selected": false
+            }
+          ],
           "placeholder": "\"\"",
           "optional": false,
           "editable": true,
@@ -72,24 +92,25 @@
           "codedata": {
             "kind": "REQUIRED",
             "originalName": "serviceUrl"
-          },
-          "typeMembers": [
-            {
-              "type": "string",
-              "packageInfo": "",
-              "packageName": "",
-              "kind": "BASIC_TYPE",
-              "selected": false
-            }
-          ]
+          }
         },
         "apiKey": {
           "metadata": {
             "label": "API Key",
             "description": "Pinecone API key for authentication"
           },
-          "valueType": "EXPRESSION",
-          "valueTypeConstraint": "string",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "ballerinaType": "string",
+              "selected": false
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "string",
+              "selected": false
+            }
+          ],
           "placeholder": "\"\"",
           "optional": false,
           "editable": true,
@@ -98,24 +119,38 @@
           "codedata": {
             "kind": "REQUIRED",
             "originalName": "apiKey"
-          },
-          "typeMembers": [
-            {
-              "type": "string",
-              "packageInfo": "",
-              "packageName": "",
-              "kind": "BASIC_TYPE",
-              "selected": false
-            }
-          ]
+          }
         },
         "queryMode": {
           "metadata": {
             "label": "Query Mode",
             "description": "Vector query mode (defaults to ai:DENSE)"
           },
-          "valueType": "EXPRESSION",
-          "valueTypeConstraint": "ai:VectorStoreQueryMode",
+          "types": [
+            {
+              "fieldType": "SINGLE_SELECT",
+              "options": [
+                {
+                  "label": "HYBRID",
+                  "value": "\"HYBRID\""
+                },
+                {
+                  "label": "SPARSE",
+                  "value": "\"SPARSE\""
+                },
+                {
+                  "label": "DENSE",
+                  "value": "\"DENSE\""
+                }
+              ],
+              "selected": false
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "ai:VectorStoreQueryMode",
+              "selected": false
+            }
+          ],
           "placeholder": "\"HYBRID\"",
           "optional": true,
           "editable": true,
@@ -125,23 +160,33 @@
             "kind": "DEFAULTABLE",
             "originalName": "queryMode"
           },
-          "typeMembers": [
-            {
-              "type": "VectorStoreQueryMode",
-              "packageInfo": "ballerina:ai:1.5.0",
-              "packageName": "ai",
-              "kind": "BASIC_TYPE",
-              "selected": false
-            }
-          ],
-          "defaultValue": "\"HYBRID\""
+          "defaultValue": "ai:DENSE"
         },
         "config": {
           "metadata": {
             "label": "Pinecone Configuration"
           },
-          "valueType": "EXPRESSION",
-          "valueTypeConstraint": "pinecone:Configuration",
+          "types": [
+            {
+              "fieldType": "RECORD_MAP_EXPRESSION",
+              "ballerinaType": "pinecone:Configuration",
+              "typeMembers": [
+                {
+                  "type": "Configuration",
+                  "packageInfo": "ballerinax:ai.pinecone:1.1.0",
+                  "packageName": "ai.pinecone",
+                  "kind": "RECORD_TYPE",
+                  "selected": false
+                }
+              ],
+              "selected": false
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "pinecone:Configuration",
+              "selected": false
+            }
+          ],
           "placeholder": "{}",
           "optional": true,
           "editable": true,
@@ -151,15 +196,6 @@
             "kind": "DEFAULTABLE",
             "originalName": "config"
           },
-          "typeMembers": [
-            {
-              "type": "Configuration",
-              "packageInfo": "ballerinax:ai.pinecone:1.1.0",
-              "packageName": "ai.pinecone",
-              "kind": "RECORD_TYPE",
-              "selected": false
-            }
-          ],
           "defaultValue": "{}"
         },
         "httpConfig": {
@@ -167,8 +203,27 @@
             "label": "HTTP Configuration",
             "description": "HTTP client configuration for the Pinecone connection\n"
           },
-          "valueType": "EXPRESSION",
-          "valueTypeConstraint": "vector:ConnectionConfig",
+          "types": [
+            {
+              "fieldType": "RECORD_MAP_EXPRESSION",
+              "ballerinaType": "vector:ConnectionConfig",
+              "typeMembers": [
+                {
+                  "type": "ConnectionConfig",
+                  "packageInfo": "ballerinax:pinecone.vector:1.0.2",
+                  "packageName": "pinecone.vector",
+                  "kind": "RECORD_TYPE",
+                  "selected": false
+                }
+              ],
+              "selected": false
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "vector:ConnectionConfig",
+              "selected": false
+            }
+          ],
           "placeholder": "{}",
           "optional": true,
           "editable": true,
@@ -178,15 +233,6 @@
             "kind": "DEFAULTABLE",
             "originalName": "httpConfig"
           },
-          "typeMembers": [
-            {
-              "type": "ConnectionConfig",
-              "packageInfo": "ballerinax:pinecone.vector:1.0.2",
-              "packageName": "pinecone.vector",
-              "kind": "RECORD_TYPE",
-              "selected": false
-            }
-          ],
           "defaultValue": "{}"
         },
         "scope": {
@@ -194,7 +240,12 @@
             "label": "Connection Scope",
             "description": "Scope of the connection, Global or Local"
           },
-          "valueType": "ENUM",
+          "types": [
+            {
+              "fieldType": "ENUM",
+              "selected": true
+            }
+          ],
           "value": "Global",
           "optional": false,
           "editable": true,
@@ -206,7 +257,12 @@
             "label": "Check Error",
             "description": "Terminate on error"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": true,
           "optional": false,
           "editable": false,

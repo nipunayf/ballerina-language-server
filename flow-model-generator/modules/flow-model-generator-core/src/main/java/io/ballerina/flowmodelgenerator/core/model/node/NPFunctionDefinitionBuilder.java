@@ -92,7 +92,9 @@ public class NPFunctionDefinitionBuilder extends FunctionDefinitionBuilder {
                         null))
                 .lsClientLogger(context.lsClientLogger())
                 .functionResultKind(FunctionData.Kind.FUNCTION)
-                .userModuleInfo(moduleInfo);
+                .userModuleInfo(moduleInfo)
+                .workspaceManager(context.workspaceManager())
+                .filePath(context.filePath());
 
         functionDataBuilder.build();
 
@@ -114,8 +116,7 @@ public class NPFunctionDefinitionBuilder extends FunctionDefinitionBuilder {
                         .stepOut()
                     .placeholder("")
                     .value("")
-                    .typeConstraint(NaturalFunctions.MODULE_PREFIXED_PROMPT_TYPE)
-                    .type(Property.ValueType.RAW_TEMPLATE)
+                    .type(Property.ValueType.RAW_TEMPLATE, NaturalFunctions.MODULE_PREFIXED_PROMPT_TYPE)
                     .editable()
                     .hidden()
                     .stepOut()
@@ -130,9 +131,8 @@ public class NPFunctionDefinitionBuilder extends FunctionDefinitionBuilder {
                 .codedata()
                     .kind(REQUIRED.name())
                     .stepOut()
-                .type(Property.ValueType.EXPRESSION)
+                .type(Property.ValueType.EXPRESSION, null)
                 .value(null)
-                .typeConstraint(null)
                 .editable()
                 .hidden()
                 .stepOut()

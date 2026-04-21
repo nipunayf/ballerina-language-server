@@ -29,8 +29,13 @@
         "label": "Variable",
         "description": "Name of the variable/field"
       },
-      "valueType": "DATA_MAPPING_EXPRESSION",
-      "valueTypeConstraint": "int",
+      "types": [
+        {
+          "fieldType": "DATA_MAPPING_EXPRESSION",
+          "ballerinaType": "int",
+          "selected": true
+        }
+      ],
       "placeholder": "0",
       "optional": false,
       "editable": true,
@@ -43,6 +48,9 @@
   "completions": [
     {
       "label": "name",
+      "labelDetails": {
+        "detail": " string"
+      },
       "kind": "Field",
       "detail": "string",
       "sortText": "CA",
@@ -51,6 +59,9 @@
     },
     {
       "label": "email",
+      "labelDetails": {
+        "detail": " string"
+      },
       "kind": "Field",
       "detail": "string",
       "sortText": "CA",
@@ -59,6 +70,10 @@
     },
     {
       "label": "address",
+      "labelDetails": {
+        "detail": " Address",
+        "description": "Record"
+      },
       "kind": "Field",
       "detail": "Address",
       "sortText": "CA",

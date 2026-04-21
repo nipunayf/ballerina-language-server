@@ -32,7 +32,10 @@ import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.NodeParser;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.compiler.syntax.tree.SyntaxTree;
+import io.ballerina.flowmodelgenerator.core.Constants;
+import io.ballerina.flowmodelgenerator.core.TypesManager;
 import io.ballerina.flowmodelgenerator.core.utils.FileSystemUtils;
+import io.ballerina.flowmodelgenerator.core.utils.SourceCodeGenerator;
 import io.ballerina.modelgenerator.commons.CommonUtils;
 import io.ballerina.modelgenerator.commons.DefaultValueGeneratorUtil;
 import io.ballerina.modelgenerator.commons.ModuleInfo;
@@ -69,6 +72,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static io.ballerina.flowmodelgenerator.core.model.Property.PROPERTY_TYPE_LIST_TYPE_TOKEN;
+import static io.ballerina.flowmodelgenerator.core.model.Property.convertToProperty;
+import static org.apache.commons.lang3.StringUtils.capitalize;
+
 public class SourceBuilder {
 
     private TokenBuilder tokenBuilder;
@@ -77,6 +84,7 @@ public class SourceBuilder {
     public final WorkspaceManager workspaceManager;
     private final Map<Path, List<TextEdit>> textEditsMap;
     private final Set<String> imports;
+    private final List<TypeData> typesToGenerate;
     private final LSClientLogger lsClientLogger;
     private Range defaultRange;
 
@@ -87,6 +95,7 @@ public class SourceBuilder {
     private static final String DATA_MAPPINGS_BAL = "data_mappings.bal";
     private static final String FUNCTIONS_BAL = "functions.bal";
     private static final String BALLERINA_FILE_SUFFIX = ".bal";
+    private static final String TYPES_BAL = "types.bal";
 
     public SourceBuilder(FlowNode flowNode, WorkspaceManager workspaceManager, Path filePath,
                          LSClientLogger lsClientLogger) {
@@ -95,11 +104,15 @@ public class SourceBuilder {
         this.flowNode = flowNode;
         this.workspaceManager = workspaceManager;
         this.imports = new HashSet<>();
+        this.typesToGenerate = new ArrayList<>();
         this.lsClientLogger = lsClientLogger;
 
         Codedata codedata = flowNode.codedata();
         if (codedata == null) {
             this.filePath = filePath;
+        } else if (Boolean.TRUE.equals(codedata.isNew()) && codedata.data() != null
+                && codedata.data().containsKey(Constants.FILE_PATH_KEY)) {
+            this.filePath = resolveFromData(codedata, filePath);
         } else {
             NodeKind nodeKind = codedata.node();
             if (filePath.endsWith(AGENTS_BAL) && (nodeKind == NodeKind.FUNCTION_DEFINITION
@@ -117,15 +130,43 @@ public class SourceBuilder {
         this(flowNode, workspaceManager, filePath, null);
     }
 
+    private Path resolveFromData(Codedata codedata, Path requestFilePath) {
+        Path relativePath = Path.of(codedata.data().get(Constants.FILE_PATH_KEY).toString());
+        Path targetPath = workspaceManager.projectRoot(requestFilePath).resolve(relativePath);
+        try {
+            workspaceManager.loadProject(targetPath);
+            if (codedata.lineRange() != null && !hasDefaultFile(codedata.node())) {
+                defaultRange = CommonUtils.toRange(codedata.lineRange());
+            } else {
+                Document document = FileSystemUtils.getDocument(workspaceManager, targetPath);
+                defaultRange = CommonUtils.toRange(document.syntaxTree().rootNode().lineRange().endLine());
+            }
+        } catch (WorkspaceDocumentException | EventSyncException e) {
+            throw new RuntimeException(e);
+        }
+        return targetPath;
+    }
+
+    private boolean hasDefaultFile(NodeKind node) {
+        return switch (node) {
+            case NEW_CONNECTION, MODEL_PROVIDER, EMBEDDING_PROVIDER, VECTOR_STORE, KNOWLEDGE_BASE,
+                 DATA_LOADER, CHUNKER, CLASS_INIT, DATA_MAPPER_DEFINITION,
+                 FUNCTION_DEFINITION, NP_FUNCTION, NP_FUNCTION_DEFINITION, AUTOMATION,
+                 AGENT, MEMORY, SHORT_TERM_MEMORY_STORE, MCP_TOOL_KIT -> true;
+            default -> false;
+        };
+    }
+
     private Path resolvePath(Path inputPath, NodeKind node, LineRange lineRange, Boolean isNew) {
         if (Boolean.TRUE.equals(isNew) || lineRange == null) {
             String defaultFile = switch (node) {
                 case NEW_CONNECTION, MODEL_PROVIDER, EMBEDDING_PROVIDER, VECTOR_STORE, KNOWLEDGE_BASE,
                      DATA_LOADER, CHUNKER, CLASS_INIT -> CONNECTIONS_BAL;
                 case DATA_MAPPER_DEFINITION -> DATA_MAPPINGS_BAL;
-                case FUNCTION_DEFINITION, NP_FUNCTION, NP_FUNCTION_DEFINITION -> FUNCTIONS_BAL;
+                case FUNCTION_DEFINITION, NP_FUNCTION, NP_FUNCTION_DEFINITION, WORKFLOW, ACTIVITY,
+                     ACTIVITY_CREATION -> FUNCTIONS_BAL;
                 case AUTOMATION -> AUTOMATION_BAL;
-                case AGENT, MEMORY, MEMORY_STORE, MCP_TOOL_KIT -> AGENTS_BAL;
+                case AGENT, MEMORY, SHORT_TERM_MEMORY_STORE, MCP_TOOL_KIT -> AGENTS_BAL;
                 default -> null;
             };
             if (defaultFile == null) {
@@ -179,20 +220,75 @@ public class SourceBuilder {
         Property type = optionalType.get();
         String typeName = type.value().toString();
         if (flowNode.codedata().inferredReturnType() != null) {
-            Optional<Property> inferredParam = flowNode.properties().values().stream()
-                    .filter(property -> property.codedata() != null && property.codedata().kind() != null &&
-                            property.codedata().kind().equals(ParameterData.Kind.PARAM_FOR_TYPE_INFER.name()))
-                    .findFirst();
-            if (inferredParam.isPresent()) {
-                String returnType = flowNode.codedata().inferredReturnType();
-                String inferredType = inferredParam.get().value().toString();
-                String inferredTypeDef = inferredParam.get()
-                        .codedata().originalName();
-                typeName = returnType.replace(inferredTypeDef, inferredType);
-            }
+            typeName = getTypeNameForInferredParam(variable.get(), typeName);
         }
 
         tokenBuilder.expressionWithType(typeName, variable.get()).keyword(SyntaxKind.EQUAL_TOKEN);
+        return this;
+    }
+
+    public String getTypeNameForInferredParam(Property variable, String typeName) {
+        Optional<Property> inferredParam = flowNode.properties().values().stream()
+                .filter(property -> property.codedata() != null && property.codedata().kind() != null &&
+                        property.codedata().kind().equals(ParameterData.Kind.PARAM_FOR_TYPE_INFER.name()))
+                .findFirst();
+        if (inferredParam.isEmpty()) {
+            return typeName;
+        }
+        String inferredType = inferredParam.get().value().toString();
+        String inferredTypeDef = inferredParam.get()
+                .codedata().originalName();
+
+        Property inferredProperty = inferredParam.get();
+        if (inferredProperty.types() != null && !inferredProperty.types().isEmpty() &&
+                inferredProperty.types().getFirst().recordSelectorType() != null) {
+            // Always compute and apply the generated type name so the variable declaration uses
+            // "<Prefix>Type" even when no text-edits are produced (e.g. the type already exists).
+            String typeNamePrefix = capitalize(variable.toSourceCode());
+            inferredType = String.format("%sType", typeNamePrefix);
+
+            RecordSelectorType recordSelectorType = null;
+            try {
+                List<PropertyType> propertyTypes = inferredProperty.valueAsType(PROPERTY_TYPE_LIST_TYPE_TOKEN);
+                if (propertyTypes != null && !propertyTypes.isEmpty()) {
+                    recordSelectorType = propertyTypes.getFirst().recordSelectorType();
+                }
+            } catch (IllegalArgumentException | ClassCastException e) {
+                // The property value is not properly set as a type; skip record selector type generation.
+            }
+            if (recordSelectorType != null) {
+                Path typesFilePath = filePath.resolveSibling("types.bal");
+                Document document = FileSystemUtils.getDocument(workspaceManager, typesFilePath);
+                if (document != null) {
+                    TypesManager typesManager = new TypesManager(document);
+                    List<TextEdit> typeEdits = typesManager.getTextEditsForRecordSelectorTypes(recordSelectorType,
+                            typeNamePrefix, isUpdateRequest());
+                    if (!typeEdits.isEmpty()) {
+                        if (textEditsMap.containsKey(typesFilePath)) {
+                            textEditsMap.get(typesFilePath).addAll(typeEdits);
+                        } else {
+                            textEditsMap.put(typesFilePath, new ArrayList<>(typeEdits));
+                        }
+                    }
+                }
+            }
+        }
+
+        String returnType = flowNode.codedata().inferredReturnType();
+        return returnType.replace(inferredTypeDef, inferredType);
+    }
+
+    private boolean isUpdateRequest() {
+        return flowNode.codedata() != null &&
+                (flowNode.codedata().isNew() == null || !flowNode.codedata().isNew());
+    }
+
+    public SourceBuilder newVariableWithType(String resolvedType) {
+        Optional<Property> variable = getProperty(Property.VARIABLE_KEY);
+        if (variable.isEmpty()) {
+            return this;
+        }
+        tokenBuilder.expressionWithType(resolvedType, variable.get()).keyword(SyntaxKind.EQUAL_TOKEN);
         return this;
     }
 
@@ -275,6 +371,22 @@ public class SourceBuilder {
         }
         imports.add(importSignature);
         return this;
+    }
+
+    /**
+     * Accepts a type model for generation. Simply adds the type to the typesToGenerate list.
+     * Case-specific logic (checking existing types, readonly fields, etc.) should be handled
+     * by the specific builder classes (e.g., WorkflowBuilder).
+     *
+     * @param typeModel The TypeData to generate
+     * @return The type name, or null if typeModel is invalid
+     */
+    public String acceptTypeGeneration(TypeData typeModel) {
+        if (typeModel == null || typeModel.name() == null || typeModel.name().isEmpty()) {
+            return null;
+        }
+        typesToGenerate.add(typeModel);
+        return typeModel.name();
     }
 
     public Optional<String> getExpressionBodyText(String typeName, Map<String, String> imports) {
@@ -474,6 +586,9 @@ public class SourceBuilder {
             boolean optional = prop.optional();
 
             if (kind.equals(ParameterData.Kind.PARAM_FOR_TYPE_INFER.name())) {
+                // If we find a parameter for type inference, we skip it. But we need to mark missedDefaultValue
+                // as true to make the next arguments to be added as named args
+                missedDefaultValue = true;
                 continue;
             }
 
@@ -482,7 +597,7 @@ public class SourceBuilder {
                     if (isPropValueEmpty(prop)) {
                         continue;
                     }
-                    if (hasRestParamValues(prop)) {
+                    if (hasRestArgs(prop)) {
                         tokenBuilder.keyword(SyntaxKind.COMMA_TOKEN);
                         addRestParamValues(prop);
                     }
@@ -491,7 +606,7 @@ public class SourceBuilder {
                     if (isPropValueEmpty(prop)) {
                         continue;
                     }
-                    if (hasRestParamValues(prop)) {
+                    if (hasIncludedRecordRestArgs(prop)) {
                         tokenBuilder.keyword(SyntaxKind.COMMA_TOKEN);
                         addIncludedRecordRestParamValues(prop);
                     }
@@ -524,8 +639,7 @@ public class SourceBuilder {
                     tokenBuilder.keyword(SyntaxKind.COMMA_TOKEN);
                 }
                 if (missedDefaultValue) {
-                    tokenBuilder.name(prop.codedata().originalName()).whiteSpace()
-                            .keyword(SyntaxKind.EQUAL_TOKEN).expression(prop);
+                    tokenBuilder.namedArg(prop);
                 } else {
                     tokenBuilder.param(prop);
                 }
@@ -536,8 +650,7 @@ public class SourceBuilder {
                 if (firstParamAdded) {
                     tokenBuilder.keyword(SyntaxKind.COMMA_TOKEN);
                 }
-                tokenBuilder.name(prop.codedata().originalName())
-                        .whiteSpace().keyword(SyntaxKind.EQUAL_TOKEN).expression(prop);
+                tokenBuilder.namedArg(prop);
             } else if (kind.equals(ParameterData.Kind.REST_PARAMETER.name())) {
                 if (isPropValueEmpty(prop) || ((List<?>) prop.value()).isEmpty()) {
                     continue;
@@ -547,7 +660,7 @@ public class SourceBuilder {
                 }
                 addRestParamValues(prop);
             } else if (kind.equals(ParameterData.Kind.INCLUDED_RECORD_REST.name())) {
-                if (isPropValueEmpty(prop) || ((List<?>) prop.value()).isEmpty()) {
+                if (isPropValueEmpty(prop) || ((Map<?, ?>) prop.value()).isEmpty()) {
                     continue;
                 }
                 if (firstParamAdded) {
@@ -569,8 +682,15 @@ public class SourceBuilder {
         return property.value() == null || (property.optional() && property.value().toString().isEmpty());
     }
 
-    private boolean hasRestParamValues(Property prop) {
+    private boolean hasRestArgs(Property prop) {
         if (prop.value() instanceof List<?> values) {
+            return !values.isEmpty();
+        }
+        return false;
+    }
+
+    private boolean hasIncludedRecordRestArgs(Property prop) {
+        if (prop.value() instanceof Map<?, ?> values) {
             return !values.isEmpty();
         }
         return false;
@@ -579,23 +699,30 @@ public class SourceBuilder {
     private void addRestParamValues(Property prop) {
         if (prop.value() instanceof List<?> values) {
             if (!values.isEmpty()) {
-                List<String> strValues = ((List<?>) prop.value()).stream().map(Object::toString).toList();
+                List<String> strValues = values.stream()
+                        .filter(Map.class::isInstance)
+                        .map(Map.class::cast)
+                        .map(val -> new Property.Builder<>(null)
+                                .value(val.get("value")).build().toSourceCode())
+                        .toList();
                 tokenBuilder.expression(String.join(", ", strValues));
             }
         }
     }
 
     private void addIncludedRecordRestParamValues(Property prop) {
-        if (prop.value() instanceof List<?>) {
-            List<Map> values = (List<Map>) prop.value();
+        if (prop.value() instanceof Map<?, ?> values) {
             if (!values.isEmpty()) {
-                List<String> result = new ArrayList<>();
-                values.forEach(keyValuePair -> {
-                    String key = (String) keyValuePair.keySet().iterator().next();
-                    String value = keyValuePair.values().iterator().next().toString();
-                    result.add(key + " = " + value);
+                List<String> keyValuePairs = new ArrayList<>();
+                values.forEach((keyObj, valueObj) -> {
+                    String key = (String) keyObj;
+                    String propertyValue = convertToProperty(valueObj).toSourceCode();
+                    if (!propertyValue.isEmpty()) {
+                        keyValuePairs.add(key + " = " + propertyValue);
+                    }
                 });
-                tokenBuilder.expression(String.join(", ", result));
+
+                tokenBuilder.expression(String.join(", ", keyValuePairs));
             }
         }
     }
@@ -622,6 +749,15 @@ public class SourceBuilder {
         return this;
     }
 
+    public void addTextEdit(Path filePath, TextEdit edit) {
+        List<TextEdit> textEdits = textEditsMap.get(filePath);
+        if (textEdits == null) {
+            textEdits = new ArrayList<>();
+        }
+        textEdits.add(edit);
+        textEditsMap.put(filePath, textEdits);
+    }
+
     public SourceBuilder comment() {
         String comment = token().skipFormatting().build(SourceKind.STATEMENT);
         tokenBuilder = new TokenBuilder(this);
@@ -639,6 +775,8 @@ public class SourceBuilder {
     public Map<Path, List<TextEdit>> build() {
         // Add the imports if exists
         addImports();
+        // Add the types if exists
+        addTypes();
         return textEditsMap;
     }
 
@@ -718,6 +856,60 @@ public class SourceBuilder {
         }
     }
 
+    private void addTypes() {
+        if (typesToGenerate.isEmpty()) {
+            return;
+        }
+
+        try {
+            this.workspaceManager.loadProject(filePath);
+        } catch (WorkspaceDocumentException | EventSyncException e) {
+            return;
+        }
+        Path parentPath = this.filePath.getParent();
+        if (parentPath == null) {
+            return;
+        }
+        Path filePath = parentPath.resolve(TYPES_BAL);
+        Document document = FileSystemUtils.getDocument(workspaceManager, filePath);
+        if (document == null) {
+            return;
+        }
+        SyntaxTree syntaxTree = document.syntaxTree();
+        ModulePartNode rootNode = syntaxTree.rootNode();
+
+        // Generate text edits for each type at the end of the file
+        Range endOfFileRange = CommonUtils.toRange(rootNode.lineRange().endLine());
+
+        for (TypeData typeData : typesToGenerate) {
+            SourceCodeGenerator sourceCodeGenerator = new SourceCodeGenerator();
+            String codeSnippet = sourceCodeGenerator.generateCodeSnippetForType(typeData);
+
+            if (codeSnippet != null && !codeSnippet.isEmpty()) {
+                // Add a newline before the type definition
+                String typeDefinition = System.lineSeparator() + codeSnippet;
+
+                List<TextEdit> textEdits = textEditsMap.get(filePath);
+                if (textEdits == null) {
+                    textEdits = new ArrayList<>();
+                }
+                textEdits.add(new TextEdit(endOfFileRange, typeDefinition));
+                textEditsMap.put(filePath, textEdits);
+
+                // Add imports from the type generation
+                Map<String, String> typeImports = sourceCodeGenerator.getImports();
+                if (typeImports != null) {
+                    typeImports.forEach((key, value) -> {
+                        String[] parts = value.split("/");
+                        if (parts.length > 1) {
+                            acceptImport(parts[0], parts[1].split(":")[0]);
+                        }
+                    });
+                }
+            }
+        }
+    }
+
     public static class TokenBuilder extends FacetedBuilder<SourceBuilder> {
 
         private boolean skipFormatting;
@@ -768,11 +960,14 @@ public class SourceBuilder {
         }
 
         public TokenBuilder param(Property property) {
-            String source = property.toSourceCode();
-            if (source.startsWith("$")) {
-                source = "'" + source.substring(1);
-            }
-            sb.append(source);
+            sb.append(CommonUtils.escapeIdentifierFromFormField(property.toSourceCode()));
+            return this;
+        }
+
+        public TokenBuilder namedArg(Property property) {
+            sb.append(CommonUtils.escapeIdentifierFromFormField(property.codedata().originalName())).append(WHITE_SPACE)
+                    .append(SyntaxKind.EQUAL_TOKEN.stringValue()).append(WHITE_SPACE)
+                    .append(property.toSourceCode());
             return this;
         }
 
@@ -788,11 +983,6 @@ public class SourceBuilder {
 
         public TokenBuilder expressionWithType(String type, Property variable) {
             sb.append(type).append(WHITE_SPACE).append(variable.toSourceCode()).append(WHITE_SPACE);
-            return this;
-        }
-
-        public TokenBuilder expressionWithType(Property property) {
-            sb.append(property.valueType()).append(WHITE_SPACE).append(property.toSourceCode());
             return this;
         }
 
@@ -843,6 +1033,11 @@ public class SourceBuilder {
             return this;
         }
 
+        public TokenBuilder newLine() {
+            sb.append(System.lineSeparator());
+            return this;
+        }
+
         public TokenBuilder skipFormatting() {
             this.skipFormatting = true;
             return this;
@@ -853,9 +1048,7 @@ public class SourceBuilder {
                     .append(WHITE_SPACE);
 
             appendDescription(description.split(System.lineSeparator()));
-            if (!sb.toString().endsWith(System.lineSeparator())) {
-                sb.append(System.lineSeparator());
-            }
+            sb.append(System.lineSeparator());
             return this;
         }
 
@@ -871,9 +1064,7 @@ public class SourceBuilder {
                         .append(WHITE_SPACE);
 
                 appendDescription(description.split(System.lineSeparator()));
-                if (!description.endsWith(System.lineSeparator())) {
-                    sb.append(System.lineSeparator());
-                }
+                sb.append(System.lineSeparator());
             }
             return this;
         }
@@ -890,9 +1081,7 @@ public class SourceBuilder {
                         .append(WHITE_SPACE);
 
                 appendDescription(returnDescription.split(System.lineSeparator()));
-                if (!returnDescription.endsWith(System.lineSeparator())) {
-                    sb.append(System.lineSeparator());
-                }
+                sb.append(System.lineSeparator());
             }
             return this;
         }

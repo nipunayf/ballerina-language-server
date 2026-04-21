@@ -25,6 +25,7 @@ import io.ballerina.flowmodelgenerator.core.expressioneditor.ExpressionEditorCon
 import io.ballerina.modelgenerator.commons.CommonUtils;
 import io.ballerina.tools.diagnostics.DiagnosticSeverity;
 import io.ballerina.tools.text.LineRange;
+import org.ballerinalang.util.diagnostic.DiagnosticErrorCode;
 import org.eclipse.lsp4j.Diagnostic;
 
 import java.util.Optional;
@@ -39,6 +40,9 @@ import java.util.stream.Collectors;
  */
 public class ExpressionDiagnosticsRequest extends DiagnosticsRequest {
 
+    private static final DiagnosticErrorCode CANNOT_INFER_OBJECT_TYPE_CODE =
+            DiagnosticErrorCode.CANNOT_INFER_OBJECT_TYPE_FROM_LHS;
+
     public ExpressionDiagnosticsRequest(ExpressionEditorContext context) {
         super(context);
     }
@@ -50,11 +54,13 @@ public class ExpressionDiagnosticsRequest extends DiagnosticsRequest {
 
     @Override
     protected Set<Diagnostic> getSemanticDiagnostics(ExpressionEditorContext context) {
-        LineRange lineRange = context.generateStatement();
+        LineRange lineRange =
+                context.generateStatement("any|error __reserved__ = ", ";%s".formatted(System.lineSeparator()));
         Optional<SemanticModel> semanticModel =
                 context.workspaceManager().semanticModel(context.filePath());
         return semanticModel.map(model -> model.diagnostics(lineRange).stream()
-                .filter(diagnostic -> diagnostic.diagnosticInfo().severity() == DiagnosticSeverity.ERROR)
+                .filter(diagnostic -> diagnostic.diagnosticInfo().severity() == DiagnosticSeverity.ERROR
+                        && !CANNOT_INFER_OBJECT_TYPE_CODE.diagnosticId().equals(diagnostic.diagnosticInfo().code()))
                 .map(CommonUtils::transformBallerinaDiagnostic)
                 .collect(Collectors.toSet())).orElseGet(Set::of);
     }

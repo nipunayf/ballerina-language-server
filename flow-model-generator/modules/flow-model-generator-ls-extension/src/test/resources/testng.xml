@@ -35,15 +35,12 @@ under the License.
             <class name="io.ballerina.flowmodelgenerator.extension.ExpressionEditorSignatureTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.ExpressionEditorTypesTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.ExpressionEditorDiagnosticsTest"/>
-            <class name="io.ballerina.flowmodelgenerator.extension.ServiceGeneratorTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.VisibleVariableTypesTest"/>
-            <class name="io.ballerina.flowmodelgenerator.extension.ConfigVariablesTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.ConfigVariablesV2Test"/>
             <class name="io.ballerina.flowmodelgenerator.extension.ConfigVariablesV2TemplateTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.ConfigVariablesV2UpdateTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.ConfigVariablesV2DeleteTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.ModuleNodesTest"/>
-            <class name="io.ballerina.flowmodelgenerator.extension.ConfigVariablesUpdateTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.ErrorHandlerGeneratorTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.GetEnclosedFunctionDefTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.FunctionCallTemplateTest"/>
@@ -53,6 +50,7 @@ under the License.
             <class name="io.ballerina.flowmodelgenerator.extension.DataMappingReferenceModelTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.DataMappingSourceTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.DataMappingQueryConvertTest"/>
+            <class name="io.ballerina.flowmodelgenerator.extension.DataMapperConvertExpressionTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.DataMappingVisualizeTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.DataMappingAddElementTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.DataMappingAddClausesTest"/>
@@ -64,6 +62,13 @@ under the License.
             <class name="io.ballerina.flowmodelgenerator.extension.DataMappingCustomFunctionTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.DataMappingTransformationFunctionTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.DataMappingSubMappingDeleteTest"/>
+            <class name="io.ballerina.flowmodelgenerator.extension.DataMappingTargetFieldPositionTest"/>
+            <class name="io.ballerina.flowmodelgenerator.extension.DataMappingCompletionTest"/>
+            <class name="io.ballerina.flowmodelgenerator.extension.DataMappingClausePositionTest"/>
+            <class name="io.ballerina.flowmodelgenerator.extension.DataMappingClauseDiagnosticsTest"/>
+            <class name="io.ballerina.flowmodelgenerator.extension.DataMappingClauseValidationTest"/>
+            <class name="io.ballerina.flowmodelgenerator.extension.DataMappingConvertTypeTest"/>
+            <class name="io.ballerina.flowmodelgenerator.extension.DataMappingResolveTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.OpenApiClientGeneratorTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.OpenApiClientDeleteTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.JsonConverterTest"/>
@@ -78,6 +83,8 @@ under the License.
             <class name="io.ballerina.flowmodelgenerator.extension.ServiceFieldNodesTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.DataMappingDeleteTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.ExpressionEditorSemanticTokensTest"/>
+            <class name="io.ballerina.flowmodelgenerator.extension.workflowmanager.WorkflowManagerTest"/>
+            <class name="io.ballerina.flowmodelgenerator.extension.workflowmanager.WorkflowNodeTemplateTest"/>
             <!--types manager-->
             <class name="io.ballerina.flowmodelgenerator.extension.typesmanager.CreateAndUpdateTypeTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.typesmanager.CreateGraphqlClassTypeTest"/>
@@ -90,6 +97,7 @@ under the License.
             <class name="io.ballerina.flowmodelgenerator.extension.typesmanager.RecordValueGenTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.typesmanager.UpdateRecordConfigTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.typesmanager.CreateMultipleTypesTest"/>
+            <class name="io.ballerina.flowmodelgenerator.extension.typesmanager.GetTypeOfExpressionTest"/>
 
             <!--agents manager-->
             <class name="io.ballerina.flowmodelgenerator.extension.agentsmanager.NodeTemplateTest"/>
@@ -108,6 +116,11 @@ under the License.
 
             <class name="io.ballerina.flowmodelgenerator.extension.CopilotLibraryListTest"/>
             <class name="io.ballerina.flowmodelgenerator.extension.CopilotLibraryFilterTest"/>
+            <class name="io.ballerina.flowmodelgenerator.extension.GetFilteredLibrariesFromSemanticModel"/>
+            <class name="io.ballerina.flowmodelgenerator.extension.GetLibrariesListFromSearchIndex"/>
+            <class name="io.ballerina.flowmodelgenerator.extension.InstructionLoaderTest"/>
+            <class name="io.ballerina.flowmodelgenerator.extension.CopilotInstructionAugmentationTest"/>
+            <class name="io.ballerina.flowmodelgenerator.extension.CopilotLibraryExclusionTest"/>
         </classes>
 
         <packages>

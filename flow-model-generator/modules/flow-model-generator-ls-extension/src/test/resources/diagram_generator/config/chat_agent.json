@@ -49,7 +49,7 @@
         "id": "45977",
         "metadata": {
           "label": "run",
-          "description": "Executes the agent for a given user query.\n",
+          "description": "Executes the agent for a given user query.",
           "icon": "https://bcentral-packageicons.azureedge.net/images/ballerinax_ai_1.0.1.png",
           "data": {
             "tools": [],
@@ -67,7 +67,7 @@
             },
             "model": {
               "name": "_WorkflowAgentModel",
-              "path": "https://bcentral-packageicons.azureedge.net/images/._._0.0.0.png",
+              "path": "https://bcentral-packageicons.azureedge.net/images/ballerinax_ai_1.0.1.png",
               "type": "OpenAiProvider"
             }
           }
@@ -127,8 +127,27 @@
               "label": "System Prompt",
               "description": "The system prompt assigned to the agent"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "ai:SystemPrompt",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "ai:SystemPrompt",
+                "typeMembers": [
+                  {
+                    "type": "SystemPrompt",
+                    "packageInfo": "ballerinax:ai:1.0.1",
+                    "packageName": "ai",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "ai:SystemPrompt",
+                "selected": false
+              }
+            ],
             "value": "{role: \"\", instructions: string ``}",
             "placeholder": "{role: \"\", instructions: \"\"}",
             "optional": false,
@@ -136,7 +155,8 @@
             "advanced": false,
             "hidden": true,
             "codedata": {
-              "kind": "INCLUDED_FIELD"
+              "kind": "INCLUDED_FIELD",
+              "originalName": "systemPrompt"
             },
             "defaultValue": "{role: \"\", instructions: \"\"}"
           },
@@ -145,8 +165,13 @@
               "label": "Model",
               "description": "The model used by the agent"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "ai:ModelProvider",
+            "types": [
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "ai:ModelProvider",
+                "selected": false
+              }
+            ],
             "value": "_WorkflowAgentModel",
             "placeholder": "object {}",
             "optional": false,
@@ -154,7 +179,8 @@
             "advanced": false,
             "hidden": true,
             "codedata": {
-              "kind": "INCLUDED_FIELD"
+              "kind": "INCLUDED_FIELD",
+              "originalName": "model"
             },
             "defaultValue": "object {}"
           },
@@ -163,8 +189,45 @@
               "label": "Tools",
               "description": "The tools available for the agent"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "(ai:BaseToolKit|ai:ToolConfig|ai:FunctionTool)[]",
+            "types": [
+              {
+                "fieldType": "REPEATABLE_LIST",
+                "ballerinaType": "(ai:BaseToolKit|ai:ToolConfig|ai:FunctionTool)[]",
+                "template": {
+                  "types": [
+                    {
+                      "fieldType": "RECORD_MAP_EXPRESSION",
+                      "ballerinaType": "ai:ToolConfig",
+                      "typeMembers": [
+                        {
+                          "type": "ToolConfig",
+                          "packageInfo": "ballerinax:ai:1.0.1",
+                          "packageName": "ai",
+                          "kind": "RECORD_TYPE",
+                          "selected": false
+                        }
+                      ],
+                      "selected": false
+                    },
+                    {
+                      "fieldType": "EXPRESSION",
+                      "ballerinaType": "ai:BaseToolKit|ai:ToolConfig|ai:FunctionTool",
+                      "selected": false
+                    }
+                  ],
+                  "optional": false,
+                  "editable": false,
+                  "advanced": false,
+                  "hidden": false
+                },
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "(ai:BaseToolKit|ai:ToolConfig|ai:FunctionTool)[]",
+                "selected": false
+              }
+            ],
             "value": "[]",
             "placeholder": "[]",
             "optional": true,
@@ -172,7 +235,8 @@
             "advanced": true,
             "hidden": true,
             "codedata": {
-              "kind": "INCLUDED_FIELD"
+              "kind": "INCLUDED_FIELD",
+              "originalName": "tools"
             },
             "defaultValue": "[]"
           },
@@ -181,49 +245,91 @@
               "label": "Agent Type",
               "description": "Type of the agent"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "ai:AgentType",
+            "types": [
+              {
+                "fieldType": "SINGLE_SELECT",
+                "options": [
+                  {
+                    "label": "FUNCTION_CALL_AGENT",
+                    "value": "\"FUNCTION_CALL_AGENT\""
+                  },
+                  {
+                    "label": "REACT_AGENT",
+                    "value": "\"REACT_AGENT\""
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "ai:AgentType",
+                "selected": false
+              }
+            ],
             "placeholder": "\"FUNCTION_CALL_AGENT\"",
             "optional": true,
             "editable": true,
             "advanced": true,
             "hidden": false,
             "codedata": {
-              "kind": "INCLUDED_FIELD"
+              "kind": "INCLUDED_FIELD",
+              "originalName": "agentType"
             },
-            "defaultValue": "\"FUNCTION_CALL_AGENT\""
+            "defaultValue": "FUNCTION_CALL_AGENT"
           },
           "maxIter": {
             "metadata": {
               "label": "Maximum Iterations",
               "description": "The maximum number of iterations the agent performs to complete the task"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "int",
+            "types": [
+              {
+                "fieldType": "NUMBER",
+                "ballerinaType": "int",
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "int",
+                "selected": false
+              }
+            ],
             "placeholder": "0",
             "optional": true,
             "editable": true,
             "advanced": true,
             "hidden": false,
             "codedata": {
-              "kind": "INCLUDED_FIELD"
+              "kind": "INCLUDED_FIELD",
+              "originalName": "maxIter"
             },
-            "defaultValue": "0"
+            "defaultValue": "5"
           },
           "verbose": {
             "metadata": {
               "label": "Verbose",
               "description": "Specifies whether verbose logging is enabled"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "boolean",
+            "types": [
+              {
+                "fieldType": "FLAG",
+                "ballerinaType": "boolean",
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "boolean",
+                "selected": false
+              }
+            ],
             "placeholder": "false",
             "optional": true,
             "editable": true,
             "advanced": true,
             "hidden": false,
             "codedata": {
-              "kind": "INCLUDED_FIELD"
+              "kind": "INCLUDED_FIELD",
+              "originalName": "verbose"
             },
             "defaultValue": "false"
           },
@@ -232,24 +338,35 @@
               "label": "Memory",
               "description": "The memory used by the agent to store and manage conversation history"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "ai:Memory|()",
+            "types": [
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "ai:Memory?",
+                "selected": false
+              }
+            ],
             "placeholder": "()",
             "optional": true,
             "editable": true,
             "advanced": true,
             "hidden": true,
             "codedata": {
-              "kind": "INCLUDED_FIELD"
+              "kind": "INCLUDED_FIELD",
+              "originalName": "memory"
             },
-            "defaultValue": "()"
+            "defaultValue": "new MessageWindowChatMemory()"
           },
           "type": {
             "metadata": {
               "label": "Variable Type",
               "description": "Type of the variable"
             },
-            "valueType": "TYPE",
+            "types": [
+              {
+                "fieldType": "TYPE",
+                "selected": true
+              }
+            ],
             "value": "string",
             "placeholder": "var",
             "optional": false,
@@ -263,7 +380,12 @@
               "label": "Variable Name",
               "description": "Name of the variable"
             },
-            "valueType": "IDENTIFIER",
+            "types": [
+              {
+                "fieldType": "IDENTIFIER",
+                "selected": true
+              }
+            ],
             "value": "stringResult",
             "optional": false,
             "editable": false,
@@ -288,7 +410,12 @@
               "label": "Check Error",
               "description": "Trigger error flow"
             },
-            "valueType": "FLAG",
+            "types": [
+              {
+                "fieldType": "FLAG",
+                "selected": true
+              }
+            ],
             "value": true,
             "optional": false,
             "editable": true,
@@ -300,22 +427,35 @@
               "label": "Connection Scope",
               "description": "Scope of the connection, Global or Local"
             },
-            "valueType": "ENUM",
+            "types": [
+              {
+                "fieldType": "ENUM",
+                "selected": true
+              }
+            ],
             "value": "Global",
             "optional": false,
             "editable": true,
             "advanced": true,
-            "hidden": true,
-            "codedata": {
-              "kind": ""
-            }
+            "hidden": true
           },
           "role": {
             "metadata": {
               "label": "Role",
               "description": "Define the agent's primary function"
             },
-            "valueType": "STRING",
+            "types": [
+              {
+                "fieldType": "PROMPT",
+                "ballerinaType": "string",
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "string",
+                "selected": true
+              }
+            ],
             "value": "\"\"",
             "placeholder": "e.g., Customer Support Assistant, Sales Advisor, Data Analyst",
             "optional": true,
@@ -332,7 +472,18 @@
               "label": "Instructions",
               "description": "Detailed instructions for the agent"
             },
-            "valueType": "STRING",
+            "types": [
+              {
+                "fieldType": "PROMPT",
+                "ballerinaType": "string",
+                "selected": true
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "string",
+                "selected": false
+              }
+            ],
             "value": "",
             "placeholder": "e.g., You are a friendly assistant. Your goal is to...",
             "optional": true,
@@ -347,9 +498,17 @@
           "connection": {
             "metadata": {
               "label": "Connection",
-              "description": "Connection to use"
+              "description": "Connection to use",
+              "data": {
+                "connectorType": "Default"
+              }
             },
-            "valueType": "EXPRESSION",
+            "types": [
+              {
+                "fieldType": "EXPRESSION",
+                "selected": true
+              }
+            ],
             "value": "_WorkflowAgentAgent",
             "optional": false,
             "editable": false,
@@ -361,8 +520,18 @@
               "label": "Query",
               "description": "The natural language input provided to the agent"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "string",
+            "types": [
+              {
+                "fieldType": "TEXT",
+                "ballerinaType": "string",
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "string",
+                "selected": true
+              }
+            ],
             "value": "request.message",
             "placeholder": "\"\"",
             "optional": false,
@@ -372,24 +541,25 @@
             "codedata": {
               "kind": "REQUIRED",
               "originalName": "query"
-            },
-            "typeMembers": [
-              {
-                "type": "string",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": true
-              }
-            ]
+            }
           },
           "sessionId": {
             "metadata": {
               "label": "Session ID",
               "description": "The ID associated with the agent memory"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "string",
+            "types": [
+              {
+                "fieldType": "TEXT",
+                "ballerinaType": "string",
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "string",
+                "selected": true
+              }
+            ],
             "value": "request.sessionId",
             "placeholder": "\"\"",
             "optional": true,
@@ -400,16 +570,7 @@
               "kind": "DEFAULTABLE",
               "originalName": "sessionId"
             },
-            "typeMembers": [
-              {
-                "type": "string",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": true
-              }
-            ],
-            "defaultValue": "\"\""
+            "defaultValue": "DEFAULT_SESSION_ID"
           }
         },
         "flags": 1
@@ -442,9 +603,14 @@
               "label": "Expression",
               "description": "Return value"
             },
-            "valueType": "ACTION_OR_EXPRESSION",
+            "types": [
+              {
+                "fieldType": "ACTION_OR_EXPRESSION",
+                "selected": true
+              }
+            ],
             "value": "{message: stringResult}",
-            "optional": false,
+            "optional": true,
             "editable": true,
             "advanced": false,
             "hidden": false
@@ -487,8 +653,27 @@
               "label": "System Prompt",
               "description": "The system prompt assigned to the agent"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "ai:SystemPrompt",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "ai:SystemPrompt",
+                "typeMembers": [
+                  {
+                    "type": "SystemPrompt",
+                    "packageInfo": "ballerinax:ai:1.0.1",
+                    "packageName": "ai",
+                    "kind": "RECORD_TYPE",
+                    "selected": true
+                  }
+                ],
+                "selected": true
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "ai:SystemPrompt",
+                "selected": false
+              }
+            ],
             "value": "{role: \"\", instructions: string ``}",
             "placeholder": "{role: \"\", instructions: \"\"}",
             "optional": false,
@@ -499,15 +684,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "systemPrompt"
             },
-            "typeMembers": [
-              {
-                "type": "SystemPrompt",
-                "packageInfo": "ballerinax:ai:1.0.1",
-                "packageName": "ai",
-                "kind": "RECORD_TYPE",
-                "selected": true
-              }
-            ],
             "defaultValue": "{role: \"\", instructions: \"\"}"
           },
           "model": {
@@ -515,8 +691,13 @@
               "label": "Model",
               "description": "The model used by the agent"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "ai:ModelProvider",
+            "types": [
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "ai:ModelProvider",
+                "selected": true
+              }
+            ],
             "value": "_WorkflowAgentModel",
             "placeholder": "object {}",
             "optional": false,
@@ -527,15 +708,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "model"
             },
-            "typeMembers": [
-              {
-                "type": "ModelProvider",
-                "packageInfo": "ballerinax:ai:1.0.1",
-                "packageName": "ai",
-                "kind": "OBJECT_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "object {}"
           },
           "tools": {
@@ -543,9 +715,46 @@
               "label": "Tools",
               "description": "The tools available for the agent"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "(ai:BaseToolKit|ai:ToolConfig|ai:FunctionTool)[]",
-            "value": "[]",
+            "types": [
+              {
+                "fieldType": "REPEATABLE_LIST",
+                "ballerinaType": "(ai:BaseToolKit|ai:ToolConfig|ai:FunctionTool)[]",
+                "template": {
+                  "types": [
+                    {
+                      "fieldType": "RECORD_MAP_EXPRESSION",
+                      "ballerinaType": "ai:ToolConfig",
+                      "typeMembers": [
+                        {
+                          "type": "ToolConfig",
+                          "packageInfo": "ballerinax:ai:1.0.1",
+                          "packageName": "ai",
+                          "kind": "RECORD_TYPE",
+                          "selected": false
+                        }
+                      ],
+                      "selected": false
+                    },
+                    {
+                      "fieldType": "EXPRESSION",
+                      "ballerinaType": "ai:BaseToolKit|ai:ToolConfig|ai:FunctionTool",
+                      "selected": false
+                    }
+                  ],
+                  "optional": false,
+                  "editable": false,
+                  "advanced": false,
+                  "hidden": false
+                },
+                "selected": true
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "(ai:BaseToolKit|ai:ToolConfig|ai:FunctionTool)[]",
+                "selected": false
+              }
+            ],
+            "value": [],
             "placeholder": "[]",
             "optional": true,
             "editable": true,
@@ -555,15 +764,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "tools"
             },
-            "typeMembers": [
-              {
-                "type": "BaseToolKit|ai",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "ARRAY_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "[]"
           },
           "agentType": {
@@ -571,8 +771,27 @@
               "label": "Agent Type",
               "description": "Type of the agent"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "ai:AgentType",
+            "types": [
+              {
+                "fieldType": "SINGLE_SELECT",
+                "options": [
+                  {
+                    "label": "FUNCTION_CALL_AGENT",
+                    "value": "\"FUNCTION_CALL_AGENT\""
+                  },
+                  {
+                    "label": "REACT_AGENT",
+                    "value": "\"REACT_AGENT\""
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "ai:AgentType",
+                "selected": false
+              }
+            ],
             "placeholder": "\"FUNCTION_CALL_AGENT\"",
             "optional": true,
             "editable": true,
@@ -582,24 +801,25 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "agentType"
             },
-            "typeMembers": [
-              {
-                "type": "AgentType",
-                "packageInfo": "ballerinax:ai:1.0.1",
-                "packageName": "ai",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              }
-            ],
-            "defaultValue": "\"FUNCTION_CALL_AGENT\""
+            "defaultValue": "FUNCTION_CALL_AGENT"
           },
           "maxIter": {
             "metadata": {
               "label": "Maximum Iterations",
               "description": "The maximum number of iterations the agent performs to complete the task"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "int",
+            "types": [
+              {
+                "fieldType": "NUMBER",
+                "ballerinaType": "int",
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "int",
+                "selected": false
+              }
+            ],
             "placeholder": "0",
             "optional": true,
             "editable": true,
@@ -609,24 +829,25 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "maxIter"
             },
-            "typeMembers": [
-              {
-                "type": "int",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              }
-            ],
-            "defaultValue": "0"
+            "defaultValue": "5"
           },
           "verbose": {
             "metadata": {
               "label": "Verbose",
               "description": "Specifies whether verbose logging is enabled"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "boolean",
+            "types": [
+              {
+                "fieldType": "FLAG",
+                "ballerinaType": "boolean",
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "boolean",
+                "selected": false
+              }
+            ],
             "placeholder": "false",
             "optional": true,
             "editable": true,
@@ -636,15 +857,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "verbose"
             },
-            "typeMembers": [
-              {
-                "type": "boolean",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "false"
           },
           "memory": {
@@ -652,8 +864,13 @@
               "label": "Memory",
               "description": "The memory used by the agent to store and manage conversation history"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "ai:Memory|()",
+            "types": [
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "ai:Memory?",
+                "selected": false
+              }
+            ],
             "placeholder": "()",
             "optional": true,
             "editable": true,
@@ -663,30 +880,19 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "memory"
             },
-            "typeMembers": [
-              {
-                "type": "Memory",
-                "packageInfo": "ballerinax:ai:1.0.1",
-                "packageName": "ai",
-                "kind": "OBJECT_TYPE",
-                "selected": false
-              },
-              {
-                "type": "()",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              }
-            ],
-            "defaultValue": "()"
+            "defaultValue": "new MessageWindowChatMemory()"
           },
           "checkError": {
             "metadata": {
               "label": "Check Error",
               "description": "Terminate on error"
             },
-            "valueType": "FLAG",
+            "types": [
+              {
+                "fieldType": "FLAG",
+                "selected": true
+              }
+            ],
             "value": true,
             "optional": false,
             "editable": false,
@@ -698,7 +904,12 @@
               "label": "Connection Scope",
               "description": "Scope of the connection, Global or Local"
             },
-            "valueType": "ENUM",
+            "types": [
+              {
+                "fieldType": "ENUM",
+                "selected": true
+              }
+            ],
             "value": "Global",
             "optional": false,
             "editable": true,
@@ -710,7 +921,12 @@
               "label": "Variable Name",
               "description": "Name of the variable"
             },
-            "valueType": "IDENTIFIER",
+            "types": [
+              {
+                "fieldType": "IDENTIFIER",
+                "selected": true
+              }
+            ],
             "value": "_WorkflowAgentAgent",
             "optional": false,
             "editable": false,
@@ -735,7 +951,12 @@
               "label": "Variable Type",
               "description": "Type of the variable"
             },
-            "valueType": "TYPE",
+            "types": [
+              {
+                "fieldType": "TYPE",
+                "selected": true
+              }
+            ],
             "value": "ai:Agent",
             "placeholder": "var",
             "optional": false,
@@ -780,8 +1001,18 @@
               "label": "API Key",
               "description": "The OpenAI API key"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "string",
+            "types": [
+              {
+                "fieldType": "TEXT",
+                "ballerinaType": "string",
+                "selected": true
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "string",
+                "selected": false
+              }
+            ],
             "value": "\"\"",
             "placeholder": "\"\"",
             "optional": false,
@@ -791,53 +1022,141 @@
             "codedata": {
               "kind": "REQUIRED",
               "originalName": "apiKey"
-            },
-            "typeMembers": [
-              {
-                "type": "string",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": true
-              }
-            ]
+            }
           },
           "modelType": {
             "metadata": {
               "label": "Model Type",
               "description": "The OpenAI model name"
             },
-            "valueType": "SINGLE_SELECT",
-            "valueTypeConstraint": [
-              "\"gpt-3.5-turbo-16k-0613\"",
-              "\"gpt-3.5-turbo-0125\"",
-              "\"gpt-3.5-turbo-1106\"",
-              "\"gpt-3.5-turbo-0613\"",
-              "\"gpt-3.5-turbo-0301\"",
-              "\"gpt-3.5-turbo-16k\"",
-              "\"gpt-3.5-turbo\"",
-              "\"gpt-4-32k-0613\"",
-              "\"gpt-4-32k-0314\"",
-              "\"gpt-4-32k\"",
-              "\"gpt-4-0613\"",
-              "\"gpt-4-0314\"",
-              "\"gpt-4\"",
-              "\"gpt-4-vision-preview\"",
-              "\"gpt-4-1106-preview\"",
-              "\"gpt-4-turbo-preview\"",
-              "\"gpt-4-0125-preview\"",
-              "\"gpt-4-turbo-2024-04-09\"",
-              "\"gpt-4-turbo\"",
-              "\"gpt-4o-mini-2024-07-18\"",
-              "\"gpt-4o-mini\"",
-              "\"gpt-4o-2024-05-13\"",
-              "\"gpt-4o-2024-08-06\"",
-              "\"gpt-4o-2024-11-20\"",
-              "\"gpt-4o\"",
-              "\"o1-2024-12-17\"",
-              "\"o1\"",
-              "\"o3-mini-2025-01-31\"",
-              "\"o3-mini\""
+            "types": [
+              {
+                "fieldType": "SINGLE_SELECT",
+                "options": [
+                  {
+                    "label": "gpt-3.5-turbo-16k-0613",
+                    "value": "\"gpt-3.5-turbo-16k-0613\""
+                  },
+                  {
+                    "label": "gpt-3.5-turbo-0125",
+                    "value": "\"gpt-3.5-turbo-0125\""
+                  },
+                  {
+                    "label": "gpt-3.5-turbo-1106",
+                    "value": "\"gpt-3.5-turbo-1106\""
+                  },
+                  {
+                    "label": "gpt-3.5-turbo-0613",
+                    "value": "\"gpt-3.5-turbo-0613\""
+                  },
+                  {
+                    "label": "gpt-3.5-turbo-0301",
+                    "value": "\"gpt-3.5-turbo-0301\""
+                  },
+                  {
+                    "label": "gpt-3.5-turbo-16k",
+                    "value": "\"gpt-3.5-turbo-16k\""
+                  },
+                  {
+                    "label": "gpt-3.5-turbo",
+                    "value": "\"gpt-3.5-turbo\""
+                  },
+                  {
+                    "label": "gpt-4-32k-0613",
+                    "value": "\"gpt-4-32k-0613\""
+                  },
+                  {
+                    "label": "gpt-4-32k-0314",
+                    "value": "\"gpt-4-32k-0314\""
+                  },
+                  {
+                    "label": "gpt-4-32k",
+                    "value": "\"gpt-4-32k\""
+                  },
+                  {
+                    "label": "gpt-4-0613",
+                    "value": "\"gpt-4-0613\""
+                  },
+                  {
+                    "label": "gpt-4-0314",
+                    "value": "\"gpt-4-0314\""
+                  },
+                  {
+                    "label": "gpt-4",
+                    "value": "\"gpt-4\""
+                  },
+                  {
+                    "label": "gpt-4-vision-preview",
+                    "value": "\"gpt-4-vision-preview\""
+                  },
+                  {
+                    "label": "gpt-4-1106-preview",
+                    "value": "\"gpt-4-1106-preview\""
+                  },
+                  {
+                    "label": "gpt-4-turbo-preview",
+                    "value": "\"gpt-4-turbo-preview\""
+                  },
+                  {
+                    "label": "gpt-4-0125-preview",
+                    "value": "\"gpt-4-0125-preview\""
+                  },
+                  {
+                    "label": "gpt-4-turbo-2024-04-09",
+                    "value": "\"gpt-4-turbo-2024-04-09\""
+                  },
+                  {
+                    "label": "gpt-4-turbo",
+                    "value": "\"gpt-4-turbo\""
+                  },
+                  {
+                    "label": "gpt-4o-mini-2024-07-18",
+                    "value": "\"gpt-4o-mini-2024-07-18\""
+                  },
+                  {
+                    "label": "gpt-4o-mini",
+                    "value": "\"gpt-4o-mini\""
+                  },
+                  {
+                    "label": "gpt-4o-2024-05-13",
+                    "value": "\"gpt-4o-2024-05-13\""
+                  },
+                  {
+                    "label": "gpt-4o-2024-08-06",
+                    "value": "\"gpt-4o-2024-08-06\""
+                  },
+                  {
+                    "label": "gpt-4o-2024-11-20",
+                    "value": "\"gpt-4o-2024-11-20\""
+                  },
+                  {
+                    "label": "gpt-4o",
+                    "value": "\"gpt-4o\""
+                  },
+                  {
+                    "label": "o1-2024-12-17",
+                    "value": "\"o1-2024-12-17\""
+                  },
+                  {
+                    "label": "o1",
+                    "value": "\"o1\""
+                  },
+                  {
+                    "label": "o3-mini-2025-01-31",
+                    "value": "\"o3-mini-2025-01-31\""
+                  },
+                  {
+                    "label": "o3-mini",
+                    "value": "\"o3-mini\""
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "ai:OPEN_AI_MODEL_NAMES",
+                "selected": true
+              }
             ],
             "value": "ai:GPT_4O",
             "placeholder": "\"gpt-3.5-turbo-16k-0613\"",
@@ -848,24 +1167,25 @@
             "codedata": {
               "kind": "REQUIRED",
               "originalName": "modelType"
-            },
-            "typeMembers": [
-              {
-                "type": "OPEN_AI_MODEL_NAMES",
-                "packageInfo": "ballerinax:ai:1.0.1",
-                "packageName": "ai",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              }
-            ]
+            }
           },
           "serviceUrl": {
             "metadata": {
               "label": "Service URL",
               "description": "The base URL of OpenAI API endpoint"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "string",
+            "types": [
+              {
+                "fieldType": "TEXT",
+                "ballerinaType": "string",
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "string",
+                "selected": false
+              }
+            ],
             "placeholder": "\"\"",
             "optional": true,
             "editable": true,
@@ -875,24 +1195,25 @@
               "kind": "DEFAULTABLE",
               "originalName": "serviceUrl"
             },
-            "typeMembers": [
-              {
-                "type": "string",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              }
-            ],
-            "defaultValue": "\"\""
+            "defaultValue": "OPENAI_SERVICE_URL"
           },
           "maxTokens": {
             "metadata": {
               "label": "Maximum Tokens",
               "description": "The upper limit for the number of tokens in the response generated by the model"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "int",
+            "types": [
+              {
+                "fieldType": "NUMBER",
+                "ballerinaType": "int",
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "int",
+                "selected": false
+              }
+            ],
             "placeholder": "0",
             "optional": true,
             "editable": true,
@@ -902,24 +1223,25 @@
               "kind": "DEFAULTABLE",
               "originalName": "maxTokens"
             },
-            "typeMembers": [
-              {
-                "type": "int",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              }
-            ],
-            "defaultValue": "0"
+            "defaultValue": "DEFAULT_MAX_TOKEN_COUNT"
           },
           "temperature": {
             "metadata": {
               "label": "Temperature",
               "description": "The temperature for controlling randomness in the model's output  "
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "decimal",
+            "types": [
+              {
+                "fieldType": "NUMBER",
+                "ballerinaType": "decimal",
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "decimal",
+                "selected": false
+              }
+            ],
             "placeholder": "0.0d",
             "optional": true,
             "editable": true,
@@ -929,24 +1251,38 @@
               "kind": "DEFAULTABLE",
               "originalName": "temperature"
             },
-            "typeMembers": [
-              {
-                "type": "decimal",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              }
-            ],
-            "defaultValue": "0.0d"
+            "defaultValue": "DEFAULT_TEMPERATURE"
           },
           "httpVersion": {
             "metadata": {
               "label": "HTTP Version",
               "description": "The HTTP version understood by the client"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:HttpVersion",
+            "types": [
+              {
+                "fieldType": "SINGLE_SELECT",
+                "options": [
+                  {
+                    "label": "2.0",
+                    "value": "\"2.0\""
+                  },
+                  {
+                    "label": "1.1",
+                    "value": "\"1.1\""
+                  },
+                  {
+                    "label": "1.0",
+                    "value": "\"1.0\""
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:HttpVersion",
+                "selected": false
+              }
+            ],
             "placeholder": "\"2.0\"",
             "optional": true,
             "editable": true,
@@ -956,27 +1292,37 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "httpVersion"
             },
-            "typeMembers": [
-              {
-                "type": "HttpVersion",
-                "packageInfo": "ballerina:http:2.15.0",
-                "packageName": "http",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              }
-            ],
             "imports": {
               "http": "ballerina/http"
             },
-            "defaultValue": "\"2.0\""
+            "defaultValue": "http:HTTP_2_0"
           },
           "http1Settings": {
             "metadata": {
               "label": "HTTP1 Settings",
               "description": "Configurations related to HTTP/1.x protocol"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:ClientHttp1Settings",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "http:ClientHttp1Settings",
+                "typeMembers": [
+                  {
+                    "type": "ClientHttp1Settings",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:ClientHttp1Settings",
+                "selected": false
+              }
+            ],
             "placeholder": "{}",
             "optional": true,
             "editable": true,
@@ -986,15 +1332,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "http1Settings"
             },
-            "typeMembers": [
-              {
-                "type": "ClientHttp1Settings",
-                "packageInfo": "ballerina:http:2.15.0",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              }
-            ],
             "imports": {
               "http": "ballerina/http"
             },
@@ -1005,8 +1342,27 @@
               "label": "HTTP2 Settings",
               "description": "Configurations related to HTTP/2 protocol"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:ClientHttp2Settings",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "http:ClientHttp2Settings",
+                "typeMembers": [
+                  {
+                    "type": "ClientHttp2Settings",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:ClientHttp2Settings",
+                "selected": false
+              }
+            ],
             "placeholder": "{}",
             "optional": true,
             "editable": true,
@@ -1016,15 +1372,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "http2Settings"
             },
-            "typeMembers": [
-              {
-                "type": "ClientHttp2Settings",
-                "packageInfo": "ballerina:http:2.15.0",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              }
-            ],
             "imports": {
               "http": "ballerina/http"
             },
@@ -1035,8 +1382,18 @@
               "label": "Timeout",
               "description": "The maximum time to wait (in seconds) for a response before closing the connection"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "decimal",
+            "types": [
+              {
+                "fieldType": "NUMBER",
+                "ballerinaType": "decimal",
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "decimal",
+                "selected": false
+              }
+            ],
             "placeholder": "0.0d",
             "optional": true,
             "editable": true,
@@ -1046,24 +1403,25 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "timeout"
             },
-            "typeMembers": [
-              {
-                "type": "decimal",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              }
-            ],
-            "defaultValue": "0.0d"
+            "defaultValue": "60"
           },
           "forwarded": {
             "metadata": {
               "label": "Forwarded",
               "description": "The choice of setting `forwarded`/`x-forwarded` header"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "string",
+            "types": [
+              {
+                "fieldType": "TEXT",
+                "ballerinaType": "string",
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "string",
+                "selected": false
+              }
+            ],
             "placeholder": "\"\"",
             "optional": true,
             "editable": true,
@@ -1073,24 +1431,34 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "forwarded"
             },
-            "typeMembers": [
-              {
-                "type": "string",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              }
-            ],
-            "defaultValue": "\"\""
+            "defaultValue": "\"disable\""
           },
           "poolConfig": {
             "metadata": {
               "label": "Pool Configuration",
               "description": "Configurations associated with request pooling"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:PoolConfiguration",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "http:PoolConfiguration",
+                "typeMembers": [
+                  {
+                    "type": "PoolConfiguration",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:PoolConfiguration",
+                "selected": false
+              }
+            ],
             "placeholder": "{}",
             "optional": true,
             "editable": true,
@@ -1100,15 +1468,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "poolConfig"
             },
-            "typeMembers": [
-              {
-                "type": "PoolConfiguration",
-                "packageInfo": "ballerina:http:2.15.0",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              }
-            ],
             "imports": {
               "http": "ballerina/http"
             },
@@ -1119,8 +1478,27 @@
               "label": "Cache Configuration",
               "description": "HTTP caching related configurations"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:CacheConfig",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "http:CacheConfig",
+                "typeMembers": [
+                  {
+                    "type": "CacheConfig",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:CacheConfig",
+                "selected": false
+              }
+            ],
             "placeholder": "{}",
             "optional": true,
             "editable": true,
@@ -1130,15 +1508,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "cache"
             },
-            "typeMembers": [
-              {
-                "type": "CacheConfig",
-                "packageInfo": "ballerina:http:2.15.0",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              }
-            ],
             "imports": {
               "http": "ballerina/http"
             },
@@ -1149,8 +1518,31 @@
               "label": "Compression",
               "description": "Specifies the way of handling compression (`accept-encoding`) header"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:Compression",
+            "types": [
+              {
+                "fieldType": "SINGLE_SELECT",
+                "options": [
+                  {
+                    "label": "AUTO",
+                    "value": "\"AUTO\""
+                  },
+                  {
+                    "label": "ALWAYS",
+                    "value": "\"ALWAYS\""
+                  },
+                  {
+                    "label": "NEVER",
+                    "value": "\"NEVER\""
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:Compression",
+                "selected": false
+              }
+            ],
             "placeholder": "\"AUTO\"",
             "optional": true,
             "editable": true,
@@ -1160,27 +1552,37 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "compression"
             },
-            "typeMembers": [
-              {
-                "type": "Compression",
-                "packageInfo": "ballerina:http:2.15.0",
-                "packageName": "http",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              }
-            ],
             "imports": {
               "http": "ballerina/http"
             },
-            "defaultValue": "\"AUTO\""
+            "defaultValue": "http:COMPRESSION_AUTO"
           },
           "circuitBreaker": {
             "metadata": {
               "label": "Circuit Breaker Configuration",
               "description": "Configurations associated with the behaviour of the Circuit Breaker"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:CircuitBreakerConfig",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "http:CircuitBreakerConfig",
+                "typeMembers": [
+                  {
+                    "type": "CircuitBreakerConfig",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:CircuitBreakerConfig",
+                "selected": false
+              }
+            ],
             "placeholder": "{}",
             "optional": true,
             "editable": true,
@@ -1190,15 +1592,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "circuitBreaker"
             },
-            "typeMembers": [
-              {
-                "type": "CircuitBreakerConfig",
-                "packageInfo": "ballerina:http:2.15.0",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              }
-            ],
             "imports": {
               "http": "ballerina/http"
             },
@@ -1209,8 +1602,27 @@
               "label": "Retry Configuration",
               "description": "Configurations associated with retrying"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:RetryConfig",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "http:RetryConfig",
+                "typeMembers": [
+                  {
+                    "type": "RetryConfig",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:RetryConfig",
+                "selected": false
+              }
+            ],
             "placeholder": "{}",
             "optional": true,
             "editable": true,
@@ -1220,15 +1632,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "retryConfig"
             },
-            "typeMembers": [
-              {
-                "type": "RetryConfig",
-                "packageInfo": "ballerina:http:2.15.0",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              }
-            ],
             "imports": {
               "http": "ballerina/http"
             },
@@ -1239,8 +1642,27 @@
               "label": "Response Limit Configuration",
               "description": "Configurations associated with inbound response size limits"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:ResponseLimitConfigs",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "http:ResponseLimitConfigs",
+                "typeMembers": [
+                  {
+                    "type": "ResponseLimitConfigs",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:ResponseLimitConfigs",
+                "selected": false
+              }
+            ],
             "placeholder": "{}",
             "optional": true,
             "editable": true,
@@ -1250,15 +1672,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "responseLimits"
             },
-            "typeMembers": [
-              {
-                "type": "ResponseLimitConfigs",
-                "packageInfo": "ballerina:http:2.15.0",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              }
-            ],
             "imports": {
               "http": "ballerina/http"
             },
@@ -1269,8 +1682,27 @@
               "label": "Secure Socket Configuration",
               "description": "SSL/TLS-related options"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:ClientSecureSocket",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "http:ClientSecureSocket",
+                "typeMembers": [
+                  {
+                    "type": "ClientSecureSocket",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:ClientSecureSocket",
+                "selected": false
+              }
+            ],
             "placeholder": "{}",
             "optional": true,
             "editable": true,
@@ -1280,15 +1712,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "secureSocket"
             },
-            "typeMembers": [
-              {
-                "type": "ClientSecureSocket",
-                "packageInfo": "ballerina:http:2.15.0",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              }
-            ],
             "imports": {
               "http": "ballerina/http"
             },
@@ -1299,8 +1722,27 @@
               "label": "Proxy Configuration",
               "description": "Proxy server related options"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:ProxyConfig",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "http:ProxyConfig",
+                "typeMembers": [
+                  {
+                    "type": "ProxyConfig",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:ProxyConfig",
+                "selected": false
+              }
+            ],
             "placeholder": "{}",
             "optional": true,
             "editable": true,
@@ -1310,15 +1752,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "proxy"
             },
-            "typeMembers": [
-              {
-                "type": "ProxyConfig",
-                "packageInfo": "ballerina:http:2.15.0",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              }
-            ],
             "imports": {
               "http": "ballerina/http"
             },
@@ -1329,8 +1762,18 @@
               "label": "Payload Validation",
               "description": "Enables the inbound payload validation functionality which provided by the constraint package. Enabled by default"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "boolean",
+            "types": [
+              {
+                "fieldType": "FLAG",
+                "ballerinaType": "boolean",
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "boolean",
+                "selected": false
+              }
+            ],
             "placeholder": "false",
             "optional": true,
             "editable": true,
@@ -1340,23 +1783,19 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "validation"
             },
-            "typeMembers": [
-              {
-                "type": "boolean",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              }
-            ],
-            "defaultValue": "false"
+            "defaultValue": "true"
           },
           "checkError": {
             "metadata": {
               "label": "Check Error",
               "description": "Terminate on error"
             },
-            "valueType": "FLAG",
+            "types": [
+              {
+                "fieldType": "FLAG",
+                "selected": true
+              }
+            ],
             "value": true,
             "optional": false,
             "editable": false,
@@ -1368,7 +1807,12 @@
               "label": "Connection Scope",
               "description": "Scope of the connection, Global or Local"
             },
-            "valueType": "ENUM",
+            "types": [
+              {
+                "fieldType": "ENUM",
+                "selected": true
+              }
+            ],
             "value": "Global",
             "optional": false,
             "editable": true,
@@ -1380,7 +1824,12 @@
               "label": "Variable Name",
               "description": "Name of the variable"
             },
-            "valueType": "IDENTIFIER",
+            "types": [
+              {
+                "fieldType": "IDENTIFIER",
+                "selected": true
+              }
+            ],
             "value": "_WorkflowAgentModel",
             "optional": false,
             "editable": false,
@@ -1405,7 +1854,12 @@
               "label": "Variable Type",
               "description": "Type of the variable"
             },
-            "valueType": "TYPE",
+            "types": [
+              {
+                "fieldType": "TYPE",
+                "selected": true
+              }
+            ],
             "value": "ai:OpenAiProvider",
             "placeholder": "var",
             "optional": false,

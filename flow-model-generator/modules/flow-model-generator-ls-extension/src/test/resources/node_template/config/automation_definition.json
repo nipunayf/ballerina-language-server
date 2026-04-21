@@ -1,4 +1,5 @@
 {
+  "source": "empty.bal",
   "description": "Sample diagram node",
   "codedata": {
     "node": "AUTOMATION"
@@ -20,8 +21,13 @@
           "label": "Name",
           "description": "Name of the function"
         },
-        "valueType": "IDENTIFIER",
-        "valueTypeConstraint": "Global",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "scope": "Global",
+            "selected": false
+          }
+        ],
         "value": "main",
         "optional": false,
         "editable": false,
@@ -33,51 +39,86 @@
           "label": "Startup Parameters",
           "description": "Define the parameters to be passed to the automation at startup"
         },
-        "valueType": "REPEATABLE_PROPERTY",
-        "valueTypeConstraint": {
-          "metadata": {
-            "label": "Parameter",
-            "description": "Function parameter"
-          },
-          "valueType": "FIXED_PROPERTY",
-          "value": {
-            "type": {
+        "types": [
+          {
+            "fieldType": "REPEATABLE_PROPERTY",
+            "template": {
               "metadata": {
-                "label": "Type",
-                "description": "Type of the parameter"
+                "label": "Parameter",
+                "description": "Function parameter"
               },
-              "valueType": "SINGLE_SELECT",
-              "valueTypeConstraint": [
-                "string",
-                "int",
-                "float",
-                "decimal",
-                "byte"
+              "types": [
+                {
+                  "fieldType": "FIXED_PROPERTY",
+                  "selected": false
+                }
               ],
-              "value": "",
+              "value": {
+                "type": {
+                  "metadata": {
+                    "label": "Type",
+                    "description": "Type of the parameter"
+                  },
+                  "types": [
+                    {
+                      "fieldType": "SINGLE_SELECT",
+                      "options": [
+                        {
+                          "label": "string",
+                          "value": "string"
+                        },
+                        {
+                          "label": "int",
+                          "value": "int"
+                        },
+                        {
+                          "label": "float",
+                          "value": "float"
+                        },
+                        {
+                          "label": "decimal",
+                          "value": "decimal"
+                        },
+                        {
+                          "label": "byte",
+                          "value": "byte"
+                        }
+                      ],
+                      "selected": false
+                    }
+                  ],
+                  "value": "",
+                  "optional": false,
+                  "editable": true,
+                  "advanced": false,
+                  "hidden": false
+                },
+                "variable": {
+                  "metadata": {
+                    "label": "Name",
+                    "description": "Name of the parameter"
+                  },
+                  "types": [
+                    {
+                      "fieldType": "IDENTIFIER",
+                      "selected": true
+                    }
+                  ],
+                  "value": "",
+                  "optional": false,
+                  "editable": true,
+                  "advanced": false,
+                  "hidden": false
+                }
+              },
               "optional": false,
-              "editable": true,
+              "editable": false,
               "advanced": false,
               "hidden": false
             },
-            "variable": {
-              "metadata": {
-                "label": "Name",
-                "description": "Name of the parameter"
-              },
-              "valueType": "IDENTIFIER",
-              "value": "",
-              "optional": false,
-              "editable": true,
-              "advanced": false,
-              "hidden": false
-            }
-          },
-          "optional": false,
-          "editable": false,
-          "advanced": false,
-          "hidden": false
-        },
+            "selected": false
+          }
+        ],
         "value": {},
         "optional": true,
         "editable": false,
@@ -89,7 +130,12 @@
           "label": "Return Error",
           "description": "Indicate if the automation should exit with error"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": false
+          }
+        ],
         "value": true,
         "optional": false,
         "editable": true,

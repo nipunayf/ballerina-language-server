@@ -43,6 +43,7 @@ import io.ballerina.servicemodelgenerator.extension.model.Codedata;
 import io.ballerina.servicemodelgenerator.extension.model.Function;
 import io.ballerina.servicemodelgenerator.extension.model.MetaData;
 import io.ballerina.servicemodelgenerator.extension.model.Parameter;
+import io.ballerina.servicemodelgenerator.extension.model.PropertyType;
 import io.ballerina.servicemodelgenerator.extension.model.Service;
 import io.ballerina.servicemodelgenerator.extension.model.Value;
 import io.ballerina.servicemodelgenerator.extension.model.context.AddModelContext;
@@ -57,6 +58,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -160,14 +162,14 @@ public final class DatabindUtil {
     private static Parameter createDataBindingParam(String paramType, String paramName,
                                                     boolean dataBindingEnabled, boolean editable) {
         Value parameterType = new Value.ValueBuilder()
-                .valueType(Constants.VALUE_TYPE_TYPE)
+                .types(List.of(PropertyType.types(Value.FieldType.TYPE)))
                 .value(paramType)
                 .enabled(true)
                 .editable(false)
                 .build();
 
         Value parameterNameValue = new Value.ValueBuilder()
-                .valueType(Constants.VALUE_TYPE_IDENTIFIER)
+                .types(List.of(PropertyType.types(Value.FieldType.IDENTIFIER)))
                 .value(paramName)
                 .enabled(true)
                 .editable(false)
@@ -380,6 +382,86 @@ public final class DatabindUtil {
     }
 
     /**
+     * <p>This method handles the case where standard consolidation may overwrite DATA_BINDING kinds to
+     * REQUIRED when parameter types match (e.g., both template and source have "record {}"). By using the original
+     * kinds captured before consolidation, it can correctly restore DATA_BINDING kinds and update parameter
+     * values.</p>
+     *
+     * <p>Handles three scenarios:
+     * <p>
+     * 1. Custom type (e.g., MyType) - enabled=true, type.value="MyType", type.placeholder="record {}"
+     * <p>
+     * 2. Generic type (e.g., record {}) - enabled=true, type.value="record {}", type.placeholder="record {}"
+     * <p>
+     * 3. No parameter in source - enabled=false
+     * </p>
+     *
+     * @param targetFunction         The function in the consolidated model
+     * @param sourceFunction         The function from source code (contains actual parameter types and names)
+     * @param originalParameterKinds Map of parameter position to original kind (from before consolidation)
+     */
+    public static void restoreAndUpdateDataBindingParams(Function targetFunction, Function sourceFunction,
+                                                         Map<Integer, String> originalParameterKinds) {
+        if (targetFunction == null || sourceFunction == null || originalParameterKinds == null) {
+            return;
+        }
+
+        List<Parameter> templateParams = targetFunction.getParameters();
+        List<Parameter> sourceParams = sourceFunction.getParameters();
+
+        for (int i = 0; i < templateParams.size(); i++) {
+            Parameter templateParam = templateParams.get(i);
+            String originalKind = originalParameterKinds.get(i);
+
+            // Only process parameters that were originally DATA_BINDING
+            if (!DATA_BINDING.equals(originalKind)) {
+                continue;
+            }
+
+            // Restore the DATA_BINDING kind (may have been overwritten to REQUIRED by consolidation)
+            templateParam.setKind(DATA_BINDING);
+
+            // Check if source has a parameter at this position
+            if (i < sourceParams.size()) {
+                Parameter sourceParam = sourceParams.get(i);
+                String sourceType = sourceParam.getType().getValue();
+                String sourceName = sourceParam.getName().getValue();
+
+                // Parameter exists in source - update type and name, set enabled=true
+                templateParam.getType().setValue(sourceType);
+                templateParam.getName().setValue(sourceName);
+                templateParam.setEnabled(true);
+            } else {
+                // No source parameter at this position - parameter doesn't exist in source
+                templateParam.setEnabled(false);
+            }
+        }
+    }
+
+    /**
+     * Extracts the original parameter kinds from the template before consolidation.
+     *
+     * @param serviceModel The base service model with original template data
+     * @return Map of function name to (parameter position to original kind)
+     */
+    public static Map<String, Map<Integer, String>> extractParameterKinds(Service serviceModel) {
+        Map<String, Map<Integer, String>> originalKinds = new java.util.HashMap<>();
+
+        for (Function function : serviceModel.getFunctions()) {
+            Map<Integer, String> paramKinds = new java.util.HashMap<>();
+            List<Parameter> params = function.getParameters();
+
+            for (int i = 0; i < params.size(); i++) {
+                paramKinds.put(i, params.get(i).getKind());
+            }
+
+            originalKinds.put(function.getName().getValue(), paramKinds);
+        }
+
+        return originalKinds;
+    }
+
+    /**
      * Processes databinding for a function add operation. This method generates wrapper types and updates the function
      * parameters when a DATA_BINDING parameter is enabled. Similar to processDatabindingUpdate but adapted for add
      * operations where we don't have function nodes.
@@ -432,8 +514,10 @@ public final class DatabindUtil {
                 new Value.ValueBuilder().value(typeName).build()
         );
 
-        return createTypeDefinitionEdits(context.project(), typeName, baseType,
-                newDataBindingType, payloadFieldName, context.filePath(), context.workspaceManager());
+        Map<String, String> importsForTypeDef = dataBindingParam.getType().getImports();
+
+        return createTypeDefinitionEdits(context.project(), typeName, baseType, newDataBindingType, payloadFieldName,
+                context.filePath(), context.workspaceManager(), importsForTypeDef);
     }
 
     /**
@@ -544,27 +628,29 @@ public final class DatabindUtil {
         Map<String, List<TextEdit>> typesEdits;
         String typeName;
 
+        Map<String, String> importsForTypeDef = dataBindingParam.getType().getImports();
         if (customWrapperTypeName != null && !customWrapperTypeName.equals(existingTypeName)) {
             typeName = customWrapperTypeName;
             if (existingTypeName != null) {
                 typesEdits = updateTypeDefinitionEdits(context, existingTypeName, baseType, newDataBindingType,
-                        payloadFieldName, customWrapperTypeName);
+                        payloadFieldName, customWrapperTypeName, importsForTypeDef);
             } else {
                 typesEdits =
                         createTypeDefinitionEdits(context.project(), customWrapperTypeName, baseType,
-                                newDataBindingType, payloadFieldName, context.filePath(), context.workspaceManager());
+                                newDataBindingType, payloadFieldName, context.filePath(), context.workspaceManager(),
+                                importsForTypeDef);
             }
         } else if (existingTypeName != null) {
             typeName = existingTypeName;
             typesEdits = updateTypeDefinitionEdits(context, existingTypeName, baseType, newDataBindingType,
-                    payloadFieldName, null);
+                    payloadFieldName, null, importsForTypeDef);
         } else {
             typeName =
                     generateNewDataBindTypeName(context.filePath(), context.workspaceManager(), context.semanticModel(),
                             context.functionNode(),
                             prefix);
             typesEdits = createTypeDefinitionEdits(context.project(), typeName, baseType, newDataBindingType,
-                    payloadFieldName, context.filePath(), context.workspaceManager());
+                    payloadFieldName, context.filePath(), context.workspaceManager(), importsForTypeDef);
         }
 
         updateFunctionParameters(function, dataBindingParam, typeName, isArray);
@@ -804,10 +890,12 @@ public final class DatabindUtil {
      *
      * @param baseType       The base record type (e.g., "kafka:AnydataConsumerRecord")
      * @param modulePartNode The module part node to check existing imports
+     * @param importsForTypeDef Map of imports needed for the type definition
      * @return Set of import statements to add
      */
-    private static Set<String> extractRequiredImports(String baseType, ModulePartNode modulePartNode) {
-        Set<String> imports = new HashSet<>();
+    private static Set<String> extractRequiredImports(String baseType, ModulePartNode modulePartNode,
+                                                      Map<String, String> importsForTypeDef) {
+        Set<String> imports = new LinkedHashSet<>();
 
         if (baseType.contains(COLON)) {
             String moduleName = baseType.substring(0, baseType.indexOf(COLON));
@@ -817,6 +905,17 @@ public final class DatabindUtil {
             if (!importExists(modulePartNode, org, importModule)) {
                 imports.add(getImportStmt(org, importModule));
             }
+        }
+
+        if (importsForTypeDef != null) {
+            importsForTypeDef.values().forEach(moduleId -> {
+                String[] importParts = moduleId.split("/");
+                String orgName = importParts[0];
+                String moduleName = importParts[1].split(":")[0];
+                if (!importExists(modulePartNode, orgName, moduleName)) {
+                    imports.add(getImportStmt(orgName, moduleName));
+                }
+            });
         }
 
         return imports;
@@ -834,14 +933,15 @@ public final class DatabindUtil {
      */
     private static TypeDefinitionEditContext prepareTypeDefinitionEditContext(Project project, String baseType,
                                                                               String contextFilePath,
-                                                                              WorkspaceManager workspaceManager) {
+                                                                              WorkspaceManager workspaceManager,
+                                                                              Map<String, String> importsForTypeDef) {
         Document typesDocument = getTypesDocument(contextFilePath, workspaceManager);
         if (typesDocument == null || typesDocument.syntaxTree() == null) {
             return null;
         }
 
         ModulePartNode modulePartNode = typesDocument.syntaxTree().rootNode();
-        Set<String> requiredImports = extractRequiredImports(baseType, modulePartNode);
+        Set<String> requiredImports = extractRequiredImports(baseType, modulePartNode, importsForTypeDef);
 
         return new TypeDefinitionEditContext(typesDocument, modulePartNode, requiredImports, project);
     }
@@ -854,15 +954,20 @@ public final class DatabindUtil {
      * @param baseType         The base record type (e.g., "kafka:AnydataConsumerRecord")
      * @param dataBindingType  The data binding field type (e.g., "Order")
      * @param payloadFieldName The field name for the payload (e.g., "value" or "content")
+     * @param contextFilePath  The context file path for locating types.bal
+     * @param workspaceManager The workspace manager for document retrieval
+     * @param importsForTypeDef Map of imports needed for the type definition
      * @return Map of file paths to TextEdit lists
      */
     private static Map<String, List<TextEdit>> createTypeDefinitionEdits(Project project, String typeName,
                                                                          String baseType, String dataBindingType,
                                                                          String payloadFieldName,
                                                                          String contextFilePath,
-                                                                         WorkspaceManager workspaceManager) {
+                                                                         WorkspaceManager workspaceManager,
+                                                                         Map<String, String> importsForTypeDef) {
         TypeDefinitionEditContext context =
-                prepareTypeDefinitionEditContext(project, baseType, contextFilePath, workspaceManager);
+                prepareTypeDefinitionEditContext(project, baseType, contextFilePath, workspaceManager,
+                        importsForTypeDef);
         if (context == null) {
             return Map.of();
         }
@@ -1091,6 +1196,7 @@ public final class DatabindUtil {
      * @param newDataBindingType The new data binding field type (e.g., "Customer")
      * @param payloadFieldName   The field name for the payload (e.g., "value")
      * @param newTypeName        The new type name to rename to (optional, if null uses existingTypeName)
+     * @param importsForTypeDef  Map of imports needed for the type definition
      * @return Map of file paths to TextEdit lists
      */
     private static Map<String, List<TextEdit>> updateTypeDefinitionEdits(UpdateModelContext context,
@@ -1098,10 +1204,13 @@ public final class DatabindUtil {
                                                                          String baseType,
                                                                          String newDataBindingType,
                                                                          String payloadFieldName,
-                                                                         String newTypeName) {
+                                                                         String newTypeName,
+                                                                         Map<String, String> importsForTypeDef) {
+
         Project project = context.project() != null ? context.project() : context.document().module().project();
         TypeDefinitionEditContext editContext =
-                prepareTypeDefinitionEditContext(project, baseType, context.filePath(), context.workspaceManager());
+                prepareTypeDefinitionEditContext(project, baseType, context.filePath(), context.workspaceManager(),
+                        importsForTypeDef);
         if (editContext == null) {
             return Map.of();
         }
@@ -1122,7 +1231,7 @@ public final class DatabindUtil {
         if (existingTypeDef == null) {
             // Type doesn't exist, create it instead
             return createTypeDefinitionEdits(context.project(), existingTypeName, baseType, newDataBindingType,
-                    payloadFieldName, context.filePath(), context.workspaceManager());
+                    payloadFieldName, context.filePath(), context.workspaceManager(), importsForTypeDef);
         }
 
         // Use newTypeName if provided for renaming, otherwise use existingTypeName

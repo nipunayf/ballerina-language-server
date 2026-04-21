@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com)
+ *  Copyright (c) 2026, WSO2 LLC. (http://www.wso2.com)
  *
  *  WSO2 LLC. licenses this file to you under the Apache License,
  *  Version 2.0 (the "License"); you may not use this file except
@@ -21,7 +21,9 @@ package io.ballerina.modelgenerator.commons;
 import io.ballerina.compiler.api.ModuleID;
 import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.api.symbols.ArrayTypeSymbol;
+import io.ballerina.compiler.api.symbols.ClassFieldSymbol;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
+import io.ballerina.compiler.api.symbols.ConstantSymbol;
 import io.ballerina.compiler.api.symbols.FunctionSymbol;
 import io.ballerina.compiler.api.symbols.FutureTypeSymbol;
 import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
@@ -33,6 +35,7 @@ import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.SymbolKind;
 import io.ballerina.compiler.api.symbols.TableTypeSymbol;
 import io.ballerina.compiler.api.symbols.TupleTypeSymbol;
+import io.ballerina.compiler.api.symbols.TypeDefinitionSymbol;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
 import io.ballerina.compiler.api.symbols.TypeDescTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
@@ -42,19 +45,32 @@ import io.ballerina.compiler.api.symbols.VariableSymbol;
 import io.ballerina.compiler.syntax.tree.BindingPatternNode;
 import io.ballerina.compiler.syntax.tree.BuiltinSimpleNameReferenceNode;
 import io.ballerina.compiler.syntax.tree.ChildNodeList;
+import io.ballerina.compiler.syntax.tree.DefaultableParameterNode;
 import io.ballerina.compiler.syntax.tree.DoStatementNode;
+import io.ballerina.compiler.syntax.tree.EnumMemberNode;
+import io.ballerina.compiler.syntax.tree.ExpressionNode;
 import io.ballerina.compiler.syntax.tree.FunctionDefinitionNode;
 import io.ballerina.compiler.syntax.tree.IdentifierToken;
+import io.ballerina.compiler.syntax.tree.InterpolationNode;
+import io.ballerina.compiler.syntax.tree.MappingConstructorExpressionNode;
+import io.ballerina.compiler.syntax.tree.MappingFieldNode;
 import io.ballerina.compiler.syntax.tree.ModulePartNode;
 import io.ballerina.compiler.syntax.tree.Node;
+import io.ballerina.compiler.syntax.tree.NodeParser;
 import io.ballerina.compiler.syntax.tree.NonTerminalNode;
+import io.ballerina.compiler.syntax.tree.QualifiedNameReferenceNode;
+import io.ballerina.compiler.syntax.tree.RecordFieldWithDefaultValueNode;
 import io.ballerina.compiler.syntax.tree.SimpleNameReferenceNode;
+import io.ballerina.compiler.syntax.tree.SpecificFieldNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.compiler.syntax.tree.SyntaxTree;
+import io.ballerina.compiler.syntax.tree.TemplateExpressionNode;
 import io.ballerina.compiler.syntax.tree.TypedBindingPatternNode;
 import io.ballerina.projects.Document;
 import io.ballerina.projects.DocumentId;
+import io.ballerina.projects.Module;
 import io.ballerina.projects.ModuleDescriptor;
+import io.ballerina.projects.Package;
 import io.ballerina.projects.Project;
 import io.ballerina.projects.ProjectException;
 import io.ballerina.projects.ProjectKind;
@@ -72,13 +88,17 @@ import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.jsonrpc.validation.NonNull;
 import org.wso2.ballerinalang.compiler.tree.BLangPackage;
 
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -111,7 +131,14 @@ public class CommonUtils {
     private static final String UNKNOWN_TYPE = "Unknown Type";
     private static final String AI = "ai";
     private static final String AGENT = "Agent";
-
+    public static final String CONNECTOR_TYPE = "connectorType";
+    public static final String PERSIST = "persist";
+    public static final String PERSIST_MODEL_FILE = "persistModelFile";
+    public static final String PERSIST_DB_CLIENT_FIELD = "dbClient";
+    public static final String DEFAULT_PERSIST_MODEL_FILE = "model.bal";
+    public static final String ABSTRACT_PERSIST_CLIENT = "AbstractPersistClient";
+    public static final List<String> PERSIST_DB_DRIVERS = List.of("ballerinax/mysql", "ballerinax/postgresql",
+            "ballerinax/oracledb", "ballerinax/mssql");
     public static final String AI_OPENAI = "ai.openai";
     public static final String AI_ANTHROPIC = "ai.anthropic";
     public static final String AI_DEEPSEEK = "ai.deepseek";
@@ -120,6 +147,10 @@ public class CommonUtils {
     public static final String AI_AZURE = "ai.azure";
     public static final List<String> AI_MODULE_NAMES = List.of(AI_OPENAI, AI_ANTHROPIC, AI_DEEPSEEK,
             AI_MISTRAL, AI_OLLAMA, AI_AZURE);
+
+    private static final String DOUBLE_QUOTE = "\"";
+    public static final Pattern STRING_TEMPLATE_PATTERN = Pattern.compile("string\\s*`.*`", Pattern.DOTALL);
+    private static final String LS = System.lineSeparator();
 
     /**
      * Removes the quotes from the given string.
@@ -499,6 +530,38 @@ public class CommonUtils {
     }
 
     /**
+     * Extracts the database-specific icon URL from the persist client class by inspecting its fields.
+     * The persist-generated client always has a private field (e.g., {@code private final postgresql:Client dbClient})
+     * whose type's module carries the DB driver package info (org, packageName, version).
+     *
+     * @param persistClientClassSymbol the ClassSymbol of the persist-generated Client class
+     * @return an Optional containing the icon URL for the underlying DB driver, or empty if not found
+     */
+    public static Optional<String> getPersistDatabaseIcon(ClassSymbol persistClientClassSymbol) {
+        for (Map.Entry<String, ClassFieldSymbol> entry : persistClientClassSymbol.fieldDescriptors().entrySet()) {
+            if (!PERSIST_DB_CLIENT_FIELD.equals(entry.getKey())) {
+                continue;
+            }
+            ClassFieldSymbol fieldSymbol = entry.getValue();
+            TypeSymbol fieldType = getRawType(fieldSymbol.typeDescriptor());
+            if (!(fieldType instanceof ClassSymbol)) {
+                continue;
+            }
+            Optional<ModuleSymbol> moduleOpt = fieldType.getModule();
+            if (moduleOpt.isEmpty()) {
+                continue;
+            }
+            ModuleID id = moduleOpt.get().id();
+            if (!PERSIST_DB_DRIVERS.contains(id.orgName() + "/" + id.packageName())) {
+                continue;
+            }
+            return Optional.of(generateIcon(id.orgName(), id.packageName(), id.version()));
+
+        }
+        return Optional.empty();
+    }
+
+    /**
      * Check whether the given type is a subtype of the target type.
      *
      * @param source the source type
@@ -801,6 +864,23 @@ public class CommonUtils {
     }
 
     /**
+     * Checks if the given symbol is within the given package module.
+     *
+     * @param symbol     the symbol to check
+     * @param moduleInfo the module descriptor of the current module
+     * @return true if the symbol is within the given package module, false otherwise
+     */
+    public static boolean isWithinPackageModule(Symbol symbol, ModuleInfo moduleInfo) {
+        if (symbol.getModule().isEmpty()) {
+            return false;
+        }
+        ModuleID moduleID = symbol.getModule().get().id();
+        return moduleID.orgName().equals(moduleInfo.org()) &&
+                moduleID.packageName().equals(moduleInfo.packageName()) &&
+                moduleID.moduleName().equals(moduleInfo.moduleName());
+    }
+
+    /**
      * Converts a multi-line string into a formatted Ballerina documentation. Each line starts with a "#".
      *
      * @param text The input string.
@@ -958,6 +1038,23 @@ public class CommonUtils {
     }
 
     /**
+     * Checks whether the given same-package module import exists in the given module part node.
+     * This handles imports of the form {@code import mypackage.submodule;} which have no org name.
+     *
+     * @param node   module part node
+     * @param module full module name (e.g. {@code mypackage.submodule})
+     * @return true if the import exists, false otherwise
+     */
+    public static boolean importExists(ModulePartNode node, String module) {
+        return node.imports().stream().anyMatch(importDeclarationNode -> {
+            String moduleName = importDeclarationNode.moduleName().stream()
+                    .map(IdentifierToken::text)
+                    .collect(Collectors.joining("."));
+            return importDeclarationNode.orgName().isEmpty() && module.equals(moduleName);
+        });
+    }
+
+    /**
      * Checks whether the given import exists in the given blangPackage.
      *
      * @param blangPackage blangPackage
@@ -1040,6 +1137,153 @@ public class CommonUtils {
         return classSymbol != null && hasAiTypeInclusion(classSymbol, MCP_BASE_TOOL_KIT_TYPE_NAME);
     }
 
+    /**
+     * Checks if the given class symbol is a subtype of AbstractPersistClient from the ballerina/persist module.
+     *
+     * @param semanticModel the semantic model used to resolve types
+     * @param functionData  the function data containing module and organization information
+     * @param name          the name of the class symbol to check
+     * @return true if the class symbol is a subtype of AbstractPersistClient, false otherwise
+     */
+    public static boolean isPersistClient(SemanticModel semanticModel, FunctionData functionData, String name) {
+        Optional<Map<String, Symbol>> moduleTypesOpt = semanticModel.types()
+                .typesInModule(functionData.org(), functionData.moduleName(), functionData.version());
+        if (moduleTypesOpt.isEmpty()) {
+            return false;
+        }
+
+        Map<String, Symbol> moduleTypes = moduleTypesOpt.get();
+        Symbol symbol = moduleTypes.get(name);
+        if (!(symbol instanceof ClassSymbol classSymbol)) {
+            return false;
+        }
+
+        return isPersistClient(classSymbol, semanticModel);
+    }
+
+    /**
+     * Looks up a {@link ClassSymbol} by name within the module described by the given {@link FunctionData}.
+     * This is used to retrieve the client class (e.g. a persist client) associated with a function call
+     * so that additional metadata (like persist model file paths) can be derived from it.
+     *
+     * @param semanticModel the semantic model of the current compilation
+     * @param functionData  function metadata containing the org, module name, and version to look up
+     * @param name          the unqualified class name to look up within the module
+     * @return an {@link Optional} containing the {@link ClassSymbol} if found, or empty otherwise
+     */
+    public static Optional<ClassSymbol> getClientClassSymbol(SemanticModel semanticModel, FunctionData functionData,
+                                                             String name) {
+        Optional<Map<String, Symbol>> moduleTypesOpt = semanticModel.types()
+                .typesInModule(functionData.org(), functionData.moduleName(), functionData.version());
+        if (moduleTypesOpt.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Map<String, Symbol> moduleTypes = moduleTypesOpt.get();
+        Symbol symbol = moduleTypes.get(name);
+        if (!(symbol instanceof ClassSymbol classSymbol)) {
+            return Optional.empty();
+        }
+
+        return Optional.of(classSymbol);
+    }
+
+    /**
+     * Checks if the given class symbol is a subtype of AbstractPersistClient from the ballerina/persist module.
+     *
+     * @param classSymbol   the class symbol to check
+     * @param semanticModel the semantic model used to resolve types
+     * @return true if the class symbol is a subtype of AbstractPersistClient, false otherwise
+     */
+    public static boolean isPersistClient(ClassSymbol classSymbol, SemanticModel semanticModel) {
+        Optional<Map<String, Symbol>> persistTypesOpt = semanticModel.types()
+                .typesInModule(BALLERINA_ORG_NAME, PERSIST, "");
+        if (persistTypesOpt.isEmpty()) {
+            return false;
+        }
+
+        Map<String, Symbol> persistTypes = persistTypesOpt.get();
+        Symbol abstractClientSymbol = persistTypes.get(ABSTRACT_PERSIST_CLIENT);
+        if (!(abstractClientSymbol instanceof TypeDefinitionSymbol abstractClientTypeDefSymbol)) {
+            return false;
+        }
+
+        return classSymbol.subtypeOf(abstractClientTypeDefSymbol.typeDescriptor());
+    }
+
+    /**
+     * Extracts a user-friendly label for a persist client from its module name.
+     *
+     * @param packageName the package name of the persist module
+     * @param moduleName  the full module name of the persist client
+     * @return an Optional containing the formatted client label, or empty if extraction fails
+     */
+    public static Optional<String> getPersistClientLabel(String packageName, String moduleName) {
+        if (packageName == null || packageName.isEmpty() || moduleName == null ||
+                !moduleName.startsWith(packageName + ".")) {
+            return Optional.empty();
+        }
+        String modulePartName = moduleName.substring(packageName.length() + 1);
+        // The modulePartName follows the pattern <database-type>.<database-name>
+        if (modulePartName.isEmpty()) {
+            return Optional.empty();
+        }
+        String[] moduleParts = modulePartName.split("\\.");
+        if (moduleParts.length == 2 && !moduleParts[0].isEmpty() && !moduleParts[1].isEmpty()) {
+            String dbType = moduleParts[0];
+            String dbName = moduleParts[1];
+            return Optional.of(getPersistDatabaseName(dbType) + " " + dbName);
+        }
+        return Optional.empty();
+    }
+
+    private static String getPersistDatabaseName(String dbType) {
+        // Currently persist supports only PostgreSQL, MySQL and MSSQL
+        return switch (dbType.toLowerCase(Locale.getDefault())) {
+            case "postgresql" -> "Postgres";
+            case "mysql" -> "MySQL";
+            case "mssql" -> "MSSQL";
+            default -> dbType.substring(0, 1).toUpperCase(Locale.getDefault()) + dbType.substring(1);
+        };
+    }
+
+    /**
+     * Retrieves the file path of the persist model file in the given project directory.
+     *
+     * @param projectPath the path to the project directory as a string
+     * @param classSymbol the class symbol representing the persist model
+     * @return an Optional containing the file path if it exists, or empty if not found
+     */
+    public static Optional<String> getPersistModelFilePath(String projectPath, ClassSymbol classSymbol) {
+        if (projectPath == null || projectPath.isEmpty()) {
+            return Optional.empty();
+        }
+        return getPersistModelFilePath(Path.of(projectPath), classSymbol);
+    }
+
+    /**
+     * Retrieves the file path of the persist model file in the given project directory.
+     *
+     * @param projectPath the path to the project directory
+     * @param classSymbol the class symbol representing the persist model
+     * @return an Optional containing the file path if it exists, or empty if not found
+     */
+    public static Optional<String> getPersistModelFilePath(Path projectPath, ClassSymbol classSymbol) {
+        Optional<ModuleSymbol> module = classSymbol.getModule();
+        if (module.isEmpty()) {
+            return Optional.empty();
+        }
+        String modelName = module.get().id().modulePrefix();
+        Path persistModelPath = projectPath.resolve(PERSIST)
+                .resolve(modelName)
+                .resolve(DEFAULT_PERSIST_MODEL_FILE)
+                .toAbsolutePath();
+        if (!Files.exists(persistModelPath)) {
+            return Optional.empty();
+        }
+        return Optional.of(persistModelPath.toString());
+    }
+
     private static ClassSymbol getClassSymbol(Symbol symbol) {
         if (symbol instanceof ClassSymbol) {
             return (ClassSymbol) symbol;
@@ -1107,4 +1351,340 @@ public class CommonUtils {
                 nodeKind == SyntaxKind.MARKDOWN_REFERENCE_DOCUMENTATION_LINE ||
                 nodeKind == SyntaxKind.MARKDOWN_DEPRECATION_DOCUMENTATION_LINE;
     }
+
+    /**
+     * Gets the view line range for a symbol if it belongs to the current package or a workspace project.
+     *
+     * <p>
+     * TODO: The API currently relies on the syntax tree to determine the corresponding line range. The communication
+     * between the extension and the LS should be improved so it can reuse the go-to-def implementation and use the
+     * symbol location instead.
+     *
+     * @param symbol     the symbol to get the view line range for
+     * @param moduleInfo the module descriptor of the current module
+     * @param project    the current project
+     * @return Optional containing the line range if the symbol is viewable, empty otherwise
+     */
+    public static Optional<LineRange> getViewLineRange(Symbol symbol, ModuleInfo moduleInfo, Project project) {
+        Optional<Location> symbolLocation = symbol.getLocation();
+        if (symbolLocation.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Optional<ModuleID> moduleId = symbol.getModule().map(ModuleSymbol::id);
+        if (moduleId.isEmpty()) {
+            return Optional.empty();
+        }
+
+        String symbolOrg = moduleId.get().orgName();
+        String symbolPackage = moduleId.get().packageName();
+        Location location = symbolLocation.get();
+
+        // Only check if the organization matches
+        if (!symbolOrg.equals(moduleInfo.org())) {
+            return Optional.empty();
+        }
+
+        // Check if it's the default package
+        if (symbolPackage.equals(moduleInfo.packageName())) {
+            return CommonUtil.findNode(symbol, CommonUtils.getDocument(project, location).syntaxTree())
+                    .map(Node::lineRange);
+        }
+
+        // Check if the symbol is from a sibling workspace project
+        BallerinaCompilerApi compilerApi = BallerinaCompilerApi.getInstance();
+        Optional<Project> workspaceProject = compilerApi.getWorkspaceProject(project);
+        if (workspaceProject.isEmpty()) {
+            return Optional.empty();
+        }
+
+        List<Project> workspaceProjects = compilerApi.getWorkspaceProjectsInOrder(workspaceProject.get());
+
+        for (Project wsProject : workspaceProjects) {
+            String wsPackageName = wsProject.currentPackage().packageName().value();
+            if (wsPackageName.equals(symbolPackage)) {
+                // Use the sibling project to get the document
+                return CommonUtil.findNode(symbol, CommonUtils.getDocument(wsProject, location).syntaxTree())
+                        .map(Node::lineRange);
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * Removes a leading single quote from the given identifier, if present.
+     *
+     * <p>
+     * TODO: The utility assumes that every leading `'` is an escaped identifier. This does not correctly handle
+     * inputs where `'` is part of the identifier, such as `\'value`.
+     *
+     * @param identifier the identifier to process
+     * @return the identifier without the leading single quote, or the original identifier if no leading quote exists
+     */
+    public static String removeQuotedIdentifier(String identifier) {
+        return identifier.startsWith("'") ? identifier.substring(1) : identifier;
+    }
+
+    /**
+     * Extracts the literal content from a Ballerina string template if it does not contain interpolations.
+     *
+     * <p>This method analyzes string templates (e.g., string `Hello`) and extracts the literal content
+     * if no interpolations are present. If interpolations exist (e.g., `string Hello ${name}`),
+     * the original value is returned unchanged.
+     *
+     * @param value the string template value to process
+     * @return the extracted literal content wrapped in double quotes if no interpolations are found,
+     *         or the original value if it contains interpolations or is not a valid string template
+     */
+    public static String extractLiteralFromStringTemplate(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        if (!STRING_TEMPLATE_PATTERN.matcher(value).matches() || value.contains(LS)) {
+            return value;
+        }
+
+        TemplateExpressionNode exprNode = (TemplateExpressionNode) NodeParser.parseExpression(value);
+        boolean hasInterpolations = exprNode.content().stream()
+                .anyMatch(node -> node instanceof InterpolationNode);
+
+        if (hasInterpolations) {
+            return value;
+        }
+
+        String content = exprNode.content().size() == 1
+                ? exprNode.content().get(0).toString().trim()
+                : exprNode.toString().trim();
+
+        return DOUBLE_QUOTE + escapeContent(content) + DOUBLE_QUOTE;
+    }
+
+    /**
+     * Escapes backslashes and double quotes in the given content string.
+     *
+     * @param content the content string to escape
+     * @return the escaped content string
+     */
+    private static String escapeContent(String content) {
+        return content.replace("\\", "\\\\").replace("\"", "\\\"");
+    }
+
+    /**
+     * Unescapes backslashes and double quotes in the given content string.
+     *
+     * @param content the content string to unescape
+     * @return the unescaped content string
+     */
+    public static String unescapeContent(String content) {
+        return content.replace("\\\"", "\"").replace("\\\\", "\\");
+    }
+
+    /**
+     * Removes the leading single quote from the specified string if present.
+     *
+     * @param input the string to be processed
+     * @return the string without the leading single quote, or the original string
+     */
+    public static String removeLeadingSingleQuote(String input) {
+        if (input != null && input.startsWith("'")) {
+            return input.substring(1);
+        }
+        return input;
+    }
+
+    /**
+     * Converts a map to a string representation.
+     *
+     * @param map the map to convert
+     * @return the string representation of the map
+     */
+    public static String convertMapToString(Map<?, ?> map) {
+        if (map == null || map.isEmpty()) {
+            return "{}";
+        }
+        return map.entrySet()
+                .stream()
+                .map(entry -> entry.getKey() + ": " + entry.getValue())
+                .collect(Collectors.joining(", ", "{ ", " }"));
+    }
+
+    /**
+     * Convert mapping expression to a map.
+     *
+     * @param mapExpr the map expression node
+     * @return the map representation of the mapping expression node
+     */
+    public static Map<String, Object> convertMappingExprToMap(MappingConstructorExpressionNode mapExpr) {
+        Map<String, Object> resultMap = new LinkedHashMap<>();
+        for (MappingFieldNode fieldNode : mapExpr.fields()) {
+            if (fieldNode instanceof SpecificFieldNode specificFieldNode) {
+                String key = specificFieldNode.fieldName().toString().trim();
+                Object value = specificFieldNode.valueExpr().map(exprNode -> exprNode.toString().trim())
+                        .orElse("");
+                resultMap.put(key, value);
+            }
+        }
+        return resultMap;
+    }
+
+    /**
+     * Directly extracts the default value from a symbol without requiring FunctionDataBuilder.
+     * This method contains the core default value extraction logic decoupled from function building.
+     *
+     * @param paramSymbol     the parameter or record field symbol
+     * @param typeSymbol      the type descriptor of the parameter
+     * @param semanticModel   the semantic model for symbol resolution (can be null)
+     * @param resolvedPackage the resolved package containing the symbol (can be null)
+     * @return the extracted default value as a string
+     */
+    public static String resolveDefaultValue(Symbol paramSymbol, TypeSymbol typeSymbol,
+                                                    SemanticModel semanticModel, Package resolvedPackage) {
+        return resolveDefaultValue(paramSymbol, typeSymbol, semanticModel, resolvedPackage, null);
+    }
+
+    /**
+     * Directly extracts the default value from a symbol without requiring FunctionDataBuilder.
+     * This method contains the core default value extraction logic decoupled from function building.
+     *
+     * @param paramSymbol     the parameter or record field symbol
+     * @param typeSymbol      the type descriptor of the parameter
+     * @param semanticModel   the semantic model for symbol resolution (can be null)
+     * @param resolvedPackage the resolved package containing the symbol (can be null)
+     * @param document        the document containing the symbol (can be null for optimization)
+     * @return the extracted default value as a string
+     */
+    public static String resolveDefaultValue(Symbol paramSymbol, TypeSymbol typeSymbol,
+                                                    SemanticModel semanticModel, Package resolvedPackage,
+                                             Document document) {
+        String defaultValue = DefaultValueGeneratorUtil.getDefaultValueForType(typeSymbol);
+
+        Optional<Location> symbolLocation = paramSymbol.getLocation();
+        if (resolvedPackage == null || symbolLocation.isEmpty()) {
+            return defaultValue;
+        }
+        if (document == null) {
+            // TODO: Remove the document passing logic to separate imported and local packages
+            document = findDocument(resolvedPackage, symbolLocation.get().lineRange().fileName());
+            if (document == null) {
+                return defaultValue;
+            }
+        }
+
+        ModulePartNode rootNode = document.syntaxTree().rootNode();
+        TextRange textRange = symbolLocation.get().textRange();
+        NonTerminalNode node = rootNode.findNode(TextRange.from(textRange.startOffset(), textRange.length()));
+
+        ExpressionNode expression;
+        switch (node.kind()) {
+            case DEFAULTABLE_PARAM -> expression = (ExpressionNode) ((DefaultableParameterNode) node).expression();
+            case RECORD_FIELD_WITH_DEFAULT_VALUE -> expression = ((RecordFieldWithDefaultValueNode) node).expression();
+            default -> {
+                return defaultValue;
+            }
+        }
+
+        if (expression instanceof SimpleNameReferenceNode simpleNameReferenceNode) {
+            String enumValue = resolveEnumMemberValue(simpleNameReferenceNode, resolvedPackage,
+                    semanticModel, document);
+            return enumValue != null ? enumValue : simpleNameReferenceNode.name().text();
+        } else if (expression instanceof QualifiedNameReferenceNode qualifiedNameReferenceNode) {
+            String enumValue = resolveEnumMemberValue(qualifiedNameReferenceNode, resolvedPackage,
+                    semanticModel, document);
+            return enumValue != null ? enumValue :
+                    qualifiedNameReferenceNode.modulePrefix().text() + ":" + qualifiedNameReferenceNode.identifier()
+                    .text();
+        } else {
+            return expression.toSourceCode();
+        }
+    }
+
+    /**
+     * Helper method to find a document in a package by file path.
+     */
+    public static Document findDocument(Package pkg, String path) {
+        if (pkg == null) {
+            return null;
+        }
+        Project project = pkg.project();
+        Module defaultModule = pkg.getDefaultModule();
+        String module = pkg.packageName().value();
+        // TODO: Unify the supported for the submodules
+        Path docPath = project.sourceRoot().resolve("modules").resolve(module).resolve(path);
+        try {
+            DocumentId documentId = project.documentId(docPath);
+            return defaultModule.document(documentId);
+        } catch (RuntimeException ex) {
+            return null;
+        }
+    }
+
+    /**
+     * Helper method to resolve enum member values from expressions.
+     */
+    private static String resolveEnumMemberValue(ExpressionNode expression, Package resolvedPackage,
+                                                 SemanticModel semanticModel, Document document) {
+        if (semanticModel == null) {
+            return null;
+        }
+
+        Optional<Symbol> symbolOpt = semanticModel.symbol(expression);
+        if (symbolOpt.isEmpty()) {
+            return null;
+        }
+
+        Symbol symbol = symbolOpt.get();
+        if (symbol.kind() == SymbolKind.CONSTANT) {
+            if (symbol instanceof ConstantSymbol constantSymbol) {
+                return String.valueOf(constantSymbol.constValue());
+            }
+            // Handle case where kind is CONSTANT but not instanceof ConstantSymbol
+            return null;
+        }
+
+        if (symbol.kind() != SymbolKind.ENUM_MEMBER) {
+            return null;
+        }
+
+        Optional<Location> symbolLocation = symbol.getLocation();
+        if (resolvedPackage == null || symbolLocation.isEmpty()) {
+            return null;
+        }
+
+        if (document == null) {
+            document = findDocument(resolvedPackage, symbolLocation.get().lineRange().fileName());
+            if (document == null) {
+                return null;
+            }
+        }
+
+        ModulePartNode rootNode = document.syntaxTree().rootNode();
+        TextRange textRange = symbolLocation.get().textRange();
+        NonTerminalNode node = rootNode.findNode(TextRange.from(textRange.startOffset(), textRange.length()));
+
+        if (!(node instanceof EnumMemberNode enumMemberNode)) {
+            return null;
+        }
+
+        if (enumMemberNode.constExprNode().isEmpty()) {
+            return enumMemberNode.identifier().text();
+        }
+
+        ExpressionNode valueExpression = enumMemberNode.constExprNode().get();
+        return valueExpression.toSourceCode().trim();
+    }
+
+    /**
+     * Escapes a form field name to a valid Ballerina identifier by replacing the leading {@code $} with a
+     * single quote prefix.
+     *
+     * @param name the form field name to escape
+     * @return the escaped identifier
+     */
+    public static String escapeIdentifierFromFormField(@NonNull String name) {
+        return name.startsWith("$") ? "'" + name.substring(1) : name;
+    }
+
 }
+

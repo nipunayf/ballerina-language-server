@@ -28,8 +28,12 @@
       "codedata": {
         "type": "DOCUMENTATION"
       },
-      "valueType": "STRING",
-      "valueTypeConstraint": "string",
+      "types": [
+        {
+          "fieldType": "TEXT",
+          "selected": true
+        }
+      ],
       "enabled": true,
       "editable": true,
       "optional": true,
@@ -45,13 +49,8 @@
           "type": "LISTENER"
         },
         "placeholder": "",
-        "valueType": "MULTIPLE_SELECT_LISTENER",
-        "valueTypeConstraint": "github:Listener",
         "value": "githubDefaultListener",
         "values": [],
-        "items": [
-          "githubDefaultListener"
-        ],
         "properties": {
           "githubDefaultListener": {
             "codedata": {
@@ -73,6 +72,18 @@
             "advanced": false
           }
         },
+        "types": [
+          {
+            "fieldType": "MULTIPLE_SELECT_LISTENER",
+            "options": [
+              {
+                "label": "githubDefaultListener",
+                "value": "githubDefaultListener"
+              }
+            ],
+            "selected": true
+          }
+        ],
         "enabled": true,
         "editable": true,
         "optional": false,
@@ -87,21 +98,58 @@
           "type": "SERVICE_TYPE"
         },
         "placeholder": "",
-        "valueType": "SINGLE_SELECT",
-        "valueTypeConstraint": "string",
         "value": "IssuesService",
-        "items": [
-          "",
-          "IssuesService",
-          "IssueCommentService",
-          "PullRequestService",
-          "PullRequestReviewService",
-          "PullRequestReviewCommentService",
-          "ReleaseService",
-          "LabelService",
-          "MilestoneService",
-          "PushService",
-          "ProjectCardService"
+        "types": [
+          {
+            "fieldType": "SINGLE_SELECT",
+            "options": [
+              {
+                "label": "",
+                "value": ""
+              },
+              {
+                "label": "IssuesService",
+                "value": "IssuesService"
+              },
+              {
+                "label": "IssueCommentService",
+                "value": "IssueCommentService"
+              },
+              {
+                "label": "PullRequestService",
+                "value": "PullRequestService"
+              },
+              {
+                "label": "PullRequestReviewService",
+                "value": "PullRequestReviewService"
+              },
+              {
+                "label": "PullRequestReviewCommentService",
+                "value": "PullRequestReviewCommentService"
+              },
+              {
+                "label": "ReleaseService",
+                "value": "ReleaseService"
+              },
+              {
+                "label": "LabelService",
+                "value": "LabelService"
+              },
+              {
+                "label": "MilestoneService",
+                "value": "MilestoneService"
+              },
+              {
+                "label": "PushService",
+                "value": "PushService"
+              },
+              {
+                "label": "ProjectCardService",
+                "value": "ProjectCardService"
+              }
+            ],
+            "selected": true
+          }
         ],
         "enabled": true,
         "editable": false,
@@ -113,12 +161,17 @@
           "type": "READONLY"
         },
         "placeholder": "false",
-        "valueType": "SINGLE_SELECT",
         "value": {
           "Event Channel": [
             "IssuesService"
           ]
         },
+        "types": [
+          {
+            "fieldType": "SINGLE_SELECT",
+            "selected": true
+          }
+        ],
         "enabled": true,
         "editable": true,
         "optional": false,
@@ -154,8 +207,13 @@
             "description": ""
           },
           "placeholder": "onOpened",
-          "valueType": "IDENTIFIER",
           "value": "onOpened",
+          "types": [
+            {
+              "fieldType": "IDENTIFIER",
+              "selected": false
+            }
+          ],
           "enabled": true,
           "editable": false,
           "optional": false,
@@ -174,8 +232,13 @@
                 "description": "The type of the parameter"
               },
               "placeholder": "github:IssuesEvent",
-              "valueType": "TYPE",
               "value": "github:IssuesEvent",
+              "types": [
+                {
+                  "fieldType": "TYPE",
+                  "selected": true
+                }
+              ],
               "enabled": true,
               "editable": false,
               "optional": true,
@@ -187,8 +250,13 @@
                 "description": ""
               },
               "placeholder": "payload",
-              "valueType": "IDENTIFIER",
               "value": "payload",
+              "types": [
+                {
+                  "fieldType": "IDENTIFIER",
+                  "selected": true
+                }
+              ],
               "enabled": true,
               "editable": false,
               "optional": false,
@@ -200,8 +268,13 @@
                 "description": "The default value of the parameter"
               },
               "placeholder": "",
-              "valueType": "EXPRESSION",
               "value": "",
+              "types": [
+                {
+                  "fieldType": "EXPRESSION",
+                  "selected": true
+                }
+              ],
               "enabled": true,
               "editable": true,
               "optional": true,
@@ -223,8 +296,13 @@
             "description": "The return type of the function"
           },
           "placeholder": "error|()",
-          "valueType": "TYPE",
           "value": "error|()",
+          "types": [
+            {
+              "fieldType": "TYPE",
+              "selected": true
+            }
+          ],
           "enabled": true,
           "editable": false,
           "optional": true,
@@ -260,8 +338,13 @@
             "description": ""
           },
           "placeholder": "onClosed",
-          "valueType": "IDENTIFIER",
           "value": "onClosed",
+          "types": [
+            {
+              "fieldType": "IDENTIFIER",
+              "selected": false
+            }
+          ],
           "enabled": true,
           "editable": false,
           "optional": false,
@@ -280,8 +363,13 @@
                 "description": "The type of the parameter"
               },
               "placeholder": "github:IssuesEvent",
-              "valueType": "TYPE",
               "value": "github:IssuesEvent",
+              "types": [
+                {
+                  "fieldType": "TYPE",
+                  "selected": true
+                }
+              ],
               "enabled": true,
               "editable": false,
               "optional": true,
@@ -293,8 +381,13 @@
                 "description": ""
               },
               "placeholder": "payload",
-              "valueType": "IDENTIFIER",
               "value": "payload",
+              "types": [
+                {
+                  "fieldType": "IDENTIFIER",
+                  "selected": true
+                }
+              ],
               "enabled": true,
               "editable": false,
               "optional": false,
@@ -306,8 +399,13 @@
                 "description": "The default value of the parameter"
               },
               "placeholder": "",
-              "valueType": "EXPRESSION",
               "value": "",
+              "types": [
+                {
+                  "fieldType": "EXPRESSION",
+                  "selected": true
+                }
+              ],
               "enabled": true,
               "editable": true,
               "optional": true,
@@ -329,8 +427,13 @@
             "description": "The return type of the function"
           },
           "placeholder": "error|()",
-          "valueType": "TYPE",
           "value": "error|()",
+          "types": [
+            {
+              "fieldType": "TYPE",
+              "selected": true
+            }
+          ],
           "enabled": true,
           "editable": false,
           "optional": true,
@@ -366,8 +469,13 @@
             "description": ""
           },
           "placeholder": "onReopened",
-          "valueType": "IDENTIFIER",
           "value": "onReopened",
+          "types": [
+            {
+              "fieldType": "IDENTIFIER",
+              "selected": false
+            }
+          ],
           "enabled": true,
           "editable": false,
           "optional": false,
@@ -386,8 +494,13 @@
                 "description": "The type of the parameter"
               },
               "placeholder": "github:IssuesEvent",
-              "valueType": "TYPE",
               "value": "github:IssuesEvent",
+              "types": [
+                {
+                  "fieldType": "TYPE",
+                  "selected": true
+                }
+              ],
               "enabled": true,
               "editable": false,
               "optional": true,
@@ -399,8 +512,13 @@
                 "description": ""
               },
               "placeholder": "payload",
-              "valueType": "IDENTIFIER",
               "value": "payload",
+              "types": [
+                {
+                  "fieldType": "IDENTIFIER",
+                  "selected": true
+                }
+              ],
               "enabled": true,
               "editable": false,
               "optional": false,
@@ -412,8 +530,13 @@
                 "description": "The default value of the parameter"
               },
               "placeholder": "",
-              "valueType": "EXPRESSION",
               "value": "",
+              "types": [
+                {
+                  "fieldType": "EXPRESSION",
+                  "selected": true
+                }
+              ],
               "enabled": true,
               "editable": true,
               "optional": true,
@@ -435,8 +558,13 @@
             "description": "The return type of the function"
           },
           "placeholder": "error|()",
-          "valueType": "TYPE",
           "value": "error|()",
+          "types": [
+            {
+              "fieldType": "TYPE",
+              "selected": true
+            }
+          ],
           "enabled": true,
           "editable": false,
           "optional": true,
@@ -472,8 +600,13 @@
             "description": ""
           },
           "placeholder": "onAssigned",
-          "valueType": "IDENTIFIER",
           "value": "onAssigned",
+          "types": [
+            {
+              "fieldType": "IDENTIFIER",
+              "selected": false
+            }
+          ],
           "enabled": true,
           "editable": false,
           "optional": false,
@@ -492,8 +625,13 @@
                 "description": "The type of the parameter"
               },
               "placeholder": "github:IssuesEvent",
-              "valueType": "TYPE",
               "value": "github:IssuesEvent",
+              "types": [
+                {
+                  "fieldType": "TYPE",
+                  "selected": true
+                }
+              ],
               "enabled": true,
               "editable": false,
               "optional": true,
@@ -505,8 +643,13 @@
                 "description": ""
               },
               "placeholder": "payload",
-              "valueType": "IDENTIFIER",
               "value": "payload",
+              "types": [
+                {
+                  "fieldType": "IDENTIFIER",
+                  "selected": true
+                }
+              ],
               "enabled": true,
               "editable": false,
               "optional": false,
@@ -518,8 +661,13 @@
                 "description": "The default value of the parameter"
               },
               "placeholder": "",
-              "valueType": "EXPRESSION",
               "value": "",
+              "types": [
+                {
+                  "fieldType": "EXPRESSION",
+                  "selected": true
+                }
+              ],
               "enabled": true,
               "editable": true,
               "optional": true,
@@ -541,8 +689,13 @@
             "description": "The return type of the function"
           },
           "placeholder": "error|()",
-          "valueType": "TYPE",
           "value": "error|()",
+          "types": [
+            {
+              "fieldType": "TYPE",
+              "selected": true
+            }
+          ],
           "enabled": true,
           "editable": false,
           "optional": true,
@@ -578,8 +731,13 @@
             "description": ""
           },
           "placeholder": "onUnassigned",
-          "valueType": "IDENTIFIER",
           "value": "onUnassigned",
+          "types": [
+            {
+              "fieldType": "IDENTIFIER",
+              "selected": false
+            }
+          ],
           "enabled": true,
           "editable": false,
           "optional": false,
@@ -598,8 +756,13 @@
                 "description": "The type of the parameter"
               },
               "placeholder": "github:IssuesEvent",
-              "valueType": "TYPE",
               "value": "github:IssuesEvent",
+              "types": [
+                {
+                  "fieldType": "TYPE",
+                  "selected": true
+                }
+              ],
               "enabled": true,
               "editable": false,
               "optional": true,
@@ -611,8 +774,13 @@
                 "description": ""
               },
               "placeholder": "payload",
-              "valueType": "IDENTIFIER",
               "value": "payload",
+              "types": [
+                {
+                  "fieldType": "IDENTIFIER",
+                  "selected": true
+                }
+              ],
               "enabled": true,
               "editable": false,
               "optional": false,
@@ -624,8 +792,13 @@
                 "description": "The default value of the parameter"
               },
               "placeholder": "",
-              "valueType": "EXPRESSION",
               "value": "",
+              "types": [
+                {
+                  "fieldType": "EXPRESSION",
+                  "selected": true
+                }
+              ],
               "enabled": true,
               "editable": true,
               "optional": true,
@@ -647,8 +820,13 @@
             "description": "The return type of the function"
           },
           "placeholder": "error|()",
-          "valueType": "TYPE",
           "value": "error|()",
+          "types": [
+            {
+              "fieldType": "TYPE",
+              "selected": true
+            }
+          ],
           "enabled": true,
           "editable": false,
           "optional": true,
@@ -684,8 +862,13 @@
             "description": ""
           },
           "placeholder": "onLabeled",
-          "valueType": "IDENTIFIER",
           "value": "onLabeled",
+          "types": [
+            {
+              "fieldType": "IDENTIFIER",
+              "selected": false
+            }
+          ],
           "enabled": true,
           "editable": false,
           "optional": false,
@@ -704,8 +887,13 @@
                 "description": "The type of the parameter"
               },
               "placeholder": "github:IssuesEvent",
-              "valueType": "TYPE",
               "value": "github:IssuesEvent",
+              "types": [
+                {
+                  "fieldType": "TYPE",
+                  "selected": true
+                }
+              ],
               "enabled": true,
               "editable": false,
               "optional": true,
@@ -717,8 +905,13 @@
                 "description": ""
               },
               "placeholder": "payload",
-              "valueType": "IDENTIFIER",
               "value": "payload",
+              "types": [
+                {
+                  "fieldType": "IDENTIFIER",
+                  "selected": true
+                }
+              ],
               "enabled": true,
               "editable": false,
               "optional": false,
@@ -730,8 +923,13 @@
                 "description": "The default value of the parameter"
               },
               "placeholder": "",
-              "valueType": "EXPRESSION",
               "value": "",
+              "types": [
+                {
+                  "fieldType": "EXPRESSION",
+                  "selected": true
+                }
+              ],
               "enabled": true,
               "editable": true,
               "optional": true,
@@ -753,8 +951,13 @@
             "description": "The return type of the function"
           },
           "placeholder": "error|()",
-          "valueType": "TYPE",
           "value": "error|()",
+          "types": [
+            {
+              "fieldType": "TYPE",
+              "selected": true
+            }
+          ],
           "enabled": true,
           "editable": false,
           "optional": true,
@@ -790,8 +993,13 @@
             "description": ""
           },
           "placeholder": "onUnlabeled",
-          "valueType": "IDENTIFIER",
           "value": "onUnlabeled",
+          "types": [
+            {
+              "fieldType": "IDENTIFIER",
+              "selected": false
+            }
+          ],
           "enabled": true,
           "editable": false,
           "optional": false,
@@ -810,8 +1018,13 @@
                 "description": "The type of the parameter"
               },
               "placeholder": "github:IssuesEvent",
-              "valueType": "TYPE",
               "value": "github:IssuesEvent",
+              "types": [
+                {
+                  "fieldType": "TYPE",
+                  "selected": true
+                }
+              ],
               "enabled": true,
               "editable": false,
               "optional": true,
@@ -823,8 +1036,13 @@
                 "description": ""
               },
               "placeholder": "payload",
-              "valueType": "IDENTIFIER",
               "value": "payload",
+              "types": [
+                {
+                  "fieldType": "IDENTIFIER",
+                  "selected": true
+                }
+              ],
               "enabled": true,
               "editable": false,
               "optional": false,
@@ -836,8 +1054,13 @@
                 "description": "The default value of the parameter"
               },
               "placeholder": "",
-              "valueType": "EXPRESSION",
               "value": "",
+              "types": [
+                {
+                  "fieldType": "EXPRESSION",
+                  "selected": true
+                }
+              ],
               "enabled": true,
               "editable": true,
               "optional": true,
@@ -859,8 +1082,13 @@
             "description": "The return type of the function"
           },
           "placeholder": "error|()",
-          "valueType": "TYPE",
           "value": "error|()",
+          "types": [
+            {
+              "fieldType": "TYPE",
+              "selected": true
+            }
+          ],
           "enabled": true,
           "editable": false,
           "optional": true,

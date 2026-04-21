@@ -145,8 +145,13 @@
                           "label": "Condition",
                           "description": "Boolean Condition"
                         },
-                        "valueType": "EXPRESSION",
-                        "valueTypeConstraint": "boolean",
+                        "types": [
+                          {
+                            "fieldType": "EXPRESSION",
+                            "ballerinaType": "boolean",
+                            "selected": true
+                          }
+                        ],
                         "value": "name is string ",
                         "placeholder": "true",
                         "optional": false,
@@ -188,7 +193,12 @@
                   "label": "Ignore",
                   "description": "Ignore the error value"
                 },
-                "valueType": "EXPRESSION",
+                "types": [
+                  {
+                    "fieldType": "EXPRESSION",
+                    "selected": true
+                  }
+                ],
                 "value": "false",
                 "optional": false,
                 "editable": true,
@@ -200,7 +210,12 @@
                   "label": "Error Variable",
                   "description": "Name of the error variable"
                 },
-                "valueType": "IDENTIFIER",
+                "types": [
+                  {
+                    "fieldType": "IDENTIFIER",
+                    "selected": true
+                  }
+                ],
                 "value": "e ",
                 "placeholder": "err",
                 "optional": false,
@@ -213,7 +228,12 @@
                   "label": "Error Type",
                   "description": "Type of the error"
                 },
-                "valueType": "TYPE",
+                "types": [
+                  {
+                    "fieldType": "TYPE",
+                    "selected": true
+                  }
+                ],
                 "value": "error",
                 "placeholder": "error",
                 "optional": false,
@@ -227,7 +247,7 @@
                 "id": "41835",
                 "metadata": {
                   "label": "Declare Variable",
-                  "description": "Assign a value to a variable"
+                  "description": "Create a new variable"
                 },
                 "codedata": {
                   "node": "VARIABLE",
@@ -251,7 +271,12 @@
                       "label": "Expression",
                       "description": "Initialize with value"
                     },
-                    "valueType": "ACTION_OR_EXPRESSION",
+                    "types": [
+                      {
+                        "fieldType": "ACTION_OR_EXPRESSION",
+                        "selected": true
+                      }
+                    ],
                     "value": "12",
                     "optional": true,
                     "editable": true,
@@ -263,7 +288,12 @@
                       "label": "Name",
                       "description": "Name of the variable"
                     },
-                    "valueType": "IDENTIFIER",
+                    "types": [
+                      {
+                        "fieldType": "IDENTIFIER",
+                        "selected": true
+                      }
+                    ],
                     "value": "a",
                     "optional": false,
                     "editable": false,
@@ -288,7 +318,12 @@
                       "label": "Type",
                       "description": "Type of the variable"
                     },
-                    "valueType": "TYPE",
+                    "types": [
+                      {
+                        "fieldType": "TYPE",
+                        "selected": true
+                      }
+                    ],
                     "value": "int",
                     "placeholder": "var",
                     "optional": false,
@@ -329,9 +364,14 @@
                       "label": "Expression",
                       "description": "Return value"
                     },
-                    "valueType": "ACTION_OR_EXPRESSION",
+                    "types": [
+                      {
+                        "fieldType": "ACTION_OR_EXPRESSION",
+                        "selected": true
+                      }
+                    ],
                     "value": "\"foo\"",
-                    "optional": false,
+                    "optional": true,
                     "editable": true,
                     "advanced": false,
                     "hidden": false

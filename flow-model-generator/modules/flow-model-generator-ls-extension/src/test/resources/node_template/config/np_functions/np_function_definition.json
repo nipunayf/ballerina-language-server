@@ -1,4 +1,5 @@
 {
+  "source": "empty.bal",
   "description": "Node template for natural function definition",
   "codedata": {
     "node": "NP_FUNCTION_DEFINITION"
@@ -22,8 +23,13 @@
           "label": "Name",
           "description": "Name of the natural function"
         },
-        "valueType": "IDENTIFIER",
-        "valueTypeConstraint": "Global",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "scope": "Global",
+            "selected": true
+          }
+        ],
         "value": "naturalFunction",
         "optional": false,
         "editable": true,
@@ -35,7 +41,12 @@
           "label": "Return Type",
           "description": "Type of the return value"
         },
-        "valueType": "TYPE",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "selected": true
+          }
+        ],
         "value": "",
         "optional": true,
         "editable": true,
@@ -47,56 +58,81 @@
           "label": "Parameters",
           "description": "Function parameters"
         },
-        "valueType": "REPEATABLE_PROPERTY",
-        "valueTypeConstraint": {
-          "metadata": {
-            "label": "Parameter",
-            "description": "Function parameter"
-          },
-          "valueType": "FIXED_PROPERTY",
-          "value": {
-            "type": {
+        "types": [
+          {
+            "fieldType": "REPEATABLE_PROPERTY",
+            "template": {
               "metadata": {
-                "label": "Type",
-                "description": "Type of the parameter"
+                "label": "Parameter",
+                "description": "Function parameter"
               },
-              "valueType": "TYPE",
-              "value": "",
+              "types": [
+                {
+                  "fieldType": "FIXED_PROPERTY",
+                  "selected": false
+                }
+              ],
+              "value": {
+                "type": {
+                  "metadata": {
+                    "label": "Type",
+                    "description": "Type of the parameter"
+                  },
+                  "types": [
+                    {
+                      "fieldType": "TYPE",
+                      "selected": false
+                    }
+                  ],
+                  "value": "",
+                  "optional": false,
+                  "editable": true,
+                  "advanced": false,
+                  "hidden": false
+                },
+                "variable": {
+                  "metadata": {
+                    "label": "Name",
+                    "description": "Name of the parameter"
+                  },
+                  "types": [
+                    {
+                      "fieldType": "IDENTIFIER",
+                      "selected": false
+                    }
+                  ],
+                  "value": "",
+                  "optional": false,
+                  "editable": true,
+                  "advanced": false,
+                  "hidden": false
+                },
+                "parameterDescription": {
+                  "metadata": {
+                    "label": "Description",
+                    "description": "Description of the parameter"
+                  },
+                  "types": [
+                    {
+                      "fieldType": "DOC_TEXT",
+                      "selected": false
+                    }
+                  ],
+                  "value": "",
+                  "optional": true,
+                  "editable": true,
+                  "advanced": false,
+                  "hidden": false
+                }
+              },
               "optional": false,
-              "editable": true,
+              "editable": false,
               "advanced": false,
               "hidden": false
             },
-            "variable": {
-              "metadata": {
-                "label": "Name",
-                "description": "Name of the parameter"
-              },
-              "valueType": "IDENTIFIER",
-              "value": "",
-              "optional": false,
-              "editable": true,
-              "advanced": false,
-              "hidden": false
-            },
-            "parameterDescription": {
-              "metadata": {
-                "label": "Description",
-                "description": "Description of the parameter"
-              },
-              "valueType": "STRING",
-              "value": "",
-              "optional": true,
-              "editable": true,
-              "advanced": false,
-              "hidden": false
-            }
-          },
-          "optional": false,
-          "editable": false,
-          "advanced": false,
-          "hidden": false
-        },
+            "selected": false
+          }
+        ],
         "value": {},
         "optional": true,
         "editable": false,
@@ -108,8 +144,13 @@
           "label": "Prompt",
           "description": "Prompt for the function"
         },
-        "valueType": "RAW_TEMPLATE",
-        "valueTypeConstraint": "np:Prompt",
+        "types": [
+          {
+            "fieldType": "RAW_TEMPLATE",
+            "ballerinaType": "np:Prompt",
+            "selected": false
+          }
+        ],
         "value": "",
         "placeholder": "",
         "optional": false,
@@ -125,7 +166,12 @@
           "label": "Configure the model",
           "description": "The large language model (LLM) to use"
         },
-        "valueType": "EXPRESSION",
+        "types": [
+          {
+            "fieldType": "EXPRESSION",
+            "selected": false
+          }
+        ],
         "optional": false,
         "editable": true,
         "advanced": false,
@@ -135,7 +181,12 @@
         }
       },
       "modelProviderAsParameter": {
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": false
+          }
+        ],
         "value": false,
         "optional": false,
         "editable": true,

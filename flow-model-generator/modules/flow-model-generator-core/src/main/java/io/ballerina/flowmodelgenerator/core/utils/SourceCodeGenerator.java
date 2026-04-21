@@ -20,6 +20,7 @@ package io.ballerina.flowmodelgenerator.core.utils;
 
 import com.google.gson.Gson;
 import io.ballerina.flowmodelgenerator.core.model.AnnotationAttachment;
+import io.ballerina.flowmodelgenerator.core.model.Codedata;
 import io.ballerina.flowmodelgenerator.core.model.Function;
 import io.ballerina.flowmodelgenerator.core.model.Member;
 import io.ballerina.flowmodelgenerator.core.model.NodeKind;
@@ -35,6 +36,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
+
+import static io.ballerina.flowmodelgenerator.core.converters.utils.DataMappingModelConverterUtils.escapeIdentifier;
 
 /**
  * Code snippet generator.
@@ -109,9 +112,12 @@ public class SourceCodeGenerator {
             }
         }
 
-        String template = "%senum %s {%s%n}%n";
+        // Check for public property to add `public` qualifier to the enum
+        String publicQualifier = isPublicFlagOn(typeData.properties()) ? "public " : "";
 
-        return template.formatted(docs, typeData.name(), enumValues.toString());
+        String template = "%s%senum %s {%s%n}%n";
+
+        return template.formatted(docs, publicQualifier, typeData.name(), enumValues.toString());
     }
 
     private String generateTypeDefCodeSnippet(TypeData typeData) {
@@ -120,8 +126,11 @@ public class SourceCodeGenerator {
             docs = generateDocs(typeData.metadata().description(), "");
         }
         String annots = "";
-        if (typeData.annotationAttachments() != null && !typeData.annotationAttachments().isEmpty()) {
-            annots = typeData.annotationAttachments().stream()
+        List<AnnotationAttachment> annotationAttachments = typeData.annotationAttachments();
+        if (annotationAttachments != null && !annotationAttachments.isEmpty()) {
+            annotationAttachments.forEach(this::addCodedataImports);
+
+            annots = annotationAttachments.stream()
                     .map(annot -> annot.toString() + LS)
                     .collect(Collectors.joining());
         }
@@ -136,9 +145,15 @@ public class SourceCodeGenerator {
             }
         }
 
-        String template = "%s%stype %s %s;";
+        // Check for public property to add `public` qualifier to the type definition
+        String publicQualifier = "";
+        if (isPublicFlagOn(typeData.properties())) {
+            publicQualifier = "public ";
+        }
 
-        return template.formatted(docs, annots, typeData.name(), typeDescriptor);
+        String template = "%s%s%stype %s %s;";
+
+        return template.formatted(docs, annots, publicQualifier, typeData.name(), typeDescriptor);
     }
 
     private String generateAnnotatedTypeDescriptor(Object typeData,
@@ -146,6 +161,7 @@ public class SourceCodeGenerator {
         StringBuilder annotationsBuilder = new StringBuilder();
         for (AnnotationAttachment annot : annotAttachments) {
             annotationsBuilder.append(annot.toString()).append(" ");
+            addCodedataImports(annot);
         }
 
         return annotationsBuilder + generateTypeDescriptor(typeData);
@@ -233,7 +249,7 @@ public class SourceCodeGenerator {
 
     private String generateFieldMember(Member member, boolean withDefaultValue) {
         // Add the imports
-        addMemberImports(member);
+        addImports(member.imports());
 
         StringBuilder stringBuilder = new StringBuilder();
         String docs = generateDocs(member.docs(), "\t");
@@ -247,7 +263,7 @@ public class SourceCodeGenerator {
 
     private String generateAnnotatedFieldMember(Member member, boolean withDefaultValue) {
         // Add the imports
-        addMemberImports(member);
+        addImports(member.imports());
 
         // Docs
         String docs = generateDocs(member.docs(), "\t");
@@ -255,6 +271,7 @@ public class SourceCodeGenerator {
         // Annotation
         StringBuilder annotationsBuilder = new StringBuilder();
         for (AnnotationAttachment annot : getAnnotationAttachments(member)) {
+            addCodedataImports(annot);
             annotationsBuilder.append("\t").append(annot.toString()).append(LS);
         }
 
@@ -417,7 +434,7 @@ public class SourceCodeGenerator {
 
     private String generateTypeFromMember(Member member) {
         // Add the imports
-        addMemberImports(member);
+        addImports(member.imports());
 
         // Generate the type descriptor
         return generateTypeDescriptor(member.type());
@@ -431,7 +448,7 @@ public class SourceCodeGenerator {
 
     private String generateFunctionParameter(Member member, boolean withDefaultValue) {
         // Add the imports
-        addMemberImports(member);
+        addImports(member.imports());
 
         // Annotation and type descriptor
         List<AnnotationAttachment> copyOfAnnotAttachments = getAnnotationAttachments(member);
@@ -463,6 +480,11 @@ public class SourceCodeGenerator {
             copyOfAnnotAttachments.add(new AnnotationAttachment(
                     TypeUtils.GRAPHQL_DEFAULT_MODULE_PREFIX,
                     TypeUtils.GRAPHQL_ID_ANNOTATION_NAME,
+                    new Codedata.Builder<>(null)
+                            .node(NodeKind.ANNOTATION_ATTACHMENT)
+                            .org(TypeUtils.BALLERINA_ORG)
+                            .module(TypeUtils.GRAPHQL_DEFAULT_MODULE_PREFIX)
+                            .build(),
                     null
             ));
         }
@@ -478,20 +500,33 @@ public class SourceCodeGenerator {
 
         String template = "%s %s%s"; // <type descriptor> <identifier> [= <default value>]
 
-        String fieldName = CommonUtil.escapeReservedKeyword(member.name());
-        if (member.optional()) {
+        String rawName = member.name();
+        String fieldName;
+
+        if (rawName == null) {
+            fieldName = null;
+        } else if (rawName.startsWith("'") || rawName.startsWith("\\")) {
+            fieldName = rawName;
+        } else {
+            fieldName = escapeIdentifier(rawName);
+        }
+
+        if (member.optional() && fieldName != null) {
             fieldName = fieldName + "?";
         }
 
-        return template.formatted(typeDescriptor,
+        return template.formatted(
+                typeDescriptor,
                 fieldName,
-                (withDefaultValue && member.defaultValue() != null && !member.defaultValue().isEmpty()) ?
-                        " = " + member.defaultValue() : "");
+                (withDefaultValue && member.defaultValue() != null && !member.defaultValue().isEmpty())
+                        ? " = " + member.defaultValue()
+                        : ""
+        );
     }
 
     private String generateResourceFunction(Function function) {
         // Add the imports
-        addFunctionImports(function);
+        addImports(function.imports());
 
         String docs = generateDocs(function.description(), "\t");
 
@@ -506,6 +541,11 @@ public class SourceCodeGenerator {
             returnTypeAnnotAttachments.add(new AnnotationAttachment(
                     TypeUtils.GRAPHQL_DEFAULT_MODULE_PREFIX,
                     TypeUtils.GRAPHQL_ID_ANNOTATION_NAME,
+                    new Codedata.Builder<>(null)
+                            .node(NodeKind.ANNOTATION_ATTACHMENT)
+                            .org(TypeUtils.BALLERINA_ORG)
+                            .module(TypeUtils.GRAPHQL_DEFAULT_MODULE_PREFIX)
+                            .build(),
                     null
             ));
         }
@@ -546,37 +586,36 @@ public class SourceCodeGenerator {
         return readonlyProperty != null && readonlyProperty.value().equals("true");
     }
 
-    /**
-     * Helper method to add imports from a member to the imports map.
-     *
-     * @param member The member whose imports need to be added
-     */
-    private void addMemberImports(Member member) {
-        if (Objects.nonNull(member.imports())) {
-            member.imports().forEach(this.imports::putIfAbsent);
-        }
+    private boolean isPublicFlagOn(Map<String, Property> properties) {
+        Property publicProperty = properties.get(Property.IS_PUBLIC_KEY);
+        return publicProperty != null &&
+                (publicProperty.value().equals("true") || publicProperty.value().equals(true));
+    }
 
-        // Add GraphQL import when GraphQL ID annotation is used
-        if (member.isGraphqlId()) {
-            this.imports.putIfAbsent(TypeUtils.GRAPHQL_DEFAULT_MODULE_PREFIX,
-                    TypeUtils.BALLERINA_ORG + "/" + TypeUtils.GRAPHQL_DEFAULT_MODULE_PREFIX);
+    /**
+     * Helper method to add imports derived from an {@link AnnotationAttachment} to the imports map.
+     * Skips local annotations (where modulePrefix is null or empty) to avoid self-imports.
+     *
+     * @param annot The annotation attachment whose imports need to be added
+     */
+    private void addCodedataImports(AnnotationAttachment annot) {
+        if (annot == null || annot.modulePrefix() == null || annot.modulePrefix().isEmpty()) {
+            return;
+        }
+        Codedata codedata = annot.codedata();
+        if (codedata != null && codedata.org() != null && codedata.module() != null) {
+            this.imports.putIfAbsent(annot.codedata().module(), codedata.getImportSignature());
         }
     }
 
     /**
-     * Helper method to add imports from a function to the imports map.
+     * Helper method to add imports.
      *
-     * @param function The function whose imports need to be added
+     * @param imports The imports need to be added
      */
-    private void addFunctionImports(Function function) {
-        if (Objects.nonNull(function.imports())) {
-            function.imports().forEach(this.imports::putIfAbsent);
-        }
-
-        // Add GraphQL import when GraphQL ID annotation is used on function return type
-        if (function.isGraphqlId()) {
-            this.imports.putIfAbsent(TypeUtils.GRAPHQL_DEFAULT_MODULE_PREFIX,
-                    TypeUtils.BALLERINA_ORG + "/" + TypeUtils.GRAPHQL_DEFAULT_MODULE_PREFIX);
+    private void addImports(Map<String, String> imports) {
+        if (Objects.nonNull(imports)) {
+            imports.forEach(this.imports::putIfAbsent);
         }
     }
 }

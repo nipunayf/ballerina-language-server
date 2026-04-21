@@ -1,4 +1,5 @@
 {
+  "source": "empty.bal",
   "description": "Test node template for the retry node",
   "codedata": {
     "node": "RETRY"
@@ -37,7 +38,12 @@
               "label": "Ignore",
               "description": "Ignore the error value"
             },
-            "valueType": "EXPRESSION",
+            "types": [
+              {
+                "fieldType": "EXPRESSION",
+                "selected": true
+              }
+            ],
             "value": "true",
             "optional": false,
             "editable": true,
@@ -49,7 +55,12 @@
               "label": "Error Variable",
               "description": "Name of the error variable"
             },
-            "valueType": "IDENTIFIER",
+            "types": [
+              {
+                "fieldType": "IDENTIFIER",
+                "selected": true
+              }
+            ],
             "value": "",
             "placeholder": "err",
             "optional": false,
@@ -62,7 +73,12 @@
               "label": "Error Type",
               "description": "Type of the error"
             },
-            "valueType": "TYPE",
+            "types": [
+              {
+                "fieldType": "TYPE",
+                "selected": true
+              }
+            ],
             "value": "",
             "placeholder": "error",
             "optional": false,
@@ -80,7 +96,13 @@
           "label": "Retry Count",
           "description": "Number of retries"
         },
-        "valueType": "EXPRESSION",
+        "types": [
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "int",
+            "selected": true
+          }
+        ],
         "value": "3",
         "optional": false,
         "editable": true,

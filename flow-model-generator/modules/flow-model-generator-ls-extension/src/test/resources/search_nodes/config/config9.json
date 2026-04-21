@@ -15,7 +15,7 @@
       "metadata": {
         "label": "Agent",
         "description": "Represents an agent.",
-        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_ai_1.7.0.png"
+        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_ai_1.11.1.png"
       },
       "codedata": {
         "node": "AGENT",
@@ -43,8 +43,27 @@
             "label": "System Prompt",
             "description": "The system prompt assigned to the agent"
           },
-          "valueType": "EXPRESSION",
-          "valueTypeConstraint": "ai:SystemPrompt",
+          "types": [
+            {
+              "fieldType": "RECORD_MAP_EXPRESSION",
+              "ballerinaType": "ai:SystemPrompt",
+              "typeMembers": [
+                {
+                  "type": "SystemPrompt",
+                  "packageInfo": "ballerina:ai:1.11.1",
+                  "packageName": "ai",
+                  "kind": "RECORD_TYPE",
+                  "selected": true
+                }
+              ],
+              "selected": true
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "ai:SystemPrompt",
+              "selected": false
+            }
+          ],
           "value": "{role: \"\", instructions: string ``}",
           "placeholder": "{role: \"\", instructions: \"\"}",
           "optional": false,
@@ -55,15 +74,6 @@
             "kind": "INCLUDED_FIELD",
             "originalName": "systemPrompt"
           },
-          "typeMembers": [
-            {
-              "type": "SystemPrompt",
-              "packageInfo": "ballerina:ai:1.7.0",
-              "packageName": "ai",
-              "kind": "RECORD_TYPE",
-              "selected": true
-            }
-          ],
           "defaultValue": "{role: \"\", instructions: \"\"}"
         },
         "model": {
@@ -71,8 +81,13 @@
             "label": "Model",
             "description": "The model used by the agent"
           },
-          "valueType": "EXPRESSION",
-          "valueTypeConstraint": "ai:ModelProvider",
+          "types": [
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "ai:ModelProvider",
+              "selected": true
+            }
+          ],
           "value": "self._salesAgentModel",
           "placeholder": "object {}",
           "optional": false,
@@ -83,15 +98,6 @@
             "kind": "INCLUDED_FIELD",
             "originalName": "model"
           },
-          "typeMembers": [
-            {
-              "type": "ModelProvider",
-              "packageInfo": "ballerina:ai:1.7.0",
-              "packageName": "ai",
-              "kind": "OBJECT_TYPE",
-              "selected": false
-            }
-          ],
           "defaultValue": "object {}"
         },
         "tools": {
@@ -99,9 +105,46 @@
             "label": "Tools",
             "description": "The tools available for the agent"
           },
-          "valueType": "EXPRESSION",
-          "valueTypeConstraint": "(ai:BaseToolKit|ai:ToolConfig|ai:FunctionTool)[]",
-          "value": "[]",
+          "types": [
+            {
+              "fieldType": "REPEATABLE_LIST",
+              "ballerinaType": "(ai:BaseToolKit|ai:ToolConfig|ai:FunctionTool)[]",
+              "template": {
+                "types": [
+                  {
+                    "fieldType": "RECORD_MAP_EXPRESSION",
+                    "ballerinaType": "ai:ToolConfig",
+                    "typeMembers": [
+                      {
+                        "type": "ToolConfig",
+                        "packageInfo": "ballerina:ai:1.11.1",
+                        "packageName": "ai",
+                        "kind": "RECORD_TYPE",
+                        "selected": false
+                      }
+                    ],
+                    "selected": false
+                  },
+                  {
+                    "fieldType": "EXPRESSION",
+                    "ballerinaType": "ai:BaseToolKit|ai:ToolConfig|ai:FunctionTool",
+                    "selected": false
+                  }
+                ],
+                "optional": false,
+                "editable": false,
+                "advanced": false,
+                "hidden": false
+              },
+              "selected": true
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "(ai:BaseToolKit|ai:ToolConfig|ai:FunctionTool)[]",
+              "selected": false
+            }
+          ],
+          "value": [],
           "placeholder": "[]",
           "optional": true,
           "editable": true,
@@ -111,15 +154,6 @@
             "kind": "INCLUDED_FIELD",
             "originalName": "tools"
           },
-          "typeMembers": [
-            {
-              "type": "BaseToolKit|ai",
-              "packageInfo": "",
-              "packageName": "",
-              "kind": "ARRAY_TYPE",
-              "selected": false
-            }
-          ],
           "defaultValue": "[]"
         },
         "maxIter": {
@@ -127,8 +161,18 @@
             "label": "Maximum Iterations",
             "description": "The maximum number of iterations the agent performs to complete the task.\nBy default, it is set to the number of tools + 1."
           },
-          "valueType": "EXPRESSION",
-          "valueTypeConstraint": "\"INFER_TOOL_COUNT\"|int",
+          "types": [
+            {
+              "fieldType": "NUMBER",
+              "ballerinaType": "int",
+              "selected": false
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "\"INFER_TOOL_COUNT\"|int",
+              "selected": false
+            }
+          ],
           "placeholder": "\"INFER_TOOL_COUNT\"",
           "optional": true,
           "editable": true,
@@ -138,31 +182,25 @@
             "kind": "INCLUDED_FIELD",
             "originalName": "maxIter"
           },
-          "typeMembers": [
-            {
-              "type": "\"INFER_TOOL_COUNT\"",
-              "packageInfo": "",
-              "packageName": "",
-              "kind": "BASIC_TYPE",
-              "selected": false
-            },
-            {
-              "type": "int",
-              "packageInfo": "",
-              "packageName": "",
-              "kind": "BASIC_TYPE",
-              "selected": false
-            }
-          ],
-          "defaultValue": "\"INFER_TOOL_COUNT\""
+          "defaultValue": "INFER_TOOL_COUNT"
         },
         "verbose": {
           "metadata": {
             "label": "Verbose",
             "description": "Specifies whether verbose logging is enabled"
           },
-          "valueType": "EXPRESSION",
-          "valueTypeConstraint": "boolean",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "ballerinaType": "boolean",
+              "selected": false
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "boolean",
+              "selected": false
+            }
+          ],
           "placeholder": "false",
           "optional": true,
           "editable": true,
@@ -172,15 +210,6 @@
             "kind": "INCLUDED_FIELD",
             "originalName": "verbose"
           },
-          "typeMembers": [
-            {
-              "type": "boolean",
-              "packageInfo": "",
-              "packageName": "",
-              "kind": "BASIC_TYPE",
-              "selected": false
-            }
-          ],
           "defaultValue": "false"
         },
         "memory": {
@@ -188,8 +217,13 @@
             "label": "Memory",
             "description": "The memory used by the agent to store and manage conversation history.\nDefaults to use an in-memory message store that trims on overflow, if unspecified."
           },
-          "valueType": "EXPRESSION",
-          "valueTypeConstraint": "ai:Memory|()",
+          "types": [
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "ai:Memory?",
+              "selected": false
+            }
+          ],
           "placeholder": "()",
           "optional": true,
           "editable": true,
@@ -199,30 +233,93 @@
             "kind": "INCLUDED_FIELD",
             "originalName": "memory"
           },
-          "typeMembers": [
+          "defaultValue": "()"
+        },
+        "toolLoadingStrategy": {
+          "metadata": {
+            "label": "Tool Loading Strategy",
+            "description": "Defines the strategies for loading tool schemas into an Agent. \nBy default, all tools are loaded without any filtering."
+          },
+          "types": [
             {
-              "type": "Memory",
-              "packageInfo": "ballerina:ai:1.7.0",
-              "packageName": "ai",
-              "kind": "OBJECT_TYPE",
+              "fieldType": "SINGLE_SELECT",
+              "options": [
+                {
+                  "label": "LLM_FILTER",
+                  "value": "\"LLM_FILTER\""
+                },
+                {
+                  "label": "NO_FILTER",
+                  "value": "\"NO_FILTER\""
+                }
+              ],
               "selected": false
             },
             {
-              "type": "()",
-              "packageInfo": "",
-              "packageName": "",
-              "kind": "BASIC_TYPE",
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "ai:ToolLoadingStrategy",
               "selected": false
             }
           ],
-          "defaultValue": "()"
+          "placeholder": "\"LLM_FILTER\"",
+          "optional": true,
+          "editable": true,
+          "advanced": true,
+          "hidden": false,
+          "codedata": {
+            "kind": "INCLUDED_FIELD",
+            "originalName": "toolLoadingStrategy"
+          },
+          "defaultValue": "NO_FILTER"
+        },
+        "credential": {
+          "metadata": {
+            "label": "Agent Credential",
+            "description": "Optional authentication details of the agent."
+          },
+          "types": [
+            {
+              "fieldType": "RECORD_MAP_EXPRESSION",
+              "ballerinaType": "ai:Credential",
+              "typeMembers": [
+                {
+                  "type": "Credential",
+                  "packageInfo": "ballerina:ai:1.11.1",
+                  "packageName": "ai",
+                  "kind": "RECORD_TYPE",
+                  "selected": false
+                }
+              ],
+              "selected": false
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "ai:Credential",
+              "selected": false
+            }
+          ],
+          "placeholder": "{id: \"\", secret: \"\"}",
+          "optional": true,
+          "editable": true,
+          "advanced": true,
+          "hidden": false,
+          "codedata": {
+            "kind": "INCLUDED_FIELD",
+            "originalName": "credential"
+          },
+          "defaultValue": "{id: \"\", secret: \"\"}"
         },
         "checkError": {
           "metadata": {
             "label": "Check Error",
             "description": "Terminate on error"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": true,
           "optional": false,
           "editable": false,
@@ -234,7 +331,12 @@
             "label": "Connection Scope",
             "description": "Scope of the connection, Global or Local"
           },
-          "valueType": "ENUM",
+          "types": [
+            {
+              "fieldType": "ENUM",
+              "selected": true
+            }
+          ],
           "value": "ServiceInit",
           "optional": false,
           "editable": true,
@@ -246,7 +348,12 @@
             "label": "Variable",
             "description": "Name of the variable/field"
           },
-          "valueType": "LV_EXPRESSION",
+          "types": [
+            {
+              "fieldType": "LV_EXPRESSION",
+              "selected": false
+            }
+          ],
           "value": "self._salesAgentAgent",
           "optional": false,
           "editable": true,

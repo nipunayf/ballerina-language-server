@@ -29,7 +29,7 @@
         "displayName": "num",
         "typeName": "string",
         "kind": "string",
-        "category": "variable"
+        "category": "local-variable"
       },
       {
         "fields": [],
@@ -46,8 +46,10 @@
         "displayName": "secondaryPhonesItem",
         "typeName": "SecondaryPhones",
         "kind": "record",
+        "category": "local-variable",
         "focusExpression": "u.info.secondaryPhones",
-        "ref": "-782972947"
+        "ref": "-782972947",
+        "isIterationVariable": true
       }
     ],
     "output": {
@@ -222,6 +224,7 @@
         "typeName": "User",
         "kind": "record"
       }
-    }
+    },
+    "hasInvalidOutput": false
   }
 }

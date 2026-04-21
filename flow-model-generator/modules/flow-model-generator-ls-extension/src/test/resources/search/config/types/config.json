@@ -9,6 +9,20 @@
   "categories": [
     {
       "metadata": {
+        "label": "Current Integration",
+        "description": "Components defined within the current integration",
+        "keywords": [
+          "Project",
+          "Local",
+          "Function",
+          "Types",
+          "Data Mapper"
+        ]
+      },
+      "items": []
+    },
+    {
+      "metadata": {
         "label": "Imported Types",
         "description": "Types imported from other integrations",
         "keywords": [
@@ -29,7 +43,7 @@
               "metadata": {
                 "label": "CookieConfig",
                 "description": "Client configuration for cookies.\n",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.14.7.png"
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.16.1.png"
               },
               "codedata": {
                 "node": "TYPEDESC",
@@ -37,7 +51,7 @@
                 "module": "http",
                 "packageName": "http",
                 "symbol": "CookieConfig",
-                "version": "2.14.7"
+                "version": "2.16.1"
               },
               "enabled": true
             }
@@ -235,7 +249,7 @@
               "metadata": {
                 "label": "ConfigurationManagerClientEnabledFeatures",
                 "description": "configuration Manager client enabled features",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerinax_microsoft.onedrive_3.0.0.png"
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerinax_microsoft.onedrive_3.0.2.png"
               },
               "codedata": {
                 "node": "TYPEDESC",
@@ -243,7 +257,7 @@
                 "module": "microsoft.onedrive",
                 "packageName": "microsoft.onedrive",
                 "symbol": "ConfigurationManagerClientEnabledFeatures",
-                "version": "3.0.0"
+                "version": "3.0.2"
               },
               "enabled": true
             }
@@ -285,7 +299,7 @@
               "metadata": {
                 "label": "ClientConfig",
                 "description": "SOAP client configurations.\n",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_soap_2.3.0.png"
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_soap_2.3.1.png"
               },
               "codedata": {
                 "node": "TYPEDESC",
@@ -293,7 +307,7 @@
                 "module": "soap",
                 "packageName": "soap",
                 "symbol": "ClientConfig",
-                "version": "2.3.0"
+                "version": "2.3.1"
               },
               "enabled": true
             }
@@ -334,8 +348,8 @@
             {
               "metadata": {
                 "label": "ClientConfiguration",
-                "description": "Configuration for FTP client.\n",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_ftp_2.14.1.png"
+                "description": "Configuration for FTP client.",
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_ftp_2.18.0.png"
               },
               "codedata": {
                 "node": "TYPEDESC",
@@ -343,7 +357,7 @@
                 "module": "ftp",
                 "packageName": "ftp",
                 "symbol": "ClientConfiguration",
-                "version": "2.14.1"
+                "version": "2.18.0"
               },
               "enabled": true
             }
@@ -360,7 +374,7 @@
               "metadata": {
                 "label": "Graphiql",
                 "description": "Represent GraphiQL client configurations\n",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_graphql_1.16.1.png"
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_graphql_1.17.0.png"
               },
               "codedata": {
                 "node": "TYPEDESC",
@@ -368,7 +382,7 @@
                 "module": "graphql",
                 "packageName": "graphql",
                 "symbol": "Graphiql",
-                "version": "1.16.1"
+                "version": "1.17.0"
               },
               "enabled": true
             },
@@ -376,7 +390,7 @@
               "metadata": {
                 "label": "CookieConfig",
                 "description": "Client configuration for cookies.",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_graphql_1.16.1.png"
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_graphql_1.17.0.png"
               },
               "codedata": {
                 "node": "TYPEDESC",
@@ -384,7 +398,7 @@
                 "module": "graphql",
                 "packageName": "graphql",
                 "symbol": "CookieConfig",
-                "version": "1.16.1"
+                "version": "1.17.0"
               },
               "enabled": true
             }
@@ -392,24 +406,24 @@
         },
         {
           "metadata": {
-            "label": "microsoft.onenote",
+            "label": "smb",
             "description": "",
             "keywords": []
           },
           "items": [
             {
               "metadata": {
-                "label": "ConnectionConfig",
-                "description": "Client configuration details.",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerinax_microsoft.onenote_2.4.0.png"
+                "label": "ClientConfiguration",
+                "description": "Configuration for SMB client.\n",
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_smb_1.0.2.png"
               },
               "codedata": {
                 "node": "TYPEDESC",
-                "org": "ballerinax",
-                "module": "microsoft.onenote",
-                "packageName": "microsoft.onenote",
-                "symbol": "ConnectionConfig",
-                "version": "2.4.0"
+                "org": "ballerina",
+                "module": "smb",
+                "packageName": "smb",
+                "symbol": "ClientConfiguration",
+                "version": "1.0.2"
               },
               "enabled": true
             }
@@ -467,6 +481,31 @@
         },
         {
           "metadata": {
+            "label": "googleapis.sheets",
+            "description": "",
+            "keywords": []
+          },
+          "items": [
+            {
+              "metadata": {
+                "label": "ConnectionConfig",
+                "description": "Client configuration details.",
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerinax_googleapis.sheets_3.5.2.png"
+              },
+              "codedata": {
+                "node": "TYPEDESC",
+                "org": "ballerinax",
+                "module": "googleapis.sheets",
+                "packageName": "googleapis.sheets",
+                "symbol": "ConnectionConfig",
+                "version": "3.5.2"
+              },
+              "enabled": true
+            }
+          ]
+        },
+        {
+          "metadata": {
             "label": "microsoft.teams",
             "description": "",
             "keywords": []
@@ -492,31 +531,6 @@
         },
         {
           "metadata": {
-            "label": "googleapis.sheets",
-            "description": "",
-            "keywords": []
-          },
-          "items": [
-            {
-              "metadata": {
-                "label": "ConnectionConfig",
-                "description": "Client configuration details.",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerinax_googleapis.sheets_3.5.1.png"
-              },
-              "codedata": {
-                "node": "TYPEDESC",
-                "org": "ballerinax",
-                "module": "googleapis.sheets",
-                "packageName": "googleapis.sheets",
-                "symbol": "ConnectionConfig",
-                "version": "3.5.1"
-              },
-              "enabled": true
-            }
-          ]
-        },
-        {
-          "metadata": {
             "label": "salesforce.soap",
             "description": "",
             "keywords": []
@@ -526,7 +540,7 @@
               "metadata": {
                 "label": "ConnectionConfig",
                 "description": "Salesforce client configuration.\n",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerinax_salesforce_8.2.0.png"
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerinax_salesforce_8.4.1.png"
               },
               "codedata": {
                 "node": "TYPEDESC",
@@ -534,7 +548,7 @@
                 "module": "salesforce.soap",
                 "packageName": "salesforce",
                 "symbol": "ConnectionConfig",
-                "version": "8.2.0"
+                "version": "8.4.1"
               },
               "enabled": true
             }
@@ -551,7 +565,7 @@
               "metadata": {
                 "label": "ConnectionConfig",
                 "description": "Salesforce client configuration.",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerinax_salesforce_8.2.0.png"
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerinax_salesforce_8.4.1.png"
               },
               "codedata": {
                 "node": "TYPEDESC",
@@ -559,7 +573,7 @@
                 "module": "salesforce.bulk",
                 "packageName": "salesforce",
                 "symbol": "ConnectionConfig",
-                "version": "8.2.0"
+                "version": "8.4.1"
               },
               "enabled": true
             }

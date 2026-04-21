@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Command executor for pulling a package from central.
@@ -86,15 +87,21 @@ public class PullModuleExecutor implements LSCommandExecutor {
                 default:
             }
         }
-        return resolveModules(fileUri, context.getLanguageClient(), context.workspace(),
-                context.languageServercontext());
+        try {
+            return resolveModules(fileUri, context.getLanguageClient(), context.workspace(),
+                    context.languageServercontext()).get();
+        } catch (InterruptedException | ExecutionException e) {
+            // TODO: Add tracing after the workspace manager rewrite.
+            // Tracked with https://github.com/wso2/product-ballerina-integrator/issues/1488
+            throw new RuntimeException(e);
+        }
     }
 
     public static CompletableFuture<Void> resolveModules(String fileUri, ExtendedLanguageClient languageClient,
                                                          WorkspaceManager workspaceManager,
                                                          LanguageServerContext languageServerContext) {
         return resolveModules(fileUri, languageClient, workspaceManager, languageServerContext, false);
-}
+    }
 
     /**
      * Resolves missing modules for the given file.
@@ -138,6 +145,10 @@ public class PullModuleExecutor implements LSCommandExecutor {
                     CompilationOptions.CompilationOptionsBuilder optionsBuilder = CompilationOptions.builder();
                     optionsBuilder.setOffline(false).setSticky(sticky);
                     project.currentPackage().getResolution(optionsBuilder.build());
+                    // BIR issues are not captured during resolution, causing the pull module executor to incorrectly
+                    // report that modules were pulled successfully. To remedy this, we now include the compilation
+                    // step so that the executor accounts for BIR errors when generating the final status.
+                    project.currentPackage().getCompilation();
                 })
                 .thenRunAsync(() -> {
                     try {
@@ -173,6 +184,11 @@ public class PullModuleExecutor implements LSCommandExecutor {
                             .map(compilation -> compilation.diagnosticResult().diagnostics().stream()
                                     .filter(diagnostic -> DiagnosticErrorCode.MODULE_NOT_FOUND.diagnosticId()
                                             .equals(diagnostic.diagnosticInfo().code()))
+                                    // HACK: Ignore diagnostics for ballerinax/.config modules as they are
+                                    // internal config modules that should not be pulled from central
+                                    // https://github.com/ballerina-platform/ballerina-lang/issues/44519
+                                    .filter(diagnostic -> !diagnostic.message()
+                                            .contains("ballerinax/.config"))
                                     .map(PullModuleCodeAction::getMissingModuleNameFromDiagnostic)
                                     .filter(Optional::isPresent)
                                     .map(Optional::get)

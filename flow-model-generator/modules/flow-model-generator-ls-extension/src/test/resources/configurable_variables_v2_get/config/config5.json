@@ -30,8 +30,13 @@
                 "label": "Variable Name",
                 "description": "Name of the variable"
               },
-              "valueType": "IDENTIFIER",
-              "valueTypeConstraint": "Global",
+              "types": [
+                {
+                  "fieldType": "IDENTIFIER",
+                  "scope": "Global",
+                  "selected": true
+                }
+              ],
               "value": "sheetOAuthConfig",
               "optional": false,
               "editable": true,
@@ -43,21 +48,31 @@
                 "label": "Variable Type",
                 "description": "Type of the variable"
               },
-              "valueType": "TYPE",
+              "types": [
+                {
+                  "fieldType": "TYPE",
+                  "typeMembers": [],
+                  "selected": false
+                }
+              ],
               "value": "OAuth2RefreshTokenGrantConfig & readonly",
               "placeholder": "var",
               "optional": false,
               "editable": true,
               "advanced": false,
-              "hidden": false,
-              "codedata": {}
+              "hidden": false
             },
             "defaultValue": {
               "metadata": {
                 "label": "Default Value",
                 "description": "Default value of the variable"
               },
-              "valueType": "EXPRESSION",
+              "types": [
+                {
+                  "fieldType": "EXPRESSION",
+                  "selected": true
+                }
+              ],
               "value": "",
               "optional": true,
               "editable": true,
@@ -70,7 +85,12 @@
                 "label": "Config Value",
                 "description": "Config value of the variable, to be used in Config.toml"
               },
-              "valueType": "EXPRESSION",
+              "types": [
+                {
+                  "fieldType": "EXPRESSION",
+                  "selected": true
+                }
+              ],
               "value": "",
               "optional": true,
               "editable": true,
@@ -83,7 +103,12 @@
                 "label": "Documentation",
                 "description": "Variable documentation in Markdown format"
               },
-              "valueType": "STRING",
+              "types": [
+                {
+                  "fieldType": "TEXT",
+                  "selected": true
+                }
+              ],
               "value": "",
               "optional": true,
               "editable": true,
@@ -121,8 +146,13 @@
                 "label": "Variable Name",
                 "description": "Name of the variable"
               },
-              "valueType": "IDENTIFIER",
-              "valueTypeConstraint": "Global",
+              "types": [
+                {
+                  "fieldType": "IDENTIFIER",
+                  "scope": "Global",
+                  "selected": true
+                }
+              ],
               "value": "spreadsheetId",
               "optional": false,
               "editable": true,
@@ -134,21 +164,31 @@
                 "label": "Variable Type",
                 "description": "Type of the variable"
               },
-              "valueType": "TYPE",
+              "types": [
+                {
+                  "fieldType": "TYPE",
+                  "typeMembers": [],
+                  "selected": false
+                }
+              ],
               "value": "string & readonly",
               "placeholder": "var",
               "optional": false,
               "editable": true,
               "advanced": false,
-              "hidden": false,
-              "codedata": {}
+              "hidden": false
             },
             "defaultValue": {
               "metadata": {
                 "label": "Default Value",
                 "description": "Default value of the variable"
               },
-              "valueType": "EXPRESSION",
+              "types": [
+                {
+                  "fieldType": "EXPRESSION",
+                  "selected": true
+                }
+              ],
               "value": "",
               "optional": true,
               "editable": true,
@@ -161,7 +201,12 @@
                 "label": "Config Value",
                 "description": "Config value of the variable, to be used in Config.toml"
               },
-              "valueType": "EXPRESSION",
+              "types": [
+                {
+                  "fieldType": "EXPRESSION",
+                  "selected": true
+                }
+              ],
               "value": "",
               "optional": true,
               "editable": true,
@@ -174,7 +219,12 @@
                 "label": "Documentation",
                 "description": "Variable documentation in Markdown format"
               },
-              "valueType": "STRING",
+              "types": [
+                {
+                  "fieldType": "TEXT",
+                  "selected": true
+                }
+              ],
               "value": "",
               "optional": true,
               "editable": true,
@@ -212,8 +262,13 @@
                 "label": "Variable Name",
                 "description": "Name of the variable"
               },
-              "valueType": "IDENTIFIER",
-              "valueTypeConstraint": "Global",
+              "types": [
+                {
+                  "fieldType": "IDENTIFIER",
+                  "scope": "Global",
+                  "selected": true
+                }
+              ],
               "value": "worksheetName",
               "optional": false,
               "editable": true,
@@ -225,21 +280,31 @@
                 "label": "Variable Type",
                 "description": "Type of the variable"
               },
-              "valueType": "TYPE",
+              "types": [
+                {
+                  "fieldType": "TYPE",
+                  "typeMembers": [],
+                  "selected": false
+                }
+              ],
               "value": "string & readonly",
               "placeholder": "var",
               "optional": false,
               "editable": true,
               "advanced": false,
-              "hidden": false,
-              "codedata": {}
+              "hidden": false
             },
             "defaultValue": {
               "metadata": {
                 "label": "Default Value",
                 "description": "Default value of the variable"
               },
-              "valueType": "EXPRESSION",
+              "types": [
+                {
+                  "fieldType": "EXPRESSION",
+                  "selected": true
+                }
+              ],
               "value": "",
               "optional": true,
               "editable": true,
@@ -252,7 +317,12 @@
                 "label": "Config Value",
                 "description": "Config value of the variable, to be used in Config.toml"
               },
-              "valueType": "EXPRESSION",
+              "types": [
+                {
+                  "fieldType": "EXPRESSION",
+                  "selected": true
+                }
+              ],
               "value": "",
               "optional": true,
               "editable": true,
@@ -265,7 +335,12 @@
                 "label": "Documentation",
                 "description": "Variable documentation in Markdown format"
               },
-              "valueType": "STRING",
+              "types": [
+                {
+                  "fieldType": "TEXT",
+                  "selected": true
+                }
+              ],
               "value": "",
               "optional": true,
               "editable": true,
@@ -303,8 +378,13 @@
                 "label": "Variable Name",
                 "description": "Name of the variable"
               },
-              "valueType": "IDENTIFIER",
-              "valueTypeConstraint": "Global",
+              "types": [
+                {
+                  "fieldType": "IDENTIFIER",
+                  "scope": "Global",
+                  "selected": true
+                }
+              ],
               "value": "gmailOauthConfig",
               "optional": false,
               "editable": true,
@@ -316,21 +396,31 @@
                 "label": "Variable Type",
                 "description": "Type of the variable"
               },
-              "valueType": "TYPE",
+              "types": [
+                {
+                  "fieldType": "TYPE",
+                  "typeMembers": [],
+                  "selected": false
+                }
+              ],
               "value": "OAuth2RefreshTokenGrantConfig & readonly",
               "placeholder": "var",
               "optional": false,
               "editable": true,
               "advanced": false,
-              "hidden": false,
-              "codedata": {}
+              "hidden": false
             },
             "defaultValue": {
               "metadata": {
                 "label": "Default Value",
                 "description": "Default value of the variable"
               },
-              "valueType": "EXPRESSION",
+              "types": [
+                {
+                  "fieldType": "EXPRESSION",
+                  "selected": true
+                }
+              ],
               "value": "",
               "optional": true,
               "editable": true,
@@ -343,7 +433,12 @@
                 "label": "Config Value",
                 "description": "Config value of the variable, to be used in Config.toml"
               },
-              "valueType": "EXPRESSION",
+              "types": [
+                {
+                  "fieldType": "EXPRESSION",
+                  "selected": true
+                }
+              ],
               "value": "",
               "optional": true,
               "editable": true,
@@ -356,7 +451,12 @@
                 "label": "Documentation",
                 "description": "Variable documentation in Markdown format"
               },
-              "valueType": "STRING",
+              "types": [
+                {
+                  "fieldType": "TEXT",
+                  "selected": true
+                }
+              ],
               "value": "",
               "optional": true,
               "editable": true,
@@ -394,8 +494,13 @@
                 "label": "Variable Name",
                 "description": "Name of the variable"
               },
-              "valueType": "IDENTIFIER",
-              "valueTypeConstraint": "Global",
+              "types": [
+                {
+                  "fieldType": "IDENTIFIER",
+                  "scope": "Global",
+                  "selected": true
+                }
+              ],
               "value": "recipientAddress",
               "optional": false,
               "editable": true,
@@ -407,21 +512,31 @@
                 "label": "Variable Type",
                 "description": "Type of the variable"
               },
-              "valueType": "TYPE",
+              "types": [
+                {
+                  "fieldType": "TYPE",
+                  "typeMembers": [],
+                  "selected": false
+                }
+              ],
               "value": "string & readonly",
               "placeholder": "var",
               "optional": false,
               "editable": true,
               "advanced": false,
-              "hidden": false,
-              "codedata": {}
+              "hidden": false
             },
             "defaultValue": {
               "metadata": {
                 "label": "Default Value",
                 "description": "Default value of the variable"
               },
-              "valueType": "EXPRESSION",
+              "types": [
+                {
+                  "fieldType": "EXPRESSION",
+                  "selected": true
+                }
+              ],
               "value": "",
               "optional": true,
               "editable": true,
@@ -434,7 +549,12 @@
                 "label": "Config Value",
                 "description": "Config value of the variable, to be used in Config.toml"
               },
-              "valueType": "EXPRESSION",
+              "types": [
+                {
+                  "fieldType": "EXPRESSION",
+                  "selected": true
+                }
+              ],
               "value": "",
               "optional": true,
               "editable": true,
@@ -447,7 +567,12 @@
                 "label": "Documentation",
                 "description": "Variable documentation in Markdown format"
               },
-              "valueType": "STRING",
+              "types": [
+                {
+                  "fieldType": "TEXT",
+                  "selected": true
+                }
+              ],
               "value": "",
               "optional": true,
               "editable": true,
@@ -485,8 +610,13 @@
                 "label": "Variable Name",
                 "description": "Name of the variable"
               },
-              "valueType": "IDENTIFIER",
-              "valueTypeConstraint": "Global",
+              "types": [
+                {
+                  "fieldType": "IDENTIFIER",
+                  "scope": "Global",
+                  "selected": true
+                }
+              ],
               "value": "senderAddress",
               "optional": false,
               "editable": true,
@@ -498,21 +628,31 @@
                 "label": "Variable Type",
                 "description": "Type of the variable"
               },
-              "valueType": "TYPE",
+              "types": [
+                {
+                  "fieldType": "TYPE",
+                  "typeMembers": [],
+                  "selected": false
+                }
+              ],
               "value": "string & readonly",
               "placeholder": "var",
               "optional": false,
               "editable": true,
               "advanced": false,
-              "hidden": false,
-              "codedata": {}
+              "hidden": false
             },
             "defaultValue": {
               "metadata": {
                 "label": "Default Value",
                 "description": "Default value of the variable"
               },
-              "valueType": "EXPRESSION",
+              "types": [
+                {
+                  "fieldType": "EXPRESSION",
+                  "selected": true
+                }
+              ],
               "value": "",
               "optional": true,
               "editable": true,
@@ -525,7 +665,12 @@
                 "label": "Config Value",
                 "description": "Config value of the variable, to be used in Config.toml"
               },
-              "valueType": "EXPRESSION",
+              "types": [
+                {
+                  "fieldType": "EXPRESSION",
+                  "selected": true
+                }
+              ],
               "value": "",
               "optional": true,
               "editable": true,
@@ -538,7 +683,12 @@
                 "label": "Documentation",
                 "description": "Variable documentation in Markdown format"
               },
-              "valueType": "STRING",
+              "types": [
+                {
+                  "fieldType": "TEXT",
+                  "selected": true
+                }
+              ],
               "value": "",
               "optional": true,
               "editable": true,

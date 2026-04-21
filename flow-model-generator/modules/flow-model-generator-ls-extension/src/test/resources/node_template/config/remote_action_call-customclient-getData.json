@@ -39,8 +39,13 @@
           "label": "Connection",
           "description": "Connection to use"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "client_module:CustomClient",
+        "types": [
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "client_module:CustomClient",
+            "selected": false
+          }
+        ],
         "value": "customClient",
         "optional": false,
         "editable": false,
@@ -51,8 +56,18 @@
         "metadata": {
           "label": "Path"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "string",
+        "types": [
+          {
+            "fieldType": "TEXT",
+            "ballerinaType": "string",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "string",
+            "selected": false
+          }
+        ],
         "placeholder": "\"\"",
         "optional": false,
         "editable": true,
@@ -61,23 +76,19 @@
         "codedata": {
           "kind": "REQUIRED",
           "originalName": "path"
-        },
-        "typeMembers": [
-          {
-            "type": "string",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ]
+        }
       },
       "type": {
         "metadata": {
           "label": "Result Type",
           "description": "Type of the variable"
         },
-        "valueType": "TYPE",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "selected": true
+          }
+        ],
         "value": "string",
         "placeholder": "var",
         "optional": false,
@@ -91,7 +102,12 @@
           "label": "Result",
           "description": "Name of the result variable"
         },
-        "valueType": "IDENTIFIER",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
         "value": "stringResult",
         "optional": false,
         "editable": true,
@@ -103,7 +119,12 @@
           "label": "Check Error",
           "description": "Trigger error flow"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": true,
         "optional": false,
         "editable": true,

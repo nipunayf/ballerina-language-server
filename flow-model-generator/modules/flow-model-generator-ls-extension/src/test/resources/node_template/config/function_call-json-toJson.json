@@ -36,8 +36,13 @@
           "label": "V",
           "description": "Source anydata value"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "anydata",
+        "types": [
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "anydata",
+            "selected": false
+          }
+        ],
         "placeholder": "{}",
         "optional": false,
         "editable": true,
@@ -46,23 +51,19 @@
         "codedata": {
           "kind": "REQUIRED",
           "originalName": "v"
-        },
-        "typeMembers": [
-          {
-            "type": "anydata",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "OTHER",
-            "selected": false
-          }
-        ]
+        }
       },
       "type": {
         "metadata": {
           "label": "Result Type",
           "description": "Type of the variable"
         },
-        "valueType": "TYPE",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "selected": true
+          }
+        ],
         "value": "json",
         "placeholder": "var",
         "optional": false,
@@ -76,7 +77,12 @@
           "label": "Result",
           "description": "Name of the result variable"
         },
-        "valueType": "IDENTIFIER",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
         "value": "jsonResult",
         "optional": false,
         "editable": true,

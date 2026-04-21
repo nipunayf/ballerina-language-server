@@ -8,7 +8,7 @@
     {
       "id": "34766",
       "metadata": {
-        "label": "New Connection",
+        "label": "Redis",
         "description": "Ballerina Redis connector provides the capability to access Redis cache.\nThis connector lets you to perform operations to access and manipulate key-value data stored in a Redis database. \n",
         "icon": "https://bcentral-packageicons.azureedge.net/images/ballerinax_redis_3.1.0.png"
       },
@@ -38,8 +38,32 @@
             "label": "Connection Type",
             "description": "Connection configurations of the Redis server. This can be either a single URI or a set of parameters"
           },
-          "valueType": "EXPRESSION",
-          "valueTypeConstraint": "redis:ConnectionUri|redis:ConnectionParams",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "ballerinaType": "redis:ConnectionUri",
+              "selected": false
+            },
+            {
+              "fieldType": "RECORD_MAP_EXPRESSION",
+              "ballerinaType": "redis:ConnectionParams",
+              "typeMembers": [
+                {
+                  "type": "ConnectionParams",
+                  "packageInfo": "ballerinax:redis:3.1.0",
+                  "packageName": "redis",
+                  "kind": "RECORD_TYPE",
+                  "selected": false
+                }
+              ],
+              "selected": false
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "redis:ConnectionUri|redis:ConnectionParams",
+              "selected": false
+            }
+          ],
           "placeholder": "\"\"",
           "optional": true,
           "editable": true,
@@ -49,31 +73,25 @@
             "kind": "INCLUDED_FIELD",
             "originalName": "connection"
           },
-          "typeMembers": [
-            {
-              "type": "ConnectionParams",
-              "packageInfo": "ballerinax:redis:3.1.0",
-              "packageName": "redis",
-              "kind": "RECORD_TYPE",
-              "selected": false
-            },
-            {
-              "type": "ConnectionUri",
-              "packageInfo": "ballerinax:redis:3.1.0",
-              "packageName": "redis",
-              "kind": "BASIC_TYPE",
-              "selected": false
-            }
-          ],
-          "defaultValue": "\"\""
+          "defaultValue": "\"redis://localhost:6379\""
         },
         "connectionPooling": {
           "metadata": {
             "label": "Connection Pooling Enabled",
             "description": "Flag to indicate whether connection pooling is enabled"
           },
-          "valueType": "EXPRESSION",
-          "valueTypeConstraint": "boolean",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "ballerinaType": "boolean",
+              "selected": false
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "boolean",
+              "selected": false
+            }
+          ],
           "placeholder": "false",
           "optional": true,
           "editable": true,
@@ -83,15 +101,6 @@
             "kind": "INCLUDED_FIELD",
             "originalName": "connectionPooling"
           },
-          "typeMembers": [
-            {
-              "type": "boolean",
-              "packageInfo": "",
-              "packageName": "",
-              "kind": "BASIC_TYPE",
-              "selected": false
-            }
-          ],
           "defaultValue": "false"
         },
         "isClusterConnection": {
@@ -99,8 +108,18 @@
             "label": "Cluster Mode Enabled",
             "description": "Flag to indicate whether the connection is a cluster connection"
           },
-          "valueType": "EXPRESSION",
-          "valueTypeConstraint": "boolean",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "ballerinaType": "boolean",
+              "selected": false
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "boolean",
+              "selected": false
+            }
+          ],
           "placeholder": "false",
           "optional": true,
           "editable": true,
@@ -110,15 +129,6 @@
             "kind": "INCLUDED_FIELD",
             "originalName": "isClusterConnection"
           },
-          "typeMembers": [
-            {
-              "type": "boolean",
-              "packageInfo": "",
-              "packageName": "",
-              "kind": "BASIC_TYPE",
-              "selected": false
-            }
-          ],
           "defaultValue": "false"
         },
         "secureSocket": {
@@ -126,8 +136,27 @@
             "label": "Secure Socket Configurations",
             "description": "Configurations related to SSL/TLS encryption"
           },
-          "valueType": "EXPRESSION",
-          "valueTypeConstraint": "redis:SecureSocket",
+          "types": [
+            {
+              "fieldType": "RECORD_MAP_EXPRESSION",
+              "ballerinaType": "redis:SecureSocket",
+              "typeMembers": [
+                {
+                  "type": "SecureSocket",
+                  "packageInfo": "ballerinax:redis:3.1.0",
+                  "packageName": "redis",
+                  "kind": "RECORD_TYPE",
+                  "selected": false
+                }
+              ],
+              "selected": false
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "redis:SecureSocket",
+              "selected": false
+            }
+          ],
           "placeholder": "{}",
           "optional": true,
           "editable": true,
@@ -137,15 +166,6 @@
             "kind": "INCLUDED_FIELD",
             "originalName": "secureSocket"
           },
-          "typeMembers": [
-            {
-              "type": "SecureSocket",
-              "packageInfo": "ballerinax:redis:3.1.0",
-              "packageName": "redis",
-              "kind": "RECORD_TYPE",
-              "selected": false
-            }
-          ],
           "defaultValue": "{}"
         },
         "checkError": {
@@ -153,7 +173,12 @@
             "label": "Check Error",
             "description": "Terminate on error"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": true,
           "optional": false,
           "editable": false,
@@ -165,7 +190,12 @@
             "label": "Connection Scope",
             "description": "Scope of the connection, Global or Local"
           },
-          "valueType": "ENUM",
+          "types": [
+            {
+              "fieldType": "ENUM",
+              "selected": true
+            }
+          ],
           "value": "Global",
           "optional": false,
           "editable": true,
@@ -175,9 +205,14 @@
         "variable": {
           "metadata": {
             "label": "Connection Name",
-            "description": "Name of the variable"
+            "description": "Name of the connection"
           },
-          "valueType": "IDENTIFIER",
+          "types": [
+            {
+              "fieldType": "IDENTIFIER",
+              "selected": true
+            }
+          ],
           "value": "redisClient",
           "optional": false,
           "editable": false,
@@ -202,7 +237,12 @@
             "label": "Connection Type",
             "description": "Type of the variable"
           },
-          "valueType": "TYPE",
+          "types": [
+            {
+              "fieldType": "TYPE",
+              "selected": true
+            }
+          ],
           "value": "redis:Client",
           "placeholder": "var",
           "optional": false,

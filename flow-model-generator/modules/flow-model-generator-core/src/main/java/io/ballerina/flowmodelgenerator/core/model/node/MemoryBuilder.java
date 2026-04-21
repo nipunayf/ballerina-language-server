@@ -28,6 +28,7 @@ import io.ballerina.modelgenerator.commons.CommonUtils;
 import io.ballerina.modelgenerator.commons.FunctionData;
 import io.ballerina.modelgenerator.commons.FunctionDataBuilder;
 import io.ballerina.modelgenerator.commons.ModuleInfo;
+import io.ballerina.projects.Module;
 import org.eclipse.lsp4j.TextEdit;
 
 import java.nio.file.Path;
@@ -73,6 +74,8 @@ public class MemoryBuilder extends CallBuilder {
         FunctionData functionData = new FunctionDataBuilder().moduleInfo(codedataModuleInfo).userModuleInfo(moduleInfo)
                 .parentSymbolType(codedata.object()).name(codedata.symbol())
                 .lsClientLogger(context.lsClientLogger()).functionResultKind(FunctionData.Kind.MEMORY)
+                .workspaceManager(context.workspaceManager())
+                .filePath(context.filePath())
                 .build();
 
         metadata().label(functionData.packageName()).description(functionData.description())
@@ -88,7 +91,8 @@ public class MemoryBuilder extends CallBuilder {
             setReturnTypeProperties(functionData, context, MEMORY_NAME_LABEL, MEMORY_NAME_LABEL_DOC,
                     false);
         }
-        setParameterProperties(functionData);
+        Module module = context.workspaceManager().module(context.filePath()).orElse(null);
+        setParameterProperties(functionData, module);
         if (!codedata.object().equals(MESSAGE_WINDOW_CHAT_MEMORY_CLASS)) {
             properties().checkError(true, Property.CHECK_ERROR_DOC, false);
         }

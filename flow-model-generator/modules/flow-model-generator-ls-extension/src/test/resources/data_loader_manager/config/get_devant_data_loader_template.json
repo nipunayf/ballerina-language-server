@@ -1,5 +1,5 @@
 {
-  "source": "data_loader/loader.bal",
+  "source": "loader.bal",
   "codedata": {
     "node": "DATA_LOADER",
     "org": "ballerinax",
@@ -33,7 +33,12 @@
             "label": "Result Type",
             "description": "Type of the variable"
           },
-          "valueType": "TYPE",
+          "types": [
+            {
+              "fieldType": "TYPE",
+              "selected": true
+            }
+          ],
           "value": "devant:BinaryDataLoader",
           "placeholder": "var",
           "optional": false,
@@ -50,7 +55,12 @@
             "label": "Data Loader Name",
             "description": "Data loader instance name"
           },
-          "valueType": "IDENTIFIER",
+          "types": [
+            {
+              "fieldType": "IDENTIFIER",
+              "selected": true
+            }
+          ],
           "value": "devantBinarydataloader",
           "optional": false,
           "editable": true,
@@ -62,8 +72,18 @@
             "label": "Path",
             "description": "The file or directory path to load documents from"
           },
-          "valueType": "EXPRESSION",
-          "valueTypeConstraint": "string",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "ballerinaType": "string",
+              "selected": false
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "string",
+              "selected": false
+            }
+          ],
           "placeholder": "\"\"",
           "optional": false,
           "editable": true,
@@ -72,23 +92,19 @@
           "codedata": {
             "kind": "REQUIRED",
             "originalName": "path"
-          },
-          "typeMembers": [
-            {
-              "type": "string",
-              "packageInfo": "",
-              "packageName": "",
-              "kind": "BASIC_TYPE",
-              "selected": false
-            }
-          ]
+          }
         },
         "scope": {
           "metadata": {
             "label": "Connection Scope",
             "description": "Scope of the connection, Global or Local"
           },
-          "valueType": "ENUM",
+          "types": [
+            {
+              "fieldType": "ENUM",
+              "selected": true
+            }
+          ],
           "value": "Global",
           "optional": false,
           "editable": true,
@@ -100,7 +116,12 @@
             "label": "Check Error",
             "description": "Terminate on error"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": true,
           "optional": false,
           "editable": false,

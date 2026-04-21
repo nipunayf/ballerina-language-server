@@ -36,19 +36,22 @@ import java.util.Optional;
 /**
  * Represents an artifact in the project tree.
  *
- * @param id       unique identifier for the artifact
- * @param location location information of the artifact
- * @param type     type of the artifact
- * @param name     symbol name of the artifact
- * @param accessor accessor of the artifact
- * @param scope    scope of the artifact (global/local)
- * @param icon     icon representing the artifact
- * @param children map of child artifacts (id -> child)
- * @param module   module name of the artifact
+ * @param id         unique identifier for the artifact
+ * @param location   location information of the artifact
+ * @param type       type of the artifact
+ * @param name       symbol name of the artifact
+ * @param accessor   accessor of the artifact
+ * @param scope      lexical scope of the artifact (global/local/object)
+ * @param visibility visibility of the artifact (public/module/private)
+ * @param icon       icon representing the artifact
+ * @param children   map of child artifacts (id -> child)
+ * @param module     module name of the artifact
+ * @param metadata   metadata about the artifact
  * @since 1.0.0
  */
 public record Artifact(String id, LineRange location, String type, String name, String accessor,
-                       String scope, String icon, String module, Map<String, Artifact> children) {
+                       String scope, String visibility, String icon, String module,
+                       Map<String, Artifact> children, Map<String, Object> metadata) {
 
     private static final String CATEGORY_ENTRY_POINTS = "Entry Points";
     private static final String CATEGORY_RESOURCES = "Resources";
@@ -61,6 +64,7 @@ public record Artifact(String id, LineRange location, String type, String name, 
     private static final String CATEGORY_TYPES = "Types";
     private static final String CATEGORY_CONNECTIONS = "Connections";
     private static final String CATEGORY_VARIABLES = "Variables";
+    private static final String CATEGORY_WORKFLOWS = "Workflows";
     private static final String CATEGORY_DEFAULT = "Others";
 
     private static final Map<String, String> typeCategoryMap = Map.ofEntries(
@@ -75,14 +79,16 @@ public record Artifact(String id, LineRange location, String type, String name, 
             Map.entry(Type.CONFIGURABLE.name(), CATEGORY_CONFIGURATIONS),
             Map.entry(Type.TYPE.name(), CATEGORY_TYPES),
             Map.entry(Type.CONNECTION.name(), CATEGORY_CONNECTIONS),
-            Map.entry(Type.VARIABLE.name(), CATEGORY_VARIABLES));
+            Map.entry(Type.VARIABLE.name(), CATEGORY_VARIABLES),
+            Map.entry(Type.WORKFLOW.name(), CATEGORY_WORKFLOWS),
+            Map.entry(Type.ACTIVITY.name(), CATEGORY_WORKFLOWS));
 
     private static final Map<String, String> entryPointMap = Map.ofEntries(
             Map.entry("http", "HTTP Service"),
             Map.entry("graphql", "GraphQL Service"),
             Map.entry("tcp", "TCP Service"),
-            Map.entry("file", "Directory Service"),
-            Map.entry("ftp", "FTP Service"),
+            Map.entry("file", "Local Files"),
+            Map.entry("ftp", "FTP Integration"),
             Map.entry("mqtt", "MQTT Event Integration"),
             Map.entry("asb", "Azure Service Bus Event Integration"),
             Map.entry("rabbitmq", "RabbitMQ Event Integration"),
@@ -91,7 +97,8 @@ public record Artifact(String id, LineRange location, String type, String name, 
             Map.entry("github", "GitHub Event Integration"),
             Map.entry("twilio", "Twilio Event Integration"),
             Map.entry("ai", "AI Agent Services"),
-            Map.entry("solace", "Solace Event Integration")
+            Map.entry("solace", "Solace Event Integration"),
+            Map.entry("mssql", "CDC MSSQL Service")
     );
 
     /**
@@ -99,7 +106,9 @@ public record Artifact(String id, LineRange location, String type, String name, 
      * module can have multiple field names to try in order of preference.
      */
     private static final Map<String, String[]> moduleAnnotationFields = Map.of(
-            "solace", new String[]{"queueName", "topicName"}
+            "solace", new String[]{"queueName", "topicName"},
+            "mssql", new String[]{"tables"},
+            "ftp", new String[]{"path"}
     );
 
     public static String getCategory(String type) {
@@ -107,7 +116,7 @@ public record Artifact(String id, LineRange location, String type, String name, 
     }
 
     public static Artifact emptyArtifact(String id) {
-        return new Artifact(id, null, null, null, null, null, null, null, null);
+        return new Artifact(id, null, null, null, null, null, null, null, null, null, null);
     }
 
     public Artifact {
@@ -129,7 +138,9 @@ public record Artifact(String id, LineRange location, String type, String name, 
         CONFIGURABLE,
         TYPE,
         CONNECTION,
-        VARIABLE;
+        VARIABLE,
+        WORKFLOW,
+        ACTIVITY
     }
 
     public enum Scope {
@@ -149,6 +160,25 @@ public record Artifact(String id, LineRange location, String type, String name, 
     }
 
     /**
+     * Represents the Ballerina visibility levels of an artifact.
+     */
+    public enum Visibility {
+        PUBLIC("public"),
+        MODULE("module"),
+        PRIVATE("private");
+
+        private final String value;
+
+        Visibility(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
+    /**
      * Builder class for creating Artifact instances.
      */
     public static class Builder {
@@ -159,9 +189,11 @@ public record Artifact(String id, LineRange location, String type, String name, 
         private String name;
         private String accessor;
         private Scope scope = Scope.GLOBAL;
+        private Visibility visibility = null;
         private String icon;
         private String module;
         private final Map<String, Artifact> children = new HashMap<>();
+        private Map<String, Object> metadata = null;
 
         public Builder(Node node) {
             this.location = node.lineRange();
@@ -197,6 +229,11 @@ public record Artifact(String id, LineRange location, String type, String name, 
 
         public Builder scope(Scope scope) {
             this.scope = scope;
+            return this;
+        }
+
+        public Builder visibility(Visibility visibility) {
+            this.visibility = visibility;
             return this;
         }
 
@@ -236,6 +273,19 @@ public record Artifact(String id, LineRange location, String type, String name, 
             return this;
         }
 
+        public Builder metadata(Map<String, Object> metadata) {
+            this.metadata = metadata;
+            return this;
+        }
+
+        public Builder addMetadata(String key, Object value) {
+            if (this.metadata == null) {
+                this.metadata = new HashMap<>();
+            }
+            this.metadata.put(key, value);
+            return this;
+        }
+
         /**
          * Attempts to set the service name from annotations if applicable for the module.
          *
@@ -266,8 +316,9 @@ public record Artifact(String id, LineRange location, String type, String name, 
                 id = id == null ? name : id;
             }
             name = IdentifierUtils.unescapeBallerina(name);
-            return new Artifact(id, location, type == null ? null : type.name(), name, accessor, scope.getValue(), icon,
-                    module, new HashMap<>(children));
+            return new Artifact(id, location, type == null ? null : type.name(), name, accessor, scope.getValue(),
+                    visibility == null ? null : visibility.getValue(), icon,
+                    module, new HashMap<>(children), metadata == null ? null : new HashMap<>(metadata));
         }
     }
 }

@@ -38,8 +38,18 @@
           "label": "Size",
           "description": "The maximum capacity for stored messages"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "int",
+        "types": [
+          {
+            "fieldType": "NUMBER",
+            "ballerinaType": "int",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "int",
+            "selected": false
+          }
+        ],
         "placeholder": "0",
         "optional": true,
         "editable": true,
@@ -49,23 +59,19 @@
           "kind": "DEFAULTABLE",
           "originalName": "size"
         },
-        "typeMembers": [
-          {
-            "type": "int",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
-        "defaultValue": "0"
+        "defaultValue": "10"
       },
       "type": {
         "metadata": {
           "label": "Result Type",
           "description": "Type of the variable"
         },
-        "valueType": "TYPE",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "selected": true
+          }
+        ],
         "value": "ai:MessageWindowChatMemory",
         "placeholder": "var",
         "optional": false,
@@ -82,7 +88,12 @@
           "label": "Result",
           "description": "Name of the result variable"
         },
-        "valueType": "IDENTIFIER",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
         "value": "aiMessagewindowchatmemory",
         "optional": false,
         "editable": true,

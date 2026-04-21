@@ -17,7 +17,7 @@
   "output": {
     "id": "31",
     "metadata": {
-      "label": "New Connection",
+      "label": "RabbitMQ",
       "description": "The Ballerina interface to provide AMQP Channel related functionality.",
       "icon": "https://bcentral-packageicons.azureedge.net/images/ballerinax_rabbitmq_3.2.0.png"
     },
@@ -38,8 +38,18 @@
           "label": "Host",
           "description": "The host used for establishing the connection"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "string",
+        "types": [
+          {
+            "fieldType": "TEXT",
+            "ballerinaType": "string",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "string",
+            "selected": false
+          }
+        ],
         "placeholder": "\"\"",
         "optional": false,
         "editable": true,
@@ -48,24 +58,25 @@
         "codedata": {
           "kind": "REQUIRED",
           "originalName": "host"
-        },
-        "typeMembers": [
-          {
-            "type": "string",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ]
+        }
       },
       "port": {
         "metadata": {
           "label": "Port",
           "description": "The port used for establishing the connection"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "int",
+        "types": [
+          {
+            "fieldType": "NUMBER",
+            "ballerinaType": "int",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "int",
+            "selected": false
+          }
+        ],
         "placeholder": "0",
         "optional": false,
         "editable": true,
@@ -74,24 +85,25 @@
         "codedata": {
           "kind": "REQUIRED",
           "originalName": "port"
-        },
-        "typeMembers": [
-          {
-            "type": "int",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ]
+        }
       },
       "username": {
         "metadata": {
           "label": "Username",
           "description": "The username used for establishing the connection"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "string",
+        "types": [
+          {
+            "fieldType": "TEXT",
+            "ballerinaType": "string",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "string",
+            "selected": false
+          }
+        ],
         "placeholder": "\"\"",
         "optional": true,
         "editable": true,
@@ -101,15 +113,6 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "username"
         },
-        "typeMembers": [
-          {
-            "type": "string",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "\"\""
       },
       "password": {
@@ -117,8 +120,18 @@
           "label": "Password",
           "description": "The password used for establishing the connection"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "string",
+        "types": [
+          {
+            "fieldType": "TEXT",
+            "ballerinaType": "string",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "string",
+            "selected": false
+          }
+        ],
         "placeholder": "\"\"",
         "optional": true,
         "editable": true,
@@ -128,15 +141,6 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "password"
         },
-        "typeMembers": [
-          {
-            "type": "string",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "\"\""
       },
       "virtualHost": {
@@ -144,8 +148,18 @@
           "label": "Virtual Host",
           "description": "The virtual host to use when connecting to the broker"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "string",
+        "types": [
+          {
+            "fieldType": "TEXT",
+            "ballerinaType": "string",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "string",
+            "selected": false
+          }
+        ],
         "placeholder": "\"\"",
         "optional": true,
         "editable": true,
@@ -155,15 +169,6 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "virtualHost"
         },
-        "typeMembers": [
-          {
-            "type": "string",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "\"\""
       },
       "connectionTimeout": {
@@ -171,8 +176,18 @@
           "label": "Connection Timeout",
           "description": "Connection TCP establishment timeout in seconds and zero for infinite"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "decimal",
+        "types": [
+          {
+            "fieldType": "NUMBER",
+            "ballerinaType": "decimal",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "decimal",
+            "selected": false
+          }
+        ],
         "placeholder": "0.0d",
         "optional": true,
         "editable": true,
@@ -182,15 +197,6 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "connectionTimeout"
         },
-        "typeMembers": [
-          {
-            "type": "decimal",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "0.0d"
       },
       "handshakeTimeout": {
@@ -198,8 +204,18 @@
           "label": "Handshake Timeout",
           "description": "The AMQP 0-9-1 protocol handshake timeout in seconds"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "decimal",
+        "types": [
+          {
+            "fieldType": "NUMBER",
+            "ballerinaType": "decimal",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "decimal",
+            "selected": false
+          }
+        ],
         "placeholder": "0.0d",
         "optional": true,
         "editable": true,
@@ -209,15 +225,6 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "handshakeTimeout"
         },
-        "typeMembers": [
-          {
-            "type": "decimal",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "0.0d"
       },
       "shutdownTimeout": {
@@ -225,8 +232,18 @@
           "label": "Shutdown Timeout",
           "description": "Shutdown timeout in seconds, zero for infinite, and the default value is 10. If the consumers exceed\nthis timeout, then any remaining queued deliveries (and other Consumer callbacks) will be lost"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "decimal",
+        "types": [
+          {
+            "fieldType": "NUMBER",
+            "ballerinaType": "decimal",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "decimal",
+            "selected": false
+          }
+        ],
         "placeholder": "0.0d",
         "optional": true,
         "editable": true,
@@ -236,15 +253,6 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "shutdownTimeout"
         },
-        "typeMembers": [
-          {
-            "type": "decimal",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "0.0d"
       },
       "heartbeat": {
@@ -252,8 +260,18 @@
           "label": "Heartbeat",
           "description": "The initially-requested heartbeat timeout in seconds and zero for none"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "decimal",
+        "types": [
+          {
+            "fieldType": "NUMBER",
+            "ballerinaType": "decimal",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "decimal",
+            "selected": false
+          }
+        ],
         "placeholder": "0.0d",
         "optional": true,
         "editable": true,
@@ -263,15 +281,6 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "heartbeat"
         },
-        "typeMembers": [
-          {
-            "type": "decimal",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "0.0d"
       },
       "validation": {
@@ -279,8 +288,18 @@
           "label": "Validation",
           "description": "Configuration related to constraint validation check"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "boolean",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "ballerinaType": "boolean",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "boolean",
+            "selected": false
+          }
+        ],
         "placeholder": "false",
         "optional": true,
         "editable": true,
@@ -290,24 +309,34 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "validation"
         },
-        "typeMembers": [
-          {
-            "type": "boolean",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
-        "defaultValue": "false"
+        "defaultValue": "true"
       },
       "secureSocket": {
         "metadata": {
           "label": "Secure Socket",
           "description": "Configurations for facilitating secure connections"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "rabbitmq:SecureSocket",
+        "types": [
+          {
+            "fieldType": "RECORD_MAP_EXPRESSION",
+            "ballerinaType": "rabbitmq:SecureSocket",
+            "typeMembers": [
+              {
+                "type": "SecureSocket",
+                "packageInfo": "ballerinax:rabbitmq:3.2.0",
+                "packageName": "rabbitmq",
+                "kind": "RECORD_TYPE",
+                "selected": false
+              }
+            ],
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "rabbitmq:SecureSocket",
+            "selected": false
+          }
+        ],
         "placeholder": "{cert: {path: \"\", password: \"\"}}",
         "optional": true,
         "editable": true,
@@ -317,15 +346,6 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "secureSocket"
         },
-        "typeMembers": [
-          {
-            "type": "SecureSocket",
-            "packageInfo": "ballerinax:rabbitmq:3.2.0",
-            "packageName": "rabbitmq",
-            "kind": "RECORD_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "{cert: {path: \"\", password: \"\"}}"
       },
       "auth": {
@@ -333,8 +353,27 @@
           "label": "Auth",
           "description": "Configurations related to authentication"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "rabbitmq:Credentials",
+        "types": [
+          {
+            "fieldType": "RECORD_MAP_EXPRESSION",
+            "ballerinaType": "rabbitmq:Credentials",
+            "typeMembers": [
+              {
+                "type": "Credentials",
+                "packageInfo": "ballerinax:rabbitmq:3.2.0",
+                "packageName": "rabbitmq",
+                "kind": "RECORD_TYPE",
+                "selected": false
+              }
+            ],
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "rabbitmq:Credentials",
+            "selected": false
+          }
+        ],
         "placeholder": "{username: \"\", password: \"\"}",
         "optional": true,
         "editable": true,
@@ -344,15 +383,6 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "auth"
         },
-        "typeMembers": [
-          {
-            "type": "Credentials",
-            "packageInfo": "ballerinax:rabbitmq:3.2.0",
-            "packageName": "rabbitmq",
-            "kind": "RECORD_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "{username: \"\", password: \"\"}"
       },
       "type": {
@@ -360,7 +390,12 @@
           "label": "Result Type",
           "description": "Type of the variable"
         },
-        "valueType": "TYPE",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "selected": true
+          }
+        ],
         "value": "rabbitmq:Client",
         "placeholder": "var",
         "optional": false,
@@ -377,7 +412,12 @@
           "label": "Connection Name",
           "description": "Name of the connection"
         },
-        "valueType": "IDENTIFIER",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
         "value": "rabbitmqClient",
         "optional": false,
         "editable": true,
@@ -389,7 +429,12 @@
           "label": "Connection Scope",
           "description": "Scope of the connection, Global or Local"
         },
-        "valueType": "ENUM",
+        "types": [
+          {
+            "fieldType": "ENUM",
+            "selected": true
+          }
+        ],
         "value": "Global",
         "optional": false,
         "editable": true,
@@ -401,7 +446,12 @@
           "label": "Check Error",
           "description": "Terminate on error"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": true,
         "optional": false,
         "editable": false,

@@ -1,5 +1,5 @@
 {
-  "source": "data_loader/loader.bal",
+  "source": "loader.bal",
   "codedata": {
     "node": "DATA_LOADER",
     "org": "ballerina",
@@ -33,7 +33,12 @@
             "label": "Result Type",
             "description": "Type of the variable"
           },
-          "valueType": "TYPE",
+          "types": [
+            {
+              "fieldType": "TYPE",
+              "selected": true
+            }
+          ],
           "value": "ai:TextDataLoader",
           "placeholder": "var",
           "optional": false,
@@ -50,7 +55,12 @@
             "label": "Data Loader Name",
             "description": "Data loader instance name"
           },
-          "valueType": "IDENTIFIER",
+          "types": [
+            {
+              "fieldType": "IDENTIFIER",
+              "selected": true
+            }
+          ],
           "value": "aiTextdataloader",
           "optional": false,
           "editable": true,
@@ -62,8 +72,31 @@
             "label": "Paths",
             "description": "The paths to the files to load"
           },
-          "valueType": "EXPRESSION_SET",
-          "valueTypeConstraint": "string",
+          "types": [
+            {
+              "fieldType": "REPEATABLE_LIST",
+              "ballerinaType": "string",
+              "template": {
+                "types": [
+                  {
+                    "fieldType": "TEXT",
+                    "ballerinaType": "string",
+                    "selected": false
+                  },
+                  {
+                    "fieldType": "EXPRESSION",
+                    "ballerinaType": "string",
+                    "selected": false
+                  }
+                ],
+                "optional": false,
+                "editable": false,
+                "advanced": false,
+                "hidden": false
+              },
+              "selected": true
+            }
+          ],
           "placeholder": "\"\"",
           "optional": false,
           "editable": true,
@@ -72,23 +105,19 @@
           "codedata": {
             "kind": "REST_PARAMETER",
             "originalName": "paths"
-          },
-          "typeMembers": [
-            {
-              "type": "string",
-              "packageInfo": "",
-              "packageName": "",
-              "kind": "ARRAY_TYPE",
-              "selected": false
-            }
-          ]
+          }
         },
         "scope": {
           "metadata": {
             "label": "Connection Scope",
             "description": "Scope of the connection, Global or Local"
           },
-          "valueType": "ENUM",
+          "types": [
+            {
+              "fieldType": "ENUM",
+              "selected": true
+            }
+          ],
           "value": "Global",
           "optional": false,
           "editable": true,
@@ -100,7 +129,12 @@
             "label": "Check Error",
             "description": "Terminate on error"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": true,
           "optional": false,
           "editable": false,

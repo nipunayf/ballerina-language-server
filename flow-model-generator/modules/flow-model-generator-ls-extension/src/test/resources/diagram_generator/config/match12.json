@@ -93,14 +93,24 @@
                   "label": "Patterns",
                   "description": "List of binding patterns"
                 },
-                "valueType": "SINGLE_SELECT",
+                "types": [
+                  {
+                    "fieldType": "SINGLE_SELECT",
+                    "selected": true
+                  }
+                ],
                 "value": [
                   {
                     "metadata": {
                       "label": "Pattern",
                       "description": "Binding pattern"
                     },
-                    "valueType": "EXPRESSION",
+                    "types": [
+                      {
+                        "fieldType": "EXPRESSION",
+                        "selected": true
+                      }
+                    ],
                     "value": "var obj",
                     "optional": false,
                     "editable": true,
@@ -119,7 +129,12 @@
                   "label": "Expression",
                   "description": "Guard expression"
                 },
-                "valueType": "EXPRESSION",
+                "types": [
+                  {
+                    "fieldType": "EXPRESSION",
+                    "selected": true
+                  }
+                ],
                 "value": "obj is record {|int quantity; string 'type;|} ",
                 "optional": false,
                 "editable": true,
@@ -132,7 +147,7 @@
                 "id": "273340",
                 "metadata": {
                   "label": "Declare Variable",
-                  "description": "Assign a value to a variable"
+                  "description": "Create a new variable"
                 },
                 "codedata": {
                   "node": "VARIABLE",
@@ -156,7 +171,12 @@
                       "label": "Expression",
                       "description": "Initialize with value"
                     },
-                    "valueType": "ACTION_OR_EXPRESSION",
+                    "types": [
+                      {
+                        "fieldType": "ACTION_OR_EXPRESSION",
+                        "selected": true
+                      }
+                    ],
                     "value": "obj.quantity",
                     "optional": true,
                     "editable": true,
@@ -168,7 +188,12 @@
                       "label": "Name",
                       "description": "Name of the variable"
                     },
-                    "valueType": "IDENTIFIER",
+                    "types": [
+                      {
+                        "fieldType": "IDENTIFIER",
+                        "selected": true
+                      }
+                    ],
                     "value": "quantity",
                     "optional": false,
                     "editable": false,
@@ -193,7 +218,12 @@
                       "label": "Type",
                       "description": "Type of the variable"
                     },
-                    "valueType": "TYPE",
+                    "types": [
+                      {
+                        "fieldType": "TYPE",
+                        "selected": true
+                      }
+                    ],
                     "value": "int",
                     "placeholder": "var",
                     "optional": false,
@@ -209,7 +239,7 @@
                 "id": "274329",
                 "metadata": {
                   "label": "Declare Variable",
-                  "description": "Assign a value to a variable"
+                  "description": "Create a new variable"
                 },
                 "codedata": {
                   "node": "VARIABLE",
@@ -233,7 +263,12 @@
                       "label": "Expression",
                       "description": "Initialize with value"
                     },
-                    "valueType": "ACTION_OR_EXPRESSION",
+                    "types": [
+                      {
+                        "fieldType": "ACTION_OR_EXPRESSION",
+                        "selected": true
+                      }
+                    ],
                     "value": "obj.'type",
                     "optional": true,
                     "editable": true,
@@ -245,7 +280,12 @@
                       "label": "Name",
                       "description": "Name of the variable"
                     },
-                    "valueType": "IDENTIFIER",
+                    "types": [
+                      {
+                        "fieldType": "IDENTIFIER",
+                        "selected": true
+                      }
+                    ],
                     "value": "'type",
                     "optional": false,
                     "editable": false,
@@ -270,7 +310,12 @@
                       "label": "Type",
                       "description": "Type of the variable"
                     },
-                    "valueType": "TYPE",
+                    "types": [
+                      {
+                        "fieldType": "TYPE",
+                        "selected": true
+                      }
+                    ],
                     "value": "string",
                     "placeholder": "var",
                     "optional": false,
@@ -310,9 +355,14 @@
                       "label": "Expression",
                       "description": "Return value"
                     },
-                    "valueType": "ACTION_OR_EXPRESSION",
+                    "types": [
+                      {
+                        "fieldType": "ACTION_OR_EXPRESSION",
+                        "selected": true
+                      }
+                    ],
                     "value": "string `Order for ${quantity} ${'type} cherries placed`",
-                    "optional": false,
+                    "optional": true,
                     "editable": true,
                     "advanced": false,
                     "hidden": false
@@ -347,14 +397,24 @@
                   "label": "Patterns",
                   "description": "List of binding patterns"
                 },
-                "valueType": "SINGLE_SELECT",
+                "types": [
+                  {
+                    "fieldType": "SINGLE_SELECT",
+                    "selected": true
+                  }
+                ],
                 "value": [
                   {
                     "metadata": {
                       "label": "Pattern",
                       "description": "Binding pattern"
                     },
-                    "valueType": "EXPRESSION",
+                    "types": [
+                      {
+                        "fieldType": "EXPRESSION",
+                        "selected": true
+                      }
+                    ],
                     "value": "_",
                     "optional": false,
                     "editable": true,
@@ -398,9 +458,14 @@
                       "label": "Expression",
                       "description": "Return value"
                     },
-                    "valueType": "ACTION_OR_EXPRESSION",
+                    "types": [
+                      {
+                        "fieldType": "ACTION_OR_EXPRESSION",
+                        "selected": true
+                      }
+                    ],
                     "value": "error(\"Invalid data format\")",
-                    "optional": false,
+                    "optional": true,
                     "editable": true,
                     "advanced": false,
                     "hidden": false
@@ -435,7 +500,12 @@
                   "label": "Ignore",
                   "description": "Ignore the error value"
                 },
-                "valueType": "EXPRESSION",
+                "types": [
+                  {
+                    "fieldType": "EXPRESSION",
+                    "selected": true
+                  }
+                ],
                 "value": "false",
                 "optional": false,
                 "editable": true,
@@ -447,7 +517,12 @@
                   "label": "Error Variable",
                   "description": "Name of the error variable"
                 },
-                "valueType": "IDENTIFIER",
+                "types": [
+                  {
+                    "fieldType": "IDENTIFIER",
+                    "selected": true
+                  }
+                ],
                 "value": "e ",
                 "placeholder": "err",
                 "optional": false,
@@ -460,7 +535,12 @@
                   "label": "Error Type",
                   "description": "Type of the error"
                 },
-                "valueType": "TYPE",
+                "types": [
+                  {
+                    "fieldType": "TYPE",
+                    "selected": true
+                  }
+                ],
                 "value": "error",
                 "placeholder": "error",
                 "optional": false,
@@ -518,8 +598,13 @@
                           "label": "Condition",
                           "description": "Boolean Condition"
                         },
-                        "valueType": "EXPRESSION",
-                        "valueTypeConstraint": "boolean",
+                        "types": [
+                          {
+                            "fieldType": "EXPRESSION",
+                            "ballerinaType": "boolean",
+                            "selected": true
+                          }
+                        ],
                         "value": "e is error ",
                         "placeholder": "true",
                         "optional": false,
@@ -557,9 +642,14 @@
                               "label": "Expression",
                               "description": "Return value"
                             },
-                            "valueType": "ACTION_OR_EXPRESSION",
+                            "types": [
+                              {
+                                "fieldType": "ACTION_OR_EXPRESSION",
+                                "selected": true
+                              }
+                            ],
                             "value": "error(\"Data processing failed\", e)",
-                            "optional": false,
+                            "optional": true,
                             "editable": true,
                             "advanced": false,
                             "hidden": false
@@ -581,8 +671,13 @@
               "label": "Target",
               "description": "Match target expression"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "any|error",
+            "types": [
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "any|error",
+                "selected": true
+              }
+            ],
             "value": "data ",
             "placeholder": "true",
             "optional": false,

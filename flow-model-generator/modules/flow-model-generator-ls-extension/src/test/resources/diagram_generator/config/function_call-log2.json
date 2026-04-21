@@ -81,7 +81,12 @@
                   "label": "Ignore",
                   "description": "Ignore the error value"
                 },
-                "valueType": "EXPRESSION",
+                "types": [
+                  {
+                    "fieldType": "EXPRESSION",
+                    "selected": true
+                  }
+                ],
                 "value": "false",
                 "optional": false,
                 "editable": true,
@@ -93,7 +98,12 @@
                   "label": "Error Variable",
                   "description": "Name of the error variable"
                 },
-                "valueType": "IDENTIFIER",
+                "types": [
+                  {
+                    "fieldType": "IDENTIFIER",
+                    "selected": true
+                  }
+                ],
                 "value": "e ",
                 "placeholder": "err",
                 "optional": false,
@@ -106,7 +116,12 @@
                   "label": "Error Type",
                   "description": "Type of the error"
                 },
-                "valueType": "TYPE",
+                "types": [
+                  {
+                    "fieldType": "TYPE",
+                    "selected": true
+                  }
+                ],
                 "value": "error",
                 "placeholder": "error",
                 "optional": false,
@@ -121,7 +136,7 @@
                 "metadata": {
                   "label": "printError",
                   "description": "Prints error logs.\n```ballerina\nerror e = error(\"error occurred\");\nlog:printError(\"error log with cause\", 'error = e, id = 845315);\n```\n",
-                  "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_log_2.14.0.png"
+                  "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_log_2.17.0.png"
                 },
                 "codedata": {
                   "node": "FUNCTION_CALL",
@@ -129,7 +144,7 @@
                   "module": "log",
                   "packageName": "log",
                   "symbol": "printError",
-                  "version": "2.14.0",
+                  "version": "2.17.0",
                   "lineRange": {
                     "fileName": "log_source.bal",
                     "startLine": {
@@ -150,8 +165,18 @@
                       "label": "Msg",
                       "description": "The message to be logged"
                     },
-                    "valueType": "EXPRESSION",
-                    "valueTypeConstraint": "string|log:PrintableRawTemplate",
+                    "types": [
+                      {
+                        "fieldType": "TEXT",
+                        "ballerinaType": "string",
+                        "selected": true
+                      },
+                      {
+                        "fieldType": "EXPRESSION",
+                        "ballerinaType": "string|log:PrintableRawTemplate",
+                        "selected": false
+                      }
+                    ],
                     "value": "\"Error: \"",
                     "placeholder": "\"\"",
                     "optional": false,
@@ -161,31 +186,20 @@
                     "codedata": {
                       "kind": "REQUIRED",
                       "originalName": "msg"
-                    },
-                    "typeMembers": [
-                      {
-                        "type": "PrintableRawTemplate",
-                        "packageInfo": "ballerina:log:2.12.0",
-                        "packageName": "log",
-                        "kind": "OBJECT_TYPE",
-                        "selected": false
-                      },
-                      {
-                        "type": "string",
-                        "packageInfo": "",
-                        "packageName": "",
-                        "kind": "BASIC_TYPE",
-                        "selected": true
-                      }
-                    ]
+                    }
                   },
                   "error": {
                     "metadata": {
                       "label": "Error",
                       "description": "The error struct to be logged"
                     },
-                    "valueType": "EXPRESSION",
-                    "valueTypeConstraint": "error|()",
+                    "types": [
+                      {
+                        "fieldType": "EXPRESSION",
+                        "ballerinaType": "error?",
+                        "selected": true
+                      }
+                    ],
                     "value": "e",
                     "placeholder": "()",
                     "optional": true,
@@ -196,22 +210,6 @@
                       "kind": "DEFAULTABLE",
                       "originalName": "'error"
                     },
-                    "typeMembers": [
-                      {
-                        "type": "()",
-                        "packageInfo": "",
-                        "packageName": "",
-                        "kind": "BASIC_TYPE",
-                        "selected": false
-                      },
-                      {
-                        "type": "error",
-                        "packageInfo": "ballerina:lang.annotations:0.0.0",
-                        "packageName": "lang.annotations",
-                        "kind": "ERROR_TYPE",
-                        "selected": true
-                      }
-                    ],
                     "defaultValue": "()"
                   },
                   "stackTrace": {
@@ -219,8 +217,31 @@
                       "label": "Stack Trace",
                       "description": "The error stack trace to be logged"
                     },
-                    "valueType": "EXPRESSION",
-                    "valueTypeConstraint": "error:StackFrame[]|()",
+                    "types": [
+                      {
+                        "fieldType": "REPEATABLE_LIST",
+                        "ballerinaType": "error:StackFrame[]",
+                        "template": {
+                          "types": [
+                            {
+                              "fieldType": "EXPRESSION",
+                              "ballerinaType": "error:StackFrame",
+                              "selected": false
+                            }
+                          ],
+                          "optional": false,
+                          "editable": false,
+                          "advanced": false,
+                          "hidden": false
+                        },
+                        "selected": false
+                      },
+                      {
+                        "fieldType": "EXPRESSION",
+                        "ballerinaType": "error:StackFrame[]?",
+                        "selected": false
+                      }
+                    ],
                     "placeholder": "()",
                     "optional": true,
                     "editable": true,
@@ -230,22 +251,6 @@
                       "kind": "DEFAULTABLE",
                       "originalName": "stackTrace"
                     },
-                    "typeMembers": [
-                      {
-                        "type": "()",
-                        "packageInfo": "",
-                        "packageName": "",
-                        "kind": "BASIC_TYPE",
-                        "selected": false
-                      },
-                      {
-                        "type": "StackFrame",
-                        "packageInfo": "ballerina:lang.error:0.0.0",
-                        "packageName": "lang.error",
-                        "kind": "ARRAY_TYPE",
-                        "selected": false
-                      }
-                    ],
                     "defaultValue": "()"
                   },
                   "additionalValues": {
@@ -253,16 +258,56 @@
                       "label": "Additional Values",
                       "description": "Capture key value pairs"
                     },
-                    "valueType": "MAPPING_EXPRESSION_SET",
-                    "valueTypeConstraint": "log:Value",
-                    "value": [
+                    "types": [
                       {
-                        "key1": "\"dadfa\""
-                      },
-                      {
-                        "key2": "123"
+                        "fieldType": "REPEATABLE_MAP",
+                        "ballerinaType": "log:Value",
+                        "template": {
+                          "types": [
+                            {
+                              "fieldType": "EXPRESSION",
+                              "ballerinaType": "log:Value",
+                              "selected": false
+                            }
+                          ],
+                          "optional": false,
+                          "editable": false,
+                          "advanced": false,
+                          "hidden": false
+                        },
+                        "selected": true
                       }
                     ],
+                    "value": {
+                      "key1": {
+                        "types": [
+                          {
+                            "fieldType": "EXPRESSION",
+                            "ballerinaType": "log:Value",
+                            "selected": true
+                          }
+                        ],
+                        "value": "\"dadfa\"",
+                        "optional": false,
+                        "editable": false,
+                        "advanced": false,
+                        "hidden": false
+                      },
+                      "key2": {
+                        "types": [
+                          {
+                            "fieldType": "EXPRESSION",
+                            "ballerinaType": "log:Value",
+                            "selected": true
+                          }
+                        ],
+                        "value": "123",
+                        "optional": false,
+                        "editable": false,
+                        "advanced": false,
+                        "hidden": false
+                      }
+                    },
                     "placeholder": "{}",
                     "optional": true,
                     "editable": true,
@@ -271,8 +316,7 @@
                     "codedata": {
                       "kind": "INCLUDED_RECORD_REST",
                       "originalName": "Additional Values"
-                    },
-                    "typeMembers": []
+                    }
                   }
                 },
                 "flags": 0
@@ -282,7 +326,7 @@
                 "metadata": {
                   "label": "printError",
                   "description": "Prints error logs.\n```ballerina\nerror e = error(\"error occurred\");\nlog:printError(\"error log with cause\", 'error = e, id = 845315);\n```\n",
-                  "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_log_2.14.0.png"
+                  "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_log_2.17.0.png"
                 },
                 "codedata": {
                   "node": "FUNCTION_CALL",
@@ -290,7 +334,7 @@
                   "module": "log",
                   "packageName": "log",
                   "symbol": "printError",
-                  "version": "2.14.0",
+                  "version": "2.17.0",
                   "lineRange": {
                     "fileName": "log_source.bal",
                     "startLine": {
@@ -311,8 +355,18 @@
                       "label": "Msg",
                       "description": "The message to be logged"
                     },
-                    "valueType": "EXPRESSION",
-                    "valueTypeConstraint": "string|log:PrintableRawTemplate",
+                    "types": [
+                      {
+                        "fieldType": "TEXT",
+                        "ballerinaType": "string",
+                        "selected": true
+                      },
+                      {
+                        "fieldType": "EXPRESSION",
+                        "ballerinaType": "string|log:PrintableRawTemplate",
+                        "selected": false
+                      }
+                    ],
                     "value": "\"Error: \"",
                     "placeholder": "\"\"",
                     "optional": false,
@@ -322,31 +376,20 @@
                     "codedata": {
                       "kind": "REQUIRED",
                       "originalName": "msg"
-                    },
-                    "typeMembers": [
-                      {
-                        "type": "PrintableRawTemplate",
-                        "packageInfo": "ballerina:log:2.12.0",
-                        "packageName": "log",
-                        "kind": "OBJECT_TYPE",
-                        "selected": false
-                      },
-                      {
-                        "type": "string",
-                        "packageInfo": "",
-                        "packageName": "",
-                        "kind": "BASIC_TYPE",
-                        "selected": true
-                      }
-                    ]
+                    }
                   },
                   "error": {
                     "metadata": {
                       "label": "Error",
                       "description": "The error struct to be logged"
                     },
-                    "valueType": "EXPRESSION",
-                    "valueTypeConstraint": "error|()",
+                    "types": [
+                      {
+                        "fieldType": "EXPRESSION",
+                        "ballerinaType": "error?",
+                        "selected": true
+                      }
+                    ],
                     "value": "e",
                     "placeholder": "()",
                     "optional": true,
@@ -357,22 +400,6 @@
                       "kind": "DEFAULTABLE",
                       "originalName": "'error"
                     },
-                    "typeMembers": [
-                      {
-                        "type": "()",
-                        "packageInfo": "",
-                        "packageName": "",
-                        "kind": "BASIC_TYPE",
-                        "selected": false
-                      },
-                      {
-                        "type": "error",
-                        "packageInfo": "ballerina:lang.annotations:0.0.0",
-                        "packageName": "lang.annotations",
-                        "kind": "ERROR_TYPE",
-                        "selected": true
-                      }
-                    ],
                     "defaultValue": "()"
                   },
                   "stackTrace": {
@@ -380,8 +407,31 @@
                       "label": "Stack Trace",
                       "description": "The error stack trace to be logged"
                     },
-                    "valueType": "EXPRESSION",
-                    "valueTypeConstraint": "error:StackFrame[]|()",
+                    "types": [
+                      {
+                        "fieldType": "REPEATABLE_LIST",
+                        "ballerinaType": "error:StackFrame[]",
+                        "template": {
+                          "types": [
+                            {
+                              "fieldType": "EXPRESSION",
+                              "ballerinaType": "error:StackFrame",
+                              "selected": false
+                            }
+                          ],
+                          "optional": false,
+                          "editable": false,
+                          "advanced": false,
+                          "hidden": false
+                        },
+                        "selected": false
+                      },
+                      {
+                        "fieldType": "EXPRESSION",
+                        "ballerinaType": "error:StackFrame[]?",
+                        "selected": true
+                      }
+                    ],
                     "value": "e.stackTrace()",
                     "placeholder": "()",
                     "optional": true,
@@ -392,22 +442,6 @@
                       "kind": "DEFAULTABLE",
                       "originalName": "stackTrace"
                     },
-                    "typeMembers": [
-                      {
-                        "type": "()",
-                        "packageInfo": "",
-                        "packageName": "",
-                        "kind": "BASIC_TYPE",
-                        "selected": false
-                      },
-                      {
-                        "type": "StackFrame",
-                        "packageInfo": "ballerina:lang.error:0.0.0",
-                        "packageName": "lang.error",
-                        "kind": "ARRAY_TYPE",
-                        "selected": false
-                      }
-                    ],
                     "defaultValue": "()"
                   },
                   "additionalValues": {
@@ -415,9 +449,27 @@
                       "label": "Additional Values",
                       "description": "Capture key value pairs"
                     },
-                    "valueType": "MAPPING_EXPRESSION_SET",
-                    "valueTypeConstraint": "log:Value",
-                    "value": [],
+                    "types": [
+                      {
+                        "fieldType": "REPEATABLE_MAP",
+                        "ballerinaType": "log:Value",
+                        "template": {
+                          "types": [
+                            {
+                              "fieldType": "EXPRESSION",
+                              "ballerinaType": "log:Value",
+                              "selected": false
+                            }
+                          ],
+                          "optional": false,
+                          "editable": false,
+                          "advanced": false,
+                          "hidden": false
+                        },
+                        "selected": true
+                      }
+                    ],
+                    "value": {},
                     "placeholder": "{}",
                     "optional": true,
                     "editable": true,
@@ -426,8 +478,7 @@
                     "codedata": {
                       "kind": "INCLUDED_RECORD_REST",
                       "originalName": "Additional Values"
-                    },
-                    "typeMembers": []
+                    }
                   }
                 },
                 "flags": 0
@@ -460,9 +511,14 @@
                       "label": "Expression",
                       "description": "Return value"
                     },
-                    "valueType": "ACTION_OR_EXPRESSION",
+                    "types": [
+                      {
+                        "fieldType": "ACTION_OR_EXPRESSION",
+                        "selected": true
+                      }
+                    ],
                     "value": "e",
-                    "optional": false,
+                    "optional": true,
                     "editable": true,
                     "advanced": false,
                     "hidden": false

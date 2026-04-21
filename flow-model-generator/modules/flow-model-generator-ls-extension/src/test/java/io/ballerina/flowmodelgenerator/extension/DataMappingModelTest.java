@@ -151,9 +151,25 @@ public class DataMappingModelTest extends AbstractLSTest {
                 {Path.of("query21.json")},
                 {Path.of("query22.json")},
                 {Path.of("variable57.json")},
+                {Path.of("focussedView.json")},
                 {Path.of("query23.json")},
                 {Path.of("query24.json")},
-                {Path.of("map.json")}
+                {Path.of("map.json")},
+                {Path.of("sub_mapping7.json")},
+                {Path.of("query25.json")},
+                {Path.of("query26.json")},
+                {Path.of("query27.json")},
+                {Path.of("query28.json")},
+                {Path.of("query29.json")},
+                {Path.of("variable58.json")},
+                {Path.of("variable59.json")},
+                {Path.of("function_def_transformed_type1.json")},
+                {Path.of("function_def_transformed_type2.json")},
+                {Path.of("function_def_transformed_type3.json")},
+                {Path.of("function_def_transformed_type4.json")},
+                {Path.of("function_def_transformed_type5.json")},
+                {Path.of("function_def_transformed_type6.json")},
+                {Path.of("function_def_transformed_type7.json")},
         };
     }
 

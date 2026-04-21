@@ -26,6 +26,7 @@ import io.ballerina.compiler.syntax.tree.NonTerminalNode;
 import io.ballerina.flowmodelgenerator.core.CodeAnalyzer;
 import io.ballerina.flowmodelgenerator.core.model.FlowNode;
 import io.ballerina.flowmodelgenerator.core.model.NodeBuilder;
+import io.ballerina.flowmodelgenerator.core.model.NodeKind;
 import io.ballerina.flowmodelgenerator.core.model.Property;
 import io.ballerina.flowmodelgenerator.core.model.SourceBuilder;
 import io.ballerina.modelgenerator.commons.ModuleInfo;
@@ -81,8 +82,9 @@ public class DiagnosticRequest implements Callable<JsonElement> {
             return null;
         }
         Optional<Document> document = workspaceManager.document(path);
+        Optional<SemanticModel> semanticModelOp = workspaceManager.semanticModel(path);
 
-        if (document.isEmpty()) {
+        if (document.isEmpty() || semanticModelOp.isEmpty()) {
             return null;
         }
 
@@ -96,6 +98,7 @@ public class DiagnosticRequest implements Callable<JsonElement> {
         SourceBuilder sourceBuilder = new SourceBuilder(flowNodeObj, workspaceManager, path);
         Map<Path, List<TextEdit>> textEdits = NodeBuilder
                 .getNodeFromKind(flowNodeObj.codedata().node())
+                .semanticModel(semanticModelOp.get())
                 .toSource(sourceBuilder);
 
         // Apply text edits to the document
@@ -103,19 +106,35 @@ public class DiagnosticRequest implements Callable<JsonElement> {
         List<io.ballerina.tools.text.TextEdit> ballerinaEdits = new ArrayList<>();
         List<TextEdit> lspEdits = textEdits.get(path);
         int start = 0;
+        int cumulativeLength = 0;
         LinePosition endLinePosition = null;
         if (lspEdits != null) {
+            int numTotalEdits = lspEdits.size();
             // Transform every LSP TextEdit to a Ballerina TextEdit
-            for (TextEdit edit : lspEdits) {
+            for (int editIndex = 0; editIndex < numTotalEdits; editIndex++) {
+                TextEdit edit = lspEdits.get(editIndex);
                 // Generate the Ballerina TextEdit from the LSP TextEdit
                 Range editRange = edit.getRange();
                 int startLine = editRange.getStart().getLine();
                 int endLine = editRange.getEnd().getLine();
                 int startCharacter = editRange.getStart().getCharacter();
                 int endCharacter = editRange.getEnd().getCharacter();
-                start = textDocument.textPositionFrom(LinePosition.from(startLine, startCharacter));
+                int startPos = textDocument.textPositionFrom(LinePosition.from(startLine, startCharacter));
                 int end = textDocument.textPositionFrom(LinePosition.from(endLine, endCharacter));
-                ballerinaEdits.add(io.ballerina.tools.text.TextEdit.from(TextRange.from(start, end - start),
+
+
+                // Calculate the start position for the final edit
+                // TODO: The algorithm assumes the cursor is always at the most recent text edit, and there are
+                //  currently no known cases where this assumption breaks. However, this makes the approach
+                //  algorithmically incomplete. Ideally, the algorithm should consider the line range of the flow
+                //  node and compute the corresponding start and end ranges accordingly.
+                if (editIndex == numTotalEdits - 1) {
+                    start = cumulativeLength + startPos;
+                } else {
+                    cumulativeLength += edit.getNewText().length();
+                }
+
+                ballerinaEdits.add(io.ballerina.tools.text.TextEdit.from(TextRange.from(startPos, end - startPos),
                         edit.getNewText()));
 
                 // Calculate the end position after the edit:
@@ -125,9 +144,11 @@ public class DiagnosticRequest implements Callable<JsonElement> {
                 List<String> textEditLines = edit.getNewText().lines().toList();
                 String textLine = textEditLines.getLast();
                 int numTextEdits = textEditLines.size();
-                int lineOffset =
-                        Boolean.TRUE.equals(flowNodeObj.codedata().isNew()) && numTextEdits > 1 ? numTextEdits - 1 : 0;
-                endLinePosition = LinePosition.from(endLine + lineOffset,
+                // For multi-line new text, the end line in the updated document is always
+                // startLine + (numNewLines - 1), regardless of the original edit range's endLine.
+                // This handles existing nodes that get replaced by content with a different line count.
+                int endLineForRange = numTextEdits > 1 ? startLine + numTextEdits - 1 : endLine;
+                endLinePosition = LinePosition.from(endLineForRange,
                         numTextEdits > 1 ? textLine.length() : startCharacter + textLine.length());
             }
         }
@@ -149,20 +170,23 @@ public class DiagnosticRequest implements Callable<JsonElement> {
         TextDocument updatedTextDocument = updatedDoc.textDocument();
         ModulePartNode modulePartNode = updatedDoc.syntaxTree().rootNode();
         NonTerminalNode node = modulePartNode.findNode(TextRange.from(start,
-                updatedTextDocument.textPositionFrom(endLinePosition) - 1 - start), true);
+                updatedTextDocument.textPositionFrom(endLinePosition) - start), true);
 
         // Generate the flow node for the ST node with the respective diagnostics annotated
         SemanticModel semanticModel = project.currentPackage().getCompilation()
                 .getSemanticModel(project.currentPackage().getDefaultModule().moduleId());
+        NodeKind flowKind = flowNodeObj.codedata().node();
         CodeAnalyzer codeAnalyzer = new CodeAnalyzer(project, semanticModel, Property.LOCAL_SCOPE, Map.of(),
-                Map.of(), updatedTextDocument, ModuleInfo.from(updatedDoc.module().descriptor()), true,
-                workspaceManager);
+                Map.of(), updatedTextDocument, ModuleInfo.from(updatedDoc.module().descriptor()),
+                (flowKind == NodeKind.VARIABLE || flowKind == NodeKind.ASSIGN),
+                workspaceManager, path);
         node.accept(codeAnalyzer);
         List<FlowNode> flowNodes = codeAnalyzer.getFlowNodes();
         if (flowNodes.size() != 1) {
             return null;
         }
-        return gson.toJsonTree(flowNodes.getFirst());
+        FlowNode resultNode = flowNodes.getFirst();
+        return gson.toJsonTree(resultNode);
     }
 
     public String getKey() {

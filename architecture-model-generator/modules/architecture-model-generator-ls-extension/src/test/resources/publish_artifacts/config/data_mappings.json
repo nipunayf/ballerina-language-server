@@ -1,6 +1,7 @@
 {
   "source": "new/data_mappings.bal",
   "description": "",
+  "packageName": "proj329",
   "output": {
     "Functions": {
       "deletions": {
@@ -28,6 +29,7 @@
           "type": "DATA_MAPPER",
           "name": "calculateOrderTotal",
           "scope": "Global",
+          "visibility": "module",
           "children": {}
         },
         "toOrder": {
@@ -46,6 +48,7 @@
           "type": "DATA_MAPPER",
           "name": "toOrder",
           "scope": "Global",
+          "visibility": "module",
           "children": {}
         }
       },
@@ -84,6 +87,7 @@
           "type": "DATA_MAPPER",
           "name": "mapMenuItemV1ToV2",
           "scope": "Global",
+          "visibility": "module",
           "children": {}
         },
         "menuItemToJson": {
@@ -102,6 +106,7 @@
           "type": "DATA_MAPPER",
           "name": "menuItemToJson",
           "scope": "Global",
+          "visibility": "module",
           "children": {}
         },
         "orderItemToJson": {
@@ -120,6 +125,7 @@
           "type": "DATA_MAPPER",
           "name": "orderItemToJson",
           "scope": "Global",
+          "visibility": "module",
           "children": {}
         }
       }

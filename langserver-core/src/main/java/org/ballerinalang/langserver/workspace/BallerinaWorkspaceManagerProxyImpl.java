@@ -20,6 +20,7 @@ import io.ballerina.projects.Project;
 import org.ballerinalang.langserver.LSContextOperation;
 import org.ballerinalang.langserver.common.utils.CommonUtil;
 import org.ballerinalang.langserver.common.utils.PathUtil;
+import org.ballerinalang.langserver.commons.BallerinaCompilerApi;
 import org.ballerinalang.langserver.commons.LanguageServerContext;
 import org.ballerinalang.langserver.commons.workspace.WorkspaceDocumentException;
 import org.ballerinalang.langserver.commons.workspace.WorkspaceManager;
@@ -27,8 +28,8 @@ import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 
-import java.net.URI;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -42,10 +43,12 @@ import java.util.Optional;
 public class BallerinaWorkspaceManagerProxyImpl implements BallerinaWorkspaceManagerProxy {
     private final WorkspaceManager baseWorkspaceManager;
     private final ClonedWorkspace clonedWorkspaceManager;
+    private final AIWorkspace aiWorkspaceManager;
 
     public BallerinaWorkspaceManagerProxyImpl(LanguageServerContext serverContext) {
         this.baseWorkspaceManager = new BallerinaWorkspaceManager(serverContext);
         this.clonedWorkspaceManager = new ClonedWorkspace(serverContext);
+        this.aiWorkspaceManager = new AIWorkspace(serverContext);
     }
     
     @Override
@@ -55,8 +58,16 @@ public class BallerinaWorkspaceManagerProxyImpl implements BallerinaWorkspaceMan
 
     @Override
     public WorkspaceManager get(String fileUri) {
-        return URI.create(fileUri).getScheme().equals(CommonUtil.EXPR_SCHEME) ?
-                this.clonedWorkspaceManager : this.baseWorkspaceManager;
+        String scheme = PathUtil.getEncodedURIPath(fileUri).getScheme();
+        if (scheme == null) {
+            return this.baseWorkspaceManager;
+        }
+        if (scheme.equals(CommonUtil.AI_SCHEME)) {
+            return this.aiWorkspaceManager;
+        } else if (scheme.equals(CommonUtil.EXPR_SCHEME)) {
+            return this.clonedWorkspaceManager;
+        }
+        return this.baseWorkspaceManager;
     }
 
     @Override
@@ -69,8 +80,16 @@ public class BallerinaWorkspaceManagerProxyImpl implements BallerinaWorkspaceMan
         if (this.isExprScheme(uri)) {
             Optional<Project> project = this.baseWorkspaceManager.project(path.get());
             project.ifPresent(this.clonedWorkspaceManager::open);
+        } else if (this.isAIScheme(uri)) {
+            this.aiWorkspaceManager.didOpen(path.get(), params);
         } else {
             this.baseWorkspaceManager.didOpen(path.get(), params);
+
+            // Send didOpen if the project is already opened in the cloned workspace
+            Optional<Project> project = this.clonedWorkspaceManager.project(path.get());
+            if (project.isPresent()) {
+                this.clonedWorkspaceManager.didOpen(path.get(), params);
+            }
         }
     }
 
@@ -83,8 +102,16 @@ public class BallerinaWorkspaceManagerProxyImpl implements BallerinaWorkspaceMan
         }
         if (this.isExprScheme(uri)) {
             this.clonedWorkspaceManager.didChange(path.get(), params);
+        } else if (this.isAIScheme(uri)) {
+            this.aiWorkspaceManager.didChange(path.get(), params);
         } else {
             this.baseWorkspaceManager.didChange(path.get(), params);
+
+            // Send didChange if the project is already opened in the cloned workspace
+            Optional<Project> project = this.clonedWorkspaceManager.project(path.get());
+            if (project.isPresent()) {
+                this.clonedWorkspaceManager.didChange(path.get(), params);
+            }
         }
     }
 
@@ -97,6 +124,8 @@ public class BallerinaWorkspaceManagerProxyImpl implements BallerinaWorkspaceMan
         }
         if (this.isExprScheme(uri)) {
             this.clonedWorkspaceManager.didClose(path.get(), params);
+        } else if (this.isAIScheme(uri)) {
+            this.aiWorkspaceManager.didClose(path.get(), params);
         } else {
             this.baseWorkspaceManager.didClose(path.get(), params);
         }
@@ -108,6 +137,18 @@ public class BallerinaWorkspaceManagerProxyImpl implements BallerinaWorkspaceMan
         }
 
         public void open(Project project) {
+            BallerinaCompilerApi compilerApi = BallerinaCompilerApi.getInstance();
+            Optional<Project> workspaceProject = compilerApi.getWorkspaceProject(project);
+            if (workspaceProject.isPresent()) {
+                Project workspaceProjectDuplicate = workspaceProject.get().duplicate();
+                List<Project> workspacePackages = compilerApi.getWorkspaceProjectsInOrder(workspaceProjectDuplicate);
+                for (Project workspacePackage : workspacePackages) {
+                    Path packageRoot = workspacePackage.sourceRoot();
+                    sourceRootToProject.put(packageRoot, ProjectContext.from(workspacePackage));
+                }
+                return;
+            }
+
             this.sourceRootToProject.put(project.sourceRoot(), ProjectContext.from(project.duplicate()));
         }
 
@@ -131,6 +172,18 @@ public class BallerinaWorkspaceManagerProxyImpl implements BallerinaWorkspaceMan
         }
     }
 
+    private static class AIWorkspace extends ClonedWorkspace {
+
+        public AIWorkspace(LanguageServerContext serverContext) {
+            super(serverContext);
+        }
+
+        @Override
+        public String uriScheme() {
+            return CommonUtil.AI_SCHEME;
+        }
+    }
+
     /**
      * Sets the build options for both base and cloned workspace managers.
      *
@@ -141,7 +194,15 @@ public class BallerinaWorkspaceManagerProxyImpl implements BallerinaWorkspaceMan
         this.clonedWorkspaceManager.setBuildOptions(buildOptions);
     }
 
+    public void setEvictProjectOnLastClose(boolean enabled) {
+        ((BallerinaWorkspaceManager) this.baseWorkspaceManager).setEvictProjectOnLastClose(enabled);
+    }
+
     private boolean isExprScheme(String uri) {
-        return URI.create(uri).getScheme().equals(CommonUtil.EXPR_SCHEME);
+        return PathUtil.getEncodedURIPath(uri).getScheme().equals(CommonUtil.EXPR_SCHEME);
+    }
+
+    private boolean isAIScheme(String uri) {
+        return PathUtil.getEncodedURIPath(uri).getScheme().equals(CommonUtil.AI_SCHEME);
     }
 }

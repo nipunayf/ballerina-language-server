@@ -21,8 +21,18 @@
         "label": "sqlQuery",
         "description": "The SQL query such as `` `SELECT * from Album WHERE name=${albumName}` ``"
       },
-      "valueType": "EXPRESSION",
-      "valueTypeConstraint": "sql:ParameterizedQuery",
+      "types": [
+        {
+          "fieldType": "SQL_QUERY",
+          "ballerinaType": "sql:ParameterizedQuery",
+          "selected": true
+        },
+        {
+          "fieldType": "EXPRESSION",
+          "ballerinaType": "sql:ParameterizedQuery",
+          "selected": false
+        }
+      ],
       "value": "object {}",
       "placeholder": "object {}",
       "optional": false,

@@ -384,8 +384,10 @@ public class DatabaseManager {
                         rs.getString("description"),
                         rs.getString("label"),
                         rs.getBoolean("optional"),
+                        false,
                         rs.getString("import_statements"),
-                        new ArrayList<>()
+                        new ArrayList<>(),
+                        null
                 );
                 parameterResults.add(parameterData);
             }
@@ -506,8 +508,10 @@ public class DatabaseManager {
                     description,
                     label,
                     optional,
+                    false,
                     importStatements,
-                    typeMembers
+                    typeMembers,
+                    null
             );
         }
     }

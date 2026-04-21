@@ -1,6 +1,7 @@
 {
   "description": "",
   "source": "project_1",
+  "packageName": "multi_component",
   "output": {
     "Connections": {
       "httpClient": {
@@ -19,7 +20,8 @@
         "type": "CONNECTION",
         "name": "httpClient",
         "scope": "Global",
-        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.15.0.png",
+        "visibility": "module",
+        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.16.1.png",
         "module": "http",
         "children": {}
       },
@@ -39,7 +41,8 @@
         "type": "CONNECTION",
         "name": "httpClient2",
         "scope": "Global",
-        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.15.0.png",
+        "visibility": "module",
+        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.16.1.png",
         "module": "http",
         "children": {}
       }
@@ -61,7 +64,8 @@
         "type": "LISTENER",
         "name": "ls",
         "scope": "Global",
-        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.15.0.png",
+        "visibility": "module",
+        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.16.1.png",
         "module": "http",
         "children": {}
       },
@@ -81,7 +85,8 @@
         "type": "LISTENER",
         "name": "securedEP",
         "scope": "Global",
-        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.15.0.png",
+        "visibility": "module",
+        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.16.1.png",
         "module": "http",
         "children": {}
       },
@@ -101,7 +106,8 @@
         "type": "LISTENER",
         "name": "securedEP2",
         "scope": "Global",
-        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.15.0.png",
+        "visibility": "module",
+        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.16.1.png",
         "module": "http",
         "children": {}
       }
@@ -123,6 +129,7 @@
         "type": "FUNCTION",
         "name": "bar",
         "scope": "Global",
+        "visibility": "module",
         "children": {}
       },
       "foo": {
@@ -141,6 +148,7 @@
         "type": "FUNCTION",
         "name": "foo",
         "scope": "Global",
+        "visibility": "module",
         "children": {}
       }
     },
@@ -161,7 +169,8 @@
         "type": "SERVICE",
         "name": "HTTP Service - /api2",
         "scope": "Global",
-        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.15.0.png",
+        "visibility": "module",
+        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.16.1.png",
         "module": "http",
         "children": {
           "get#path": {
@@ -181,6 +190,7 @@
             "name": "path",
             "accessor": "get",
             "scope": "Global",
+            "visibility": "module",
             "children": {}
           }
         }
@@ -201,7 +211,8 @@
         "type": "SERVICE",
         "name": "HTTP Service - /api1",
         "scope": "Global",
-        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.15.0.png",
+        "visibility": "module",
+        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.16.1.png",
         "module": "http",
         "children": {
           "get#path": {
@@ -221,6 +232,7 @@
             "name": "path",
             "accessor": "get",
             "scope": "Global",
+            "visibility": "module",
             "children": {}
           },
           "baz": {
@@ -239,6 +251,7 @@
             "type": "FUNCTION",
             "name": "baz",
             "scope": "Global",
+            "visibility": "module",
             "children": {}
           }
         }
@@ -259,7 +272,8 @@
         "type": "SERVICE",
         "name": "HTTP Service - /",
         "scope": "Global",
-        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.15.0.png",
+        "visibility": "module",
+        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.16.1.png",
         "module": "http",
         "children": {
           "init": {
@@ -278,6 +292,7 @@
             "type": "FUNCTION",
             "name": "init",
             "scope": "Global",
+            "visibility": "module",
             "children": {}
           },
           "get#greeting": {
@@ -297,6 +312,7 @@
             "name": "greeting",
             "accessor": "get",
             "scope": "Global",
+            "visibility": "module",
             "children": {}
           }
         }
@@ -317,7 +333,8 @@
         "type": "SERVICE",
         "name": "HTTP Service - /",
         "scope": "Global",
-        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.15.0.png",
+        "visibility": "module",
+        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.16.1.png",
         "module": "http",
         "children": {
           "init": {
@@ -336,6 +353,7 @@
             "type": "FUNCTION",
             "name": "init",
             "scope": "Global",
+            "visibility": "module",
             "children": {}
           },
           "get#greeting": {
@@ -355,6 +373,7 @@
             "name": "greeting",
             "accessor": "get",
             "scope": "Global",
+            "visibility": "module",
             "children": {}
           },
           "foo1": {
@@ -373,6 +392,7 @@
             "type": "FUNCTION",
             "name": "foo1",
             "scope": "Global",
+            "visibility": "module",
             "children": {}
           },
           "foo2": {
@@ -391,6 +411,7 @@
             "type": "FUNCTION",
             "name": "foo2",
             "scope": "Global",
+            "visibility": "module",
             "children": {}
           },
           "foo3": {
@@ -409,6 +430,7 @@
             "type": "FUNCTION",
             "name": "foo3",
             "scope": "Global",
+            "visibility": "module",
             "children": {}
           }
         }
@@ -429,6 +451,7 @@
         "type": "AUTOMATION",
         "name": "automation",
         "scope": "Global",
+        "visibility": "public",
         "children": {}
       }
     },
@@ -449,6 +472,7 @@
         "type": "CONFIGURABLE",
         "name": "orderTopics",
         "scope": "Global",
+        "visibility": "module",
         "children": {}
       }
     }

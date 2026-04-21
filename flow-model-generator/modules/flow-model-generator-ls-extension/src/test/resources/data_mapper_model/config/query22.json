@@ -144,7 +144,10 @@
         ],
         "expression": "from Person person in personList\n                                 outer join var dept in deptList\n                                 on person.id equals dept?.id\n                                 select {\n                                     fname : person.fname,\n                                     dept : dept?.name\n                                 }\n",
         "diagnostics": [
-          "incompatible types: expected 'DeptPerson', found 'record {| string fname; string? dept; |}[]'"
+          {
+            "code": "BCE2066",
+            "message": "incompatible types: expected 'DeptPerson', found 'record {| string fname; string? dept; |}[]'"
+          }
         ],
         "elements": [],
         "isQueryExpression": true,
@@ -233,7 +236,7 @@
           {
             "name": "dept",
             "displayName": "dept",
-            "typeName": "string",
+            "typeName": "string?",
             "kind": "string",
             "optional": false
           }
@@ -241,6 +244,7 @@
         "typeName": "DeptPerson",
         "kind": "record"
       }
-    }
+    },
+    "hasInvalidOutput": false
   }
 }

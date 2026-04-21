@@ -1,44 +1,9 @@
 {
   "description": "",
   "source": "np.bal",
+  "packageName": ".",
   "output": {
     "Natural Functions": {
-      "suggestMovieName2": {
-        "id": "suggestMovieName2",
-        "location": {
-          "fileName": "np.bal",
-          "startLine": {
-            "line": 26,
-            "offset": 0
-          },
-          "endLine": {
-            "line": 35,
-            "offset": 2
-          }
-        },
-        "type": "NP_FUNCTION",
-        "name": "suggestMovieName2",
-        "scope": "Global",
-        "children": {}
-      },
-      "suggestMovieName1": {
-        "id": "suggestMovieName1",
-        "location": {
-          "fileName": "np.bal",
-          "startLine": {
-            "line": 14,
-            "offset": 0
-          },
-          "endLine": {
-            "line": 24,
-            "offset": 2
-          }
-        },
-        "type": "NP_FUNCTION",
-        "name": "suggestMovieName1",
-        "scope": "Global",
-        "children": {}
-      },
       "getMovieRating": {
         "id": "getMovieRating",
         "location": {
@@ -55,6 +20,7 @@
         "type": "NP_FUNCTION",
         "name": "getMovieRating",
         "scope": "Global",
+        "visibility": "module",
         "children": {}
       },
       "suggestMovieGenre": {
@@ -73,6 +39,45 @@
         "type": "NP_FUNCTION",
         "name": "suggestMovieGenre",
         "scope": "Global",
+        "visibility": "module",
+        "children": {}
+      },
+      "suggestMovieName1": {
+        "id": "suggestMovieName1",
+        "location": {
+          "fileName": "np.bal",
+          "startLine": {
+            "line": 14,
+            "offset": 0
+          },
+          "endLine": {
+            "line": 24,
+            "offset": 2
+          }
+        },
+        "type": "NP_FUNCTION",
+        "name": "suggestMovieName1",
+        "scope": "Global",
+        "visibility": "module",
+        "children": {}
+      },
+      "suggestMovieName2": {
+        "id": "suggestMovieName2",
+        "location": {
+          "fileName": "np.bal",
+          "startLine": {
+            "line": 26,
+            "offset": 0
+          },
+          "endLine": {
+            "line": 35,
+            "offset": 2
+          }
+        },
+        "type": "NP_FUNCTION",
+        "name": "suggestMovieName2",
+        "scope": "Global",
+        "visibility": "module",
         "children": {}
       }
     }

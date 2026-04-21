@@ -68,7 +68,12 @@
               "label": "Expression",
               "description": "Call action or expression"
             },
-            "valueType": "ACTION_OR_EXPRESSION",
+            "types": [
+              {
+                "fieldType": "ACTION_OR_EXPRESSION",
+                "selected": true
+              }
+            ],
             "value": "multipleWaitWithRecord()",
             "optional": false,
             "editable": true,
@@ -80,7 +85,12 @@
               "label": "Variable Name",
               "description": "Name of the variable"
             },
-            "valueType": "IDENTIFIER",
+            "types": [
+              {
+                "fieldType": "IDENTIFIER",
+                "selected": true
+              }
+            ],
             "value": "futureResult",
             "optional": false,
             "editable": false,
@@ -105,7 +115,12 @@
               "label": "Variable Type",
               "description": "Type of the variable"
             },
-            "valueType": "TYPE",
+            "types": [
+              {
+                "fieldType": "TYPE",
+                "selected": true
+              }
+            ],
             "value": "future<MultiResult>",
             "placeholder": "var",
             "optional": false,
@@ -120,11 +135,11 @@
       {
         "id": "56717",
         "metadata": {
-          "label": "Wait",
-          "description": "Wait for a set of futures to complete"
+          "label": "Custom Expression",
+          "description": "Represents a custom Ballerina expression"
         },
         "codedata": {
-          "node": "WAIT",
+          "node": "EXPRESSION",
           "lineRange": {
             "fileName": "wait.bal",
             "startLine": {
@@ -140,68 +155,20 @@
         },
         "returning": false,
         "properties": {
-          "waitAll": {
+          "statement": {
             "metadata": {
-              "label": "Wait All",
-              "description": "Wait for all tasks to complete"
+              "label": "Statement",
+              "description": "Ballerina statement"
             },
-            "valueType": "FLAG",
-            "value": false,
+            "types": [
+              {
+                "fieldType": "TEXT",
+                "selected": true
+              }
+            ],
+            "value": "wait futureResult",
             "optional": false,
             "editable": true,
-            "advanced": false,
-            "hidden": false
-          },
-          "futures": {
-            "metadata": {
-              "label": "Futures",
-              "description": "The futures to wait for"
-            },
-            "valueType": "REPEATABLE_PROPERTY",
-            "value": {
-              "future1": {
-                "metadata": {
-                  "label": "Future",
-                  "description": "The worker/async function to wait for"
-                },
-                "valueType": "FIXED_PROPERTY",
-                "value": {
-                  "variable": {
-                    "metadata": {
-                      "label": "Variable Name",
-                      "description": "Name of the variable"
-                    },
-                    "valueType": "IDENTIFIER",
-                    "value": "",
-                    "optional": false,
-                    "editable": true,
-                    "advanced": false,
-                    "hidden": false,
-                    "codedata": {
-                      "dependentProperty": "waitAll"
-                    }
-                  },
-                  "expression": {
-                    "metadata": {
-                      "label": "Expression",
-                      "description": "Expression"
-                    },
-                    "valueType": "EXPRESSION",
-                    "value": "futureResult",
-                    "optional": false,
-                    "editable": true,
-                    "advanced": false,
-                    "hidden": false
-                  }
-                },
-                "optional": false,
-                "editable": false,
-                "advanced": false,
-                "hidden": false
-              }
-            },
-            "optional": false,
-            "editable": false,
             "advanced": false,
             "hidden": false
           },
@@ -210,7 +177,12 @@
               "label": "Variable Name",
               "description": "Name of the variable"
             },
-            "valueType": "IDENTIFIER",
+            "types": [
+              {
+                "fieldType": "IDENTIFIER",
+                "selected": true
+              }
+            ],
             "value": "result",
             "optional": false,
             "editable": false,
@@ -235,7 +207,12 @@
               "label": "Variable Type",
               "description": "Type of the variable"
             },
-            "valueType": "TYPE",
+            "types": [
+              {
+                "fieldType": "TYPE",
+                "selected": true
+              }
+            ],
             "value": "MultiResult",
             "placeholder": "var",
             "optional": false,

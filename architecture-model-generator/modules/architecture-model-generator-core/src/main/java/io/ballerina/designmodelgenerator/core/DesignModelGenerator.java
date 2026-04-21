@@ -19,6 +19,7 @@
 package io.ballerina.designmodelgenerator.core;
 
 import io.ballerina.compiler.api.SemanticModel;
+import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.ObjectTypeSymbol;
 import io.ballerina.compiler.api.symbols.Qualifier;
 import io.ballerina.compiler.api.symbols.Symbol;
@@ -47,6 +48,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static io.ballerina.modelgenerator.commons.CommonUtils.CONNECTOR_TYPE;
+import static io.ballerina.modelgenerator.commons.CommonUtils.PERSIST;
+import static io.ballerina.modelgenerator.commons.CommonUtils.PERSIST_MODEL_FILE;
+import static io.ballerina.modelgenerator.commons.CommonUtils.getPersistDatabaseIcon;
+import static io.ballerina.modelgenerator.commons.CommonUtils.getPersistModelFilePath;
+import static io.ballerina.modelgenerator.commons.CommonUtils.isPersistClient;
 
 /**
  * Generate the design model for the default package.
@@ -184,9 +192,20 @@ public class DesignModelGenerator {
                         String sortText = lineRange.fileName() + lineRange.startLine().line();
                         String icon = CommonUtils.generateIcon(variableSymbol.typeDescriptor());
                         boolean showConnection = !isHiddenAiClass; // Hide AI non-client classes
+                        ClassSymbol persistClassSymbol = null;
+                        if (objectTypeSymbol instanceof ClassSymbol cs &&
+                                isPersistClient(cs, semanticModel)) {
+                            persistClassSymbol = cs;
+                            icon = getPersistDatabaseIcon(cs).orElse(icon);
+                        }
                         Connection connection = new Connection(variableSymbol.getName().get(), sortText,
                                 getLocation(lineRange), Connection.Scope.GLOBAL, icon, showConnection,
                                 CommonUtils.getConnectionKind(objectTypeSymbol));
+                        if (persistClassSymbol != null) {
+                            connection.addMetadata(CONNECTOR_TYPE, PERSIST);
+                            getPersistModelFilePath(rootPath, persistClassSymbol)
+                                    .ifPresent(modelFile -> connection.addMetadata(PERSIST_MODEL_FILE, modelFile));
+                        }
                         intermediateModel.connectionMap.put(
                                 String.valueOf(variableSymbol.getLocation().get().hashCode()), connection);
                         intermediateModel.uuidToConnectionMap.put(connection.getUuid(), connection);
@@ -200,8 +219,23 @@ public class DesignModelGenerator {
                                       IntermediateModel.FunctionModel functionModel,
                                       IntermediateModel.ServiceModel serviceModel) {
         Set<String> connections = new HashSet<>();
+        Set<String> dependentServiceClasses = new HashSet<>();
         if (!functionModel.visited && !functionModel.analyzed) {
             functionModel.visited = true;
+            functionModel.usedClasses.forEach(usedClass -> {
+                IntermediateModel.ServiceClassModel serviceClassModel = intermediateModel.serviceClassModelMap
+                        .get(usedClass);
+                if (serviceClassModel != null) {
+                    serviceClassModel.functionModels.forEach(serviceClassFunctionModel -> {
+                        if (!serviceClassFunctionModel.analyzed) {
+                            buildConnectionGraph(intermediateModel, serviceClassFunctionModel, serviceModel);
+                        }
+                        connections.addAll(serviceClassFunctionModel.allDependentConnections);
+                        connections.addAll(serviceClassFunctionModel.connections);
+                        dependentServiceClasses.addAll(serviceClassFunctionModel.usedClasses);
+                    });
+                }
+            });
             functionModel.dependentFuncs.forEach(dependentFunc -> {
                 IntermediateModel.FunctionModel dependentFunctionModel = intermediateModel.functionModelMap
                         .get(dependentFunc);
@@ -213,6 +247,7 @@ public class DesignModelGenerator {
                 }
                 connections.addAll(dependentFunctionModel.allDependentConnections);
                 connections.addAll(dependentFunctionModel.connections);
+                dependentServiceClasses.addAll(dependentFunctionModel.usedClasses);
             });
 
             functionModel.dependentObjFuncs.forEach(dependentObjFunc -> {
@@ -229,10 +264,12 @@ public class DesignModelGenerator {
                 }
                 connections.addAll(dependentFunctionModel.allDependentConnections);
                 connections.addAll(dependentFunctionModel.connections);
+                dependentServiceClasses.addAll(dependentFunctionModel.usedClasses);
             });
         }
         functionModel.visited = true;
         functionModel.allDependentConnections.addAll(functionModel.connections);
+        functionModel.usedClasses.addAll(dependentServiceClasses);
         // Also add transitive dependent connections
         for (String connectionUuid : functionModel.connections) {
             Connection connection = intermediateModel.uuidToConnectionMap.get(connectionUuid);

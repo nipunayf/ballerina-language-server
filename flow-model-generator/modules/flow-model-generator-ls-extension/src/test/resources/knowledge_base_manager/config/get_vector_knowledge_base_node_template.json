@@ -33,7 +33,12 @@
             "label": "Result Type",
             "description": "Type of the variable"
           },
-          "valueType": "TYPE",
+          "types": [
+            {
+              "fieldType": "TYPE",
+              "selected": true
+            }
+          ],
           "value": "ai:VectorKnowledgeBase",
           "placeholder": "var",
           "optional": false,
@@ -50,7 +55,12 @@
             "label": "Knowledge Base Name",
             "description": "Name of the knowledge base instance"
           },
-          "valueType": "IDENTIFIER",
+          "types": [
+            {
+              "fieldType": "IDENTIFIER",
+              "selected": true
+            }
+          ],
           "value": "aiVectorknowledgebase",
           "optional": false,
           "editable": true,
@@ -62,8 +72,13 @@
             "label": "Vector Store",
             "description": "The vector store for embedding persistence"
           },
-          "valueType": "EXPRESSION",
-          "valueTypeConstraint": "ai:VectorStore",
+          "types": [
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "ai:VectorStore",
+              "selected": false
+            }
+          ],
           "placeholder": "object {}",
           "optional": false,
           "editable": true,
@@ -72,24 +87,20 @@
           "codedata": {
             "kind": "REQUIRED",
             "originalName": "vectorStore"
-          },
-          "typeMembers": [
-            {
-              "type": "VectorStore",
-              "packageInfo": "ballerina:ai:1.1.0",
-              "packageName": "ai",
-              "kind": "OBJECT_TYPE",
-              "selected": false
-            }
-          ]
+          }
         },
         "embeddingModel": {
           "metadata": {
             "label": "Embedding Model",
             "description": "The embedding provider for generating vector representations"
           },
-          "valueType": "EXPRESSION",
-          "valueTypeConstraint": "ai:EmbeddingProvider",
+          "types": [
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "ai:EmbeddingProvider",
+              "selected": false
+            }
+          ],
           "placeholder": "object {}",
           "optional": false,
           "editable": true,
@@ -98,23 +109,19 @@
           "codedata": {
             "kind": "REQUIRED",
             "originalName": "embeddingModel"
-          },
-          "typeMembers": [
-            {
-              "type": "EmbeddingProvider",
-              "packageInfo": "ballerina:ai:1.1.0",
-              "packageName": "ai",
-              "kind": "OBJECT_TYPE",
-              "selected": false
-            }
-          ]
+          }
         },
         "scope": {
           "metadata": {
             "label": "Connection Scope",
             "description": "Scope of the connection, Global or Local"
           },
-          "valueType": "ENUM",
+          "types": [
+            {
+              "fieldType": "ENUM",
+              "selected": true
+            }
+          ],
           "value": "Global",
           "optional": false,
           "editable": true,
@@ -126,7 +133,12 @@
             "label": "Check Error",
             "description": "Terminate on error"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": true,
           "optional": false,
           "editable": false,

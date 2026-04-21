@@ -32,7 +32,12 @@
           "label": "Type name",
           "description": "Unique name to identify the type"
         },
-        "valueType": "IDENTIFIER",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
         "value": "UndergraduateStudent1",
         "optional": false,
         "editable": false,
@@ -44,7 +49,12 @@
           "label": "Type Qualifiers",
           "description": "Qualifiers of the type"
         },
-        "valueType": "MULTIPLE_SELECT",
+        "types": [
+          {
+            "fieldType": "MULTIPLE_SELECT",
+            "selected": true
+          }
+        ],
         "value": [
           "service"
         ],
@@ -58,7 +68,12 @@
           "label": "Is array type",
           "description": "Is this type an array or list value"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": "false",
         "optional": true,
         "editable": true,
@@ -70,7 +85,12 @@
           "label": "Size of the array",
           "description": "Array dimensions"
         },
-        "valueType": "STRING",
+        "types": [
+          {
+            "fieldType": "TEXT",
+            "selected": true
+          }
+        ],
         "value": "",
         "optional": false,
         "editable": false,
@@ -80,9 +100,14 @@
       "isPublic": {
         "metadata": {
           "label": "public",
-          "description": "Is this public"
+          "description": "Make visible across the project"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": "false",
         "optional": true,
         "editable": true,
@@ -94,7 +119,12 @@
           "label": "distinct",
           "description": "Is this distinct"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": "false",
         "optional": true,
         "editable": true,
@@ -106,7 +136,12 @@
           "label": "isolated",
           "description": "Is this isolated"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": "false",
         "optional": true,
         "editable": true,
@@ -118,7 +153,12 @@
           "label": "readonly",
           "description": "Is this readonly"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": "false",
         "optional": true,
         "editable": true,
@@ -130,10 +170,21 @@
           "label": "Network Qualifier",
           "description": "Network qualifier"
         },
-        "valueType": "SINGLE_SELECT",
-        "valueTypeConstraint": [
-          "service",
-          "client"
+        "types": [
+          {
+            "fieldType": "SINGLE_SELECT",
+            "options": [
+              {
+                "label": "service",
+                "value": "service"
+              },
+              {
+                "label": "client",
+                "value": "client"
+              }
+            ],
+            "selected": true
+          }
         ],
         "value": "service",
         "optional": true,
@@ -163,7 +214,12 @@
               "label": "private",
               "description": "Is this private"
             },
-            "valueType": "FLAG",
+            "types": [
+              {
+                "fieldType": "FLAG",
+                "selected": true
+              }
+            ],
             "value": "false",
             "optional": true,
             "editable": true,
@@ -173,9 +229,14 @@
           "isPublic": {
             "metadata": {
               "label": "public",
-              "description": "Is this public"
+              "description": "Make visible across the project"
             },
-            "valueType": "FLAG",
+            "types": [
+              {
+                "fieldType": "FLAG",
+                "selected": true
+              }
+            ],
             "value": "false",
             "optional": true,
             "editable": true,
@@ -187,7 +248,12 @@
               "label": "isolated",
               "description": "Is this isolated"
             },
-            "valueType": "FLAG",
+            "types": [
+              {
+                "fieldType": "FLAG",
+                "selected": true
+              }
+            ],
             "value": "false",
             "optional": true,
             "editable": true,

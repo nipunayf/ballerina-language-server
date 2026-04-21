@@ -8,6 +8,7 @@
       "offset": 4
     },
     "offset": 1,
+    "lineOffset": 0,
     "codedata": {
       "node": "VARIABLE",
       "lineRange": {
@@ -28,8 +29,13 @@
         "label": "Expression",
         "description": "Initialize with value"
       },
-      "valueType": "EXPRESSION",
-      "valueTypeConstraint": "Location",
+      "types": [
+        {
+          "fieldType": "EXPRESSION",
+          "ballerinaType": "Location",
+          "selected": true
+        }
+      ],
       "value": "",
       "optional": true,
       "editable": true,
@@ -69,6 +75,9 @@
     },
     {
       "label": "country",
+      "labelDetails": {
+        "detail": " Location.country"
+      },
       "kind": "Field",
       "detail": "Location.country",
       "sortText": "K",
@@ -77,6 +86,9 @@
     },
     {
       "label": "city",
+      "labelDetails": {
+        "detail": " Location.city"
+      },
       "kind": "Field",
       "detail": "Location.city",
       "sortText": "K",

@@ -340,8 +340,12 @@ task pullBallerinaModules {
     dependsOn pullBallerinaModule('kafka', ballerinaxKafkaVersion)
     dependsOn pullBallerinaModule('rabbitmq', ballerinaxRabbitmqVersion)
     dependsOn pullBallerinaModule('solace', ballerinaxSolaceVersion)
+    dependsOn pullBallerinaModule('cdc', ballerinaxCdcVersion)
+    dependsOn pullBallerinaModule('mssql', ballerinaxMSSQLVersion)
+    dependsOn pullBallerinaModule('mssql.cdc.driver', ballerinaxMSSQLCDCDriverVersion)
     dependsOn pullBallerinaModule('trigger.github', ballerinaxGithubTriggerVersion)
     dependsOn pullBallerinaModule('np', ballerinaxNp)
+    dependsOn pullBallerinaModule('workflow', ballerinaWorkflowVersion, "ballerina")
 }
 
 test {

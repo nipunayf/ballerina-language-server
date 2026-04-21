@@ -40,7 +40,7 @@ CREATE TABLE ServiceDeclaration (
     string_literal_description TEXT,
     string_literal_default_value TEXT,
     kind TEXT NOT NULL,
-    listener_kind TEXT CHECK(listener_kind IN ('MULTIPLE_SELECT', 'SINGLE_SELECT')),
+    listener_kind TEXT CHECK(listener_kind IN ('MULTIPLE_SELECT_LISTENER', 'SINGLE_SELECT_LISTENER')),
     FOREIGN KEY (package_id) REFERENCES Package(package_id) ON DELETE CASCADE
 );
 
@@ -75,7 +75,7 @@ CREATE TABLE ParameterMemberType (
     type JSON, -- JSON type for parameter type information
     kind TEXT,
     parameter_id INTEGER,
-    package TEXT, -- format of the package is org:name:version
+    packageInfo TEXT, -- format of the package is org:name:version
     FOREIGN KEY (parameter_id) REFERENCES Parameter(parameter_id) ON DELETE CASCADE
 );
 
@@ -88,7 +88,7 @@ CREATE TABLE Annotation (
     description TEXT,
     package_id INTEGER,
     type_constraint TEXT, -- JSON type for parameter type information
-    package TEXT, -- format of the package is org:name:version
+    packageInfo TEXT, -- format of the package is org:name:version
     FOREIGN KEY (package_id) REFERENCES Package(package_id) ON DELETE CASCADE
 );
 
@@ -124,7 +124,7 @@ CREATE TABLE ServiceTypeFunctionParameter (
     name TEXT NOT NULL,
     label TEXT NOT NULL,
     description TEXT,
-    kind TEXT CHECK(kind IN ('REQUIRED', 'DEFAULTABLE', 'INCLUDED_RECORD', 'REST', 'OPTIONAL')),
+    kind TEXT CHECK(kind IN ('REQUIRED', 'DEFAULTABLE', 'INCLUDED_RECORD', 'REST', 'OPTIONAL', 'DATA_BINDING')),
     type JSON, -- JSON type for parameter type information
     default_value TEXT,
     import_statements TEXT,
@@ -142,11 +142,9 @@ CREATE TABLE ServiceInitializerProperty (
     description TEXT NOT NULL,
     default_value TEXT,
     placeholder TEXT,
-    value_type TEXT CHECK(value_type IN ('TYPE', 'FLAG', 'EXPRESSION', 'SINGLE_SELECT')),
-    type_constraint TEXT,
+    types TEXT,
     source_kind TEXT CHECK(source_kind IN ('SERVICE_TYPE_DESCRIPTOR', 'SERVICE_BASE_PATH', 'LISTENER_PARAM_REQUIRED',
-    'LISTENER_PARAM_INCLUDED_DEFAULTABLE_FIELD', 'LISTENER_PARAM_INCLUDED_FIELD', 'SOURCE_ANNOTATION')),
-    selections TEXT, -- Comma-separated values for selection options
+    'LISTENER_PARAM_INCLUDED_DEFAULTABLE_FIELD', 'LISTENER_PARAM_INCLUDED_FIELD', 'SOURCE_ANNOTATION', 'LISTENER_PARAM_CONFIG_FIELD')),
     FOREIGN KEY (package_id) REFERENCES Package(package_id) ON DELETE CASCADE
 );
 
@@ -158,14 +156,4 @@ CREATE TABLE ServiceReadOnlyMetaData (
     display_name TEXT,
     kind TEXT NOT NULL,
     FOREIGN KEY (package_id) REFERENCES Package(package_id) ON DELETE CASCADE
-);
-
--- Create Parameter Member Type table
-CREATE TABLE ServiceInitializerPropertyMemberType (
-    member_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    type JSON, -- JSON type for parameter type information
-    kind TEXT,
-    initializer_id INTEGER,
-    package TEXT, -- format of the package is org:name:version
-    FOREIGN KEY (initializer_id) REFERENCES ServiceInitializerProperty(initializer_id) ON DELETE CASCADE
 );

@@ -48,7 +48,7 @@
         "id": "35861",
         "metadata": {
           "label": "Declare Variable",
-          "description": "Assign a value to a variable"
+          "description": "Create a new variable"
         },
         "codedata": {
           "node": "VARIABLE",
@@ -72,7 +72,12 @@
               "label": "Expression",
               "description": "Initialize with value"
             },
-            "valueType": "ACTION_OR_EXPRESSION",
+            "types": [
+              {
+                "fieldType": "ACTION_OR_EXPRESSION",
+                "selected": true
+              }
+            ],
             "value": "\"John\"",
             "optional": true,
             "editable": true,
@@ -84,7 +89,12 @@
               "label": "Name",
               "description": "Name of the variable"
             },
-            "valueType": "IDENTIFIER",
+            "types": [
+              {
+                "fieldType": "IDENTIFIER",
+                "selected": true
+              }
+            ],
             "value": "var1",
             "optional": false,
             "editable": false,
@@ -109,7 +119,12 @@
               "label": "Type",
               "description": "Type of the variable"
             },
-            "valueType": "TYPE",
+            "types": [
+              {
+                "fieldType": "TYPE",
+                "selected": true
+              }
+            ],
             "value": "string",
             "placeholder": "var",
             "optional": false,
@@ -154,7 +169,12 @@
               "label": "View",
               "description": "Function definition location"
             },
-            "valueType": "VIEW",
+            "types": [
+              {
+                "fieldType": "VIEW",
+                "selected": true
+              }
+            ],
             "value": {
               "fileName": "data_mappings.bal",
               "startLine": {
@@ -175,8 +195,27 @@
             "metadata": {
               "label": "Src"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "Source",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "Source",
+                "typeMembers": [
+                  {
+                    "type": "Source",
+                    "packageInfo": "nipunaf:new_connection1:0.1.0",
+                    "packageName": "new_connection1",
+                    "kind": "RECORD_TYPE",
+                    "selected": true
+                  }
+                ],
+                "selected": true
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "Source",
+                "selected": false
+              }
+            ],
             "value": "{firstName: \"John\", lastName: \"Doe\", age: 30}",
             "placeholder": "{firstName: \"\", lastName: \"\", age: 0}",
             "optional": false,
@@ -186,23 +225,19 @@
             "codedata": {
               "kind": "REQUIRED",
               "originalName": "src"
-            },
-            "typeMembers": [
-              {
-                "type": "Source",
-                "packageInfo": "nipunaf:new_connection1:0.1.0",
-                "packageName": "new_connection1",
-                "kind": "RECORD_TYPE",
-                "selected": true
-              }
-            ]
+            }
           },
           "variable": {
             "metadata": {
               "label": "Result",
               "description": "Name of the result variable"
             },
-            "valueType": "IDENTIFIER",
+            "types": [
+              {
+                "fieldType": "IDENTIFIER",
+                "selected": true
+              }
+            ],
             "value": "var1",
             "optional": false,
             "editable": false,
@@ -236,7 +271,12 @@
               "label": "Result Type",
               "description": "Type of the variable"
             },
-            "valueType": "TYPE",
+            "types": [
+              {
+                "fieldType": "TYPE",
+                "selected": true
+              }
+            ],
             "value": "Target",
             "placeholder": "var",
             "optional": false,
@@ -284,7 +324,12 @@
               "label": "View",
               "description": "Function definition location"
             },
-            "valueType": "VIEW",
+            "types": [
+              {
+                "fieldType": "VIEW",
+                "selected": true
+              }
+            ],
             "value": {
               "fileName": "data_mappings.bal",
               "startLine": {
@@ -305,8 +350,27 @@
             "metadata": {
               "label": "Src"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "Source",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "Source",
+                "typeMembers": [
+                  {
+                    "type": "Source",
+                    "packageInfo": "nipunaf:new_connection1:0.1.0",
+                    "packageName": "new_connection1",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "Source",
+                "selected": false
+              }
+            ],
             "value": "{firstName: \"John\", age: 30}",
             "placeholder": "{firstName: \"\", lastName: \"\", age: 0}",
             "optional": false,
@@ -325,23 +389,19 @@
             "codedata": {
               "kind": "REQUIRED",
               "originalName": "src"
-            },
-            "typeMembers": [
-              {
-                "type": "Source",
-                "packageInfo": "nipunaf:new_connection1:0.1.0",
-                "packageName": "new_connection1",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              }
-            ]
+            }
           },
           "variable": {
             "metadata": {
               "label": "Result",
               "description": "Name of the result variable"
             },
-            "valueType": "IDENTIFIER",
+            "types": [
+              {
+                "fieldType": "IDENTIFIER",
+                "selected": true
+              }
+            ],
             "value": "var2",
             "optional": false,
             "editable": false,
@@ -366,7 +426,12 @@
               "label": "Result Type",
               "description": "Type of the variable"
             },
-            "valueType": "TYPE",
+            "types": [
+              {
+                "fieldType": "TYPE",
+                "selected": true
+              }
+            ],
             "value": "Target",
             "placeholder": "var",
             "optional": false,
@@ -414,7 +479,12 @@
               "label": "View",
               "description": "Function definition location"
             },
-            "valueType": "VIEW",
+            "types": [
+              {
+                "fieldType": "VIEW",
+                "selected": true
+              }
+            ],
             "value": {
               "fileName": "main.bal",
               "startLine": {
@@ -435,8 +505,18 @@
             "metadata": {
               "label": "I"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "int",
+            "types": [
+              {
+                "fieldType": "NUMBER",
+                "ballerinaType": "int",
+                "selected": true
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "int",
+                "selected": false
+              }
+            ],
             "value": "10",
             "placeholder": "0",
             "optional": false,
@@ -446,23 +526,19 @@
             "codedata": {
               "kind": "REQUIRED",
               "originalName": "i"
-            },
-            "typeMembers": [
-              {
-                "type": "int",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": true
-              }
-            ]
+            }
           },
           "variable": {
             "metadata": {
               "label": "Result",
               "description": "Name of the result variable"
             },
-            "valueType": "IDENTIFIER",
+            "types": [
+              {
+                "fieldType": "IDENTIFIER",
+                "selected": true
+              }
+            ],
             "value": "var1",
             "optional": false,
             "editable": false,
@@ -496,7 +572,12 @@
               "label": "Result Type",
               "description": "Type of the variable"
             },
-            "valueType": "TYPE",
+            "types": [
+              {
+                "fieldType": "TYPE",
+                "selected": true
+              }
+            ],
             "value": "int",
             "placeholder": "var",
             "optional": false,
@@ -545,8 +626,13 @@
               "label": "Value",
               "description": "The `json` value to be prettified"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "json",
+            "types": [
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "json",
+                "selected": false
+              }
+            ],
             "value": "{name: \"John\", age: 30}",
             "placeholder": "()",
             "optional": false,
@@ -556,24 +642,25 @@
             "codedata": {
               "kind": "REQUIRED",
               "originalName": "value"
-            },
-            "typeMembers": [
-              {
-                "type": "json",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "OTHER",
-                "selected": false
-              }
-            ]
+            }
           },
           "indentation": {
             "metadata": {
               "label": "Indentation",
               "description": "The number of spaces for an indentation"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "int",
+            "types": [
+              {
+                "fieldType": "NUMBER",
+                "ballerinaType": "int",
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "int",
+                "selected": false
+              }
+            ],
             "placeholder": "0",
             "optional": true,
             "editable": true,
@@ -583,23 +670,19 @@
               "kind": "DEFAULTABLE",
               "originalName": "indentation"
             },
-            "typeMembers": [
-              {
-                "type": "int",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              }
-            ],
-            "defaultValue": "0"
+            "defaultValue": "4"
           },
           "variable": {
             "metadata": {
               "label": "Result",
               "description": "Name of the result variable"
             },
-            "valueType": "IDENTIFIER",
+            "types": [
+              {
+                "fieldType": "IDENTIFIER",
+                "selected": true
+              }
+            ],
             "value": "var1",
             "optional": false,
             "editable": false,
@@ -633,7 +716,12 @@
               "label": "Result Type",
               "description": "Type of the variable"
             },
-            "valueType": "TYPE",
+            "types": [
+              {
+                "fieldType": "TYPE",
+                "selected": true
+              }
+            ],
             "value": "string",
             "placeholder": "var",
             "optional": false,

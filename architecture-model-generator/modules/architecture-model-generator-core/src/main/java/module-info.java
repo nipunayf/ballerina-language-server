@@ -26,6 +26,7 @@ module io.ballerina.architecturemodelgenerator {
     requires io.ballerina.model.generator.commons;
     requires io.ballerina.runtime;
     requires io.ballerina.toml;
+    requires io.ballerina.flow.model.generator;
 
     exports io.ballerina.architecturemodelgenerator.core;
     exports io.ballerina.architecturemodelgenerator.core.diagnostics;
@@ -40,4 +41,6 @@ module io.ballerina.architecturemodelgenerator {
     exports io.ballerina.artifactsgenerator;
     exports io.ballerina.projectservice.core;
     exports io.ballerina.projectservice.core.baltool;
+    exports io.ballerina.copilotagent.core;
+    exports io.ballerina.copilotagent.core.models;
 }

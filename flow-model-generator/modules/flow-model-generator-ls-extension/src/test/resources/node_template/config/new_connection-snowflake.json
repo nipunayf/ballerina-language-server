@@ -1,4 +1,5 @@
 {
+  "source": "empty.bal",
   "description": "Sample diagram node",
   "codedata": {
     "node": "NEW_CONNECTION",
@@ -11,9 +12,9 @@
   "output": {
     "id": "31",
     "metadata": {
-      "label": "New Connection",
+      "label": "Snowflake",
       "description": "Represents a Snowflake database client.",
-      "icon": "https://bcentral-packageicons.azureedge.net/images/ballerinax_snowflake_2.2.0.png"
+      "icon": "https://bcentral-packageicons.azureedge.net/images/ballerinax_snowflake_2.2.1.png"
     },
     "codedata": {
       "node": "NEW_CONNECTION",
@@ -22,7 +23,7 @@
       "packageName": "snowflake",
       "object": "Client",
       "symbol": "init",
-      "version": "2.2.0",
+      "version": "2.2.1",
       "isNew": true
     },
     "returning": false,
@@ -32,8 +33,18 @@
           "label": "Account Identifier",
           "description": "The Snowflake account identifier"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "string",
+        "types": [
+          {
+            "fieldType": "TEXT",
+            "ballerinaType": "string",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "string",
+            "selected": false
+          }
+        ],
         "placeholder": "\"\"",
         "optional": false,
         "editable": true,
@@ -42,24 +53,25 @@
         "codedata": {
           "kind": "REQUIRED",
           "originalName": "account_identifier"
-        },
-        "typeMembers": [
-          {
-            "type": "string",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ]
+        }
       },
       "user": {
         "metadata": {
           "label": "User",
           "description": "The username of the Snowflake account"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "string",
+        "types": [
+          {
+            "fieldType": "TEXT",
+            "ballerinaType": "string",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "string",
+            "selected": false
+          }
+        ],
         "placeholder": "\"\"",
         "optional": false,
         "editable": true,
@@ -68,24 +80,25 @@
         "codedata": {
           "kind": "REQUIRED",
           "originalName": "user"
-        },
-        "typeMembers": [
-          {
-            "type": "string",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ]
+        }
       },
       "password": {
         "metadata": {
           "label": "Password",
           "description": "The password of the Snowflake account"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "string",
+        "types": [
+          {
+            "fieldType": "TEXT",
+            "ballerinaType": "string",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "string",
+            "selected": false
+          }
+        ],
         "placeholder": "\"\"",
         "optional": false,
         "editable": true,
@@ -94,24 +107,34 @@
         "codedata": {
           "kind": "REQUIRED",
           "originalName": "password"
-        },
-        "typeMembers": [
-          {
-            "type": "string",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ]
+        }
       },
       "options": {
         "metadata": {
           "label": "Options",
           "description": "The Snowflake client properties"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "snowflake:Options|()",
+        "types": [
+          {
+            "fieldType": "RECORD_MAP_EXPRESSION",
+            "ballerinaType": "snowflake:Options",
+            "typeMembers": [
+              {
+                "type": "Options",
+                "packageInfo": "ballerinax:snowflake:2.2.1",
+                "packageName": "snowflake",
+                "kind": "RECORD_TYPE",
+                "selected": false
+              }
+            ],
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "snowflake:Options?",
+            "selected": false
+          }
+        ],
         "placeholder": "()",
         "optional": true,
         "editable": true,
@@ -121,22 +144,6 @@
           "kind": "DEFAULTABLE",
           "originalName": "options"
         },
-        "typeMembers": [
-          {
-            "type": "Options",
-            "packageInfo": "ballerinax:snowflake:2.2.0",
-            "packageName": "snowflake",
-            "kind": "RECORD_TYPE",
-            "selected": false
-          },
-          {
-            "type": "()",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "()"
       },
       "connectionPool": {
@@ -144,8 +151,27 @@
           "label": "Connection Pool",
           "description": "The `sql:ConnectionPool` to be used for the connection. If there is no\n`connectionPool` provided, the global connection pool (shared by all clients) will be used"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "sql:ConnectionPool|()",
+        "types": [
+          {
+            "fieldType": "RECORD_MAP_EXPRESSION",
+            "ballerinaType": "sql:ConnectionPool",
+            "typeMembers": [
+              {
+                "type": "ConnectionPool",
+                "packageInfo": "ballerina:sql:1.15.0",
+                "packageName": "sql",
+                "kind": "RECORD_TYPE",
+                "selected": false
+              }
+            ],
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "sql:ConnectionPool?",
+            "selected": false
+          }
+        ],
         "placeholder": "()",
         "optional": true,
         "editable": true,
@@ -155,22 +181,6 @@
           "kind": "DEFAULTABLE",
           "originalName": "connectionPool"
         },
-        "typeMembers": [
-          {
-            "type": "ConnectionPool",
-            "packageInfo": "ballerina:sql:1.15.0",
-            "packageName": "sql",
-            "kind": "RECORD_TYPE",
-            "selected": false
-          },
-          {
-            "type": "()",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "()"
       },
       "type": {
@@ -178,7 +188,12 @@
           "label": "Result Type",
           "description": "Type of the variable"
         },
-        "valueType": "TYPE",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "selected": true
+          }
+        ],
         "value": "snowflake:Client",
         "placeholder": "var",
         "optional": false,
@@ -195,7 +210,12 @@
           "label": "Connection Name",
           "description": "Name of the connection"
         },
-        "valueType": "IDENTIFIER",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
         "value": "snowflakeClient",
         "optional": false,
         "editable": true,
@@ -207,7 +227,12 @@
           "label": "Connection Scope",
           "description": "Scope of the connection, Global or Local"
         },
-        "valueType": "ENUM",
+        "types": [
+          {
+            "fieldType": "ENUM",
+            "selected": true
+          }
+        ],
         "value": "Global",
         "optional": false,
         "editable": true,
@@ -219,7 +244,12 @@
           "label": "Check Error",
           "description": "Terminate on error"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": true,
         "optional": false,
         "editable": false,

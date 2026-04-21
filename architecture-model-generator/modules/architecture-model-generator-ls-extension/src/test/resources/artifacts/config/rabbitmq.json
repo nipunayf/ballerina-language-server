@@ -1,6 +1,7 @@
 {
   "description": "",
   "source": "rabbitmq.bal",
+  "packageName": ".",
   "output": {
     "Listeners": {
       "rabbitmqListener": {
@@ -19,7 +20,8 @@
         "type": "LISTENER",
         "name": "rabbitmqListener",
         "scope": "Global",
-        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerinax_rabbitmq_3.3.0.png",
+        "visibility": "module",
+        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerinax_rabbitmq_3.3.1.png",
         "module": "rabbitmq",
         "children": {}
       }
@@ -41,7 +43,8 @@
         "type": "SERVICE",
         "name": "RabbitMQ Event Integration - \"queueName\"",
         "scope": "Global",
-        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerinax_rabbitmq_3.3.0.png",
+        "visibility": "module",
+        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerinax_rabbitmq_3.3.1.png",
         "module": "rabbitmq",
         "children": {
           "onMessage": {
@@ -60,6 +63,7 @@
             "type": "REMOTE",
             "name": "onMessage",
             "scope": "Global",
+            "visibility": "module",
             "children": {}
           }
         }

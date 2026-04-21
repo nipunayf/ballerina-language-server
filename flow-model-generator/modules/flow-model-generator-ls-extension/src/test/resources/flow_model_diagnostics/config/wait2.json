@@ -163,7 +163,7 @@
     "flags": 0
   },
   "output": {
-    "id": "39848",
+    "id": "39895",
     "metadata": {
       "label": "Wait",
       "description": "Wait for a set of futures to complete"
@@ -178,116 +178,38 @@
         },
         "endLine": {
           "line": 8,
-          "offset": 44
+          "offset": 91
         }
       },
-      "sourceCode": "int waitResult = wait worker1 | worker2;"
+      "sourceCode": "int waitResult = wait {future1: {expression: worker1}, future2: {expression: worker2}};"
     },
     "returning": false,
     "properties": {
-      "waitAll": {
-        "metadata": {
-          "label": "Wait All",
-          "description": "Wait for all tasks to complete"
-        },
-        "valueType": "FLAG",
-        "value": false,
-        "optional": false,
-        "editable": true,
-        "advanced": false,
-        "hidden": false
-      },
       "futures": {
-        "metadata": {
-          "label": "Futures",
-          "description": "The futures to wait for"
-        },
-        "valueType": "REPEATABLE_PROPERTY",
         "value": {
           "future1": {
-            "metadata": {
-              "label": "Future",
-              "description": "The worker/async function to wait for"
-            },
-            "valueType": "FIXED_PROPERTY",
-            "value": {
-              "variable": {
-                "metadata": {
-                  "label": "Variable Name",
-                  "description": "Name of the variable"
-                },
-                "valueType": "IDENTIFIER",
-                "value": "",
-                "optional": false,
-                "editable": true,
-                "advanced": false,
-                "hidden": false,
-                "codedata": {
-                  "dependentProperty": "waitAll"
-                }
-              },
-              "expression": {
-                "metadata": {
-                  "label": "Expression",
-                  "description": "Expression"
-                },
-                "valueType": "EXPRESSION",
-                "value": "worker1 ",
-                "optional": false,
-                "editable": true,
-                "advanced": false,
-                "hidden": false
+            "types": [
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "future<any|error>",
+                "selected": true
               }
-            },
+            ],
+            "value": "{expression: worker1}",
             "optional": false,
             "editable": false,
             "advanced": false,
             "hidden": false
           },
           "future2": {
-            "metadata": {
-              "label": "Future",
-              "description": "The worker/async function to wait for"
-            },
-            "valueType": "FIXED_PROPERTY",
-            "value": {
-              "variable": {
-                "metadata": {
-                  "label": "Variable Name",
-                  "description": "Name of the variable"
-                },
-                "valueType": "IDENTIFIER",
-                "value": "",
-                "optional": false,
-                "editable": true,
-                "advanced": false,
-                "hidden": false,
-                "codedata": {
-                  "dependentProperty": "waitAll"
-                }
-              },
-              "expression": {
-                "metadata": {
-                  "label": "Expression",
-                  "description": "Expression"
-                },
-                "valueType": "EXPRESSION",
-                "value": "worker2",
-                "optional": false,
-                "editable": true,
-                "advanced": false,
-                "hidden": false,
-                "diagnostics": {
-                  "hasDiagnostics": true,
-                  "diagnostics": [
-                    {
-                      "severity": "ERROR",
-                      "message": "incompatible types: expected 'future<int>', found 'future'"
-                    }
-                  ]
-                }
+            "types": [
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "future<any|error>",
+                "selected": true
               }
-            },
+            ],
+            "value": "{expression: worker2}",
             "optional": false,
             "editable": false,
             "advanced": false,
@@ -304,7 +226,12 @@
           "label": "Variable Name",
           "description": "Name of the variable"
         },
-        "valueType": "IDENTIFIER",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
         "value": "waitResult",
         "optional": false,
         "editable": false,
@@ -326,21 +253,40 @@
       },
       "type": {
         "metadata": {
-          "label": "Variable Type",
+          "label": "Type of the variable",
           "description": "Type of the variable"
         },
-        "valueType": "TYPE",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "selected": true
+          }
+        ],
         "value": "int",
         "placeholder": "var",
         "optional": false,
         "editable": true,
         "advanced": false,
-        "hidden": false,
+        "hidden": true,
         "codedata": {}
       }
     },
     "diagnostics": {
-      "hasDiagnostics": true
+      "hasDiagnostics": true,
+      "diagnostics": [
+        {
+          "severity": "ERROR",
+          "message": "incompatible types: expected 'int', found 'record {| other future1; other future2; |}'"
+        },
+        {
+          "severity": "ERROR",
+          "message": "mapping constructor expr as a wait expr"
+        },
+        {
+          "severity": "ERROR",
+          "message": "mapping constructor expr as a wait expr"
+        }
+      ]
     },
     "flags": 0
   }

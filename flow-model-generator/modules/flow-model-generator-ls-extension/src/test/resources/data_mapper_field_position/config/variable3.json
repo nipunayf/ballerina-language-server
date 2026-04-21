@@ -16,12 +16,16 @@
     },
     "sourceCode": ""
   },
-  "propertyKey": "expression",
   "targetField": "department",
   "fieldId": "department.students.address.street",
   "property": {
-    "valueType": "EXPRESSION",
-    "valueTypeConstraint": "string",
+    "types": [
+      {
+        "fieldType": "EXPRESSION",
+        "ballerinaType": "string",
+        "selected": false
+      }
+    ],
     "optional": false,
     "editable": false,
     "advanced": false,

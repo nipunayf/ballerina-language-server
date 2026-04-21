@@ -58,11 +58,10 @@ public class LocalIndexCentral {
     private static final String CONNECTORS_JSON = "connectors.json";
     private static final String CONNECTIONS_JSON = "connections.json";
     private static final String FUNCTIONS_JSON = "functions.json";
+    private static final String TEST_FUNCTIONS_JSON = "test_functions.json";
     private static final String AGENTS_JSON = "agents.json";
     private static final String CLASS_INITS_JSON = "class_inits.json";
     private static final String MEMORY_MANAGERS_JSON = "memory_managers.json";
-    private static final String MEMORY_STORES_JSON = "memory_stores.json";
-    private static final String KNOWLEDGE_BASES_JSON = "knowledge_bases.json";
 
     private static final class CentralProxyHolder {
 
@@ -97,6 +96,11 @@ public class LocalIndexCentral {
         return functions.items();
     }
 
+    public List<Item> getTestFunctions() {
+        Category testFunctions = readJsonResource(TEST_FUNCTIONS_JSON, Category.class);
+        return testFunctions.items();
+    }
+
     public List<Item> getAgents() {
         Category agents = readJsonResource(AGENTS_JSON, Category.class);
         return agents.items();
@@ -110,16 +114,6 @@ public class LocalIndexCentral {
     public List<Item> getMemoryManagers() {
         Category memoryManagers = readJsonResource(MEMORY_MANAGERS_JSON, Category.class);
         return memoryManagers.items();
-    }
-
-    public List<Item> getMemoryStores() {
-        Category memoryStores = readJsonResource(MEMORY_STORES_JSON, Category.class);
-        return memoryStores.items();
-    }
-
-    public List<Item> getKnowledgeBases() {
-        Category knowledgeBases = readJsonResource(KNOWLEDGE_BASES_JSON, Category.class);
-        return knowledgeBases.items();
     }
 
     public List<Item> getConnectorActions(Codedata codedata) {

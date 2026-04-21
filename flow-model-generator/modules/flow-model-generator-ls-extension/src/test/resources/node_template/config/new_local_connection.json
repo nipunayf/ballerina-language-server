@@ -18,7 +18,7 @@
   "output": {
     "id": "31",
     "metadata": {
-      "label": "New Connection",
+      "label": "Mod",
       "description": "",
       "icon": "https://bcentral-packageicons.azureedge.net/images/nipunaf_new_connection1_0.1.0.png"
     },
@@ -39,8 +39,18 @@
         "metadata": {
           "label": "Service Url"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "string",
+        "types": [
+          {
+            "fieldType": "TEXT",
+            "ballerinaType": "string",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "string",
+            "selected": false
+          }
+        ],
         "placeholder": "\"\"",
         "optional": true,
         "editable": true,
@@ -50,15 +60,6 @@
           "kind": "DEFAULTABLE",
           "originalName": "serviceUrl"
         },
-        "typeMembers": [
-          {
-            "type": "string",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "\"\""
       },
       "allowHeaders": {
@@ -66,8 +67,36 @@
           "label": "Allow Headers",
           "description": "The array of allowed headers by the service"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "string[]",
+        "types": [
+          {
+            "fieldType": "REPEATABLE_LIST",
+            "ballerinaType": "string[]",
+            "template": {
+              "types": [
+                {
+                  "fieldType": "TEXT",
+                  "ballerinaType": "string",
+                  "selected": false
+                },
+                {
+                  "fieldType": "EXPRESSION",
+                  "ballerinaType": "string",
+                  "selected": false
+                }
+              ],
+              "optional": false,
+              "editable": false,
+              "advanced": false,
+              "hidden": false
+            },
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "string[]",
+            "selected": false
+          }
+        ],
         "placeholder": "[]",
         "optional": true,
         "editable": true,
@@ -77,15 +106,6 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "allowHeaders"
         },
-        "typeMembers": [
-          {
-            "type": "string",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "ARRAY_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "[]"
       },
       "allowMethods": {
@@ -93,8 +113,36 @@
           "label": "Allow Methods",
           "description": "The array of allowed methods by the service"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "string[]",
+        "types": [
+          {
+            "fieldType": "REPEATABLE_LIST",
+            "ballerinaType": "string[]",
+            "template": {
+              "types": [
+                {
+                  "fieldType": "TEXT",
+                  "ballerinaType": "string",
+                  "selected": false
+                },
+                {
+                  "fieldType": "EXPRESSION",
+                  "ballerinaType": "string",
+                  "selected": false
+                }
+              ],
+              "optional": false,
+              "editable": false,
+              "advanced": false,
+              "hidden": false
+            },
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "string[]",
+            "selected": false
+          }
+        ],
         "placeholder": "[]",
         "optional": true,
         "editable": true,
@@ -104,15 +152,6 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "allowMethods"
         },
-        "typeMembers": [
-          {
-            "type": "string",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "ARRAY_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "[]"
       },
       "allowOrigins": {
@@ -120,8 +159,36 @@
           "label": "Allow Origins",
           "description": "The array of origins with which the response is shared by the service"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "string[]",
+        "types": [
+          {
+            "fieldType": "REPEATABLE_LIST",
+            "ballerinaType": "string[]",
+            "template": {
+              "types": [
+                {
+                  "fieldType": "TEXT",
+                  "ballerinaType": "string",
+                  "selected": false
+                },
+                {
+                  "fieldType": "EXPRESSION",
+                  "ballerinaType": "string",
+                  "selected": false
+                }
+              ],
+              "optional": false,
+              "editable": false,
+              "advanced": false,
+              "hidden": false
+            },
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "string[]",
+            "selected": false
+          }
+        ],
         "placeholder": "[]",
         "optional": true,
         "editable": true,
@@ -131,15 +198,6 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "allowOrigins"
         },
-        "typeMembers": [
-          {
-            "type": "string",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "ARRAY_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "[]"
       },
       "exposeHeaders": {
@@ -147,8 +205,36 @@
           "label": "Expose Headers",
           "description": "The allowlisted headers, which clients are allowed to access"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "string[]",
+        "types": [
+          {
+            "fieldType": "REPEATABLE_LIST",
+            "ballerinaType": "string[]",
+            "template": {
+              "types": [
+                {
+                  "fieldType": "TEXT",
+                  "ballerinaType": "string",
+                  "selected": false
+                },
+                {
+                  "fieldType": "EXPRESSION",
+                  "ballerinaType": "string",
+                  "selected": false
+                }
+              ],
+              "optional": false,
+              "editable": false,
+              "advanced": false,
+              "hidden": false
+            },
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "string[]",
+            "selected": false
+          }
+        ],
         "placeholder": "[]",
         "optional": true,
         "editable": true,
@@ -158,15 +244,6 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "exposeHeaders"
         },
-        "typeMembers": [
-          {
-            "type": "string",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "ARRAY_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "[]"
       },
       "allowCredentials": {
@@ -174,8 +251,18 @@
           "label": "Allow Credentials",
           "description": "Specifies whether credentials are required to access the service"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "boolean",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "ballerinaType": "boolean",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "boolean",
+            "selected": false
+          }
+        ],
         "placeholder": "false",
         "optional": true,
         "editable": true,
@@ -185,15 +272,6 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "allowCredentials"
         },
-        "typeMembers": [
-          {
-            "type": "boolean",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "false"
       },
       "maxAge": {
@@ -201,8 +279,18 @@
           "label": "Max Age",
           "description": "The maximum duration to cache the preflight from client side"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "decimal",
+        "types": [
+          {
+            "fieldType": "NUMBER",
+            "ballerinaType": "decimal",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "decimal",
+            "selected": false
+          }
+        ],
         "placeholder": "0.0d",
         "optional": true,
         "editable": true,
@@ -212,15 +300,6 @@
           "kind": "INCLUDED_FIELD",
           "originalName": "maxAge"
         },
-        "typeMembers": [
-          {
-            "type": "decimal",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "0.0d"
       },
       "type": {
@@ -228,7 +307,12 @@
           "label": "Result Type",
           "description": "Type of the variable"
         },
-        "valueType": "TYPE",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "selected": true
+          }
+        ],
         "value": "mod:Client",
         "placeholder": "var",
         "optional": false,
@@ -245,7 +329,12 @@
           "label": "Connection Name",
           "description": "Name of the connection"
         },
-        "valueType": "IDENTIFIER",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
         "value": "modClient",
         "optional": false,
         "editable": true,
@@ -257,7 +346,12 @@
           "label": "Connection Scope",
           "description": "Scope of the connection, Global or Local"
         },
-        "valueType": "ENUM",
+        "types": [
+          {
+            "fieldType": "ENUM",
+            "selected": true
+          }
+        ],
         "value": "Global",
         "optional": false,
         "editable": true,
@@ -269,7 +363,12 @@
           "label": "Check Error",
           "description": "Terminate on error"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": true,
         "optional": false,
         "editable": false,

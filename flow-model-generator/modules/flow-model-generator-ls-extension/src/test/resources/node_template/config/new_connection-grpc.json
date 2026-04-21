@@ -17,7 +17,7 @@
   "output": {
     "id": "31",
     "metadata": {
-      "label": "New Connection",
+      "label": "gRPC Streaming",
       "description": "The base client used in the generated client code to provide the gRPC streaming client actions for\ninteracting  with the gRPC server.",
       "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_grpc_1.13.2.png"
     },
@@ -38,8 +38,13 @@
           "label": "Result Type",
           "description": "Type of the variable"
         },
-        "valueType": "TYPE",
-        "value": "grpc:StreamingClient",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "selected": true
+          }
+        ],
+        "value": "StreamingClient",
         "placeholder": "var",
         "optional": false,
         "editable": false,
@@ -52,8 +57,13 @@
           "label": "Connection Name",
           "description": "Name of the connection"
         },
-        "valueType": "IDENTIFIER",
-        "value": "grpcStreamingclient",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
+        "value": "streamingClient",
         "optional": false,
         "editable": true,
         "advanced": false,
@@ -64,7 +74,12 @@
           "label": "Connection Scope",
           "description": "Scope of the connection, Global or Local"
         },
-        "valueType": "ENUM",
+        "types": [
+          {
+            "fieldType": "ENUM",
+            "selected": true
+          }
+        ],
         "value": "Global",
         "optional": false,
         "editable": true,
@@ -76,7 +91,12 @@
           "label": "Check Error",
           "description": "Terminate on error"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": true,
         "optional": false,
         "editable": false,

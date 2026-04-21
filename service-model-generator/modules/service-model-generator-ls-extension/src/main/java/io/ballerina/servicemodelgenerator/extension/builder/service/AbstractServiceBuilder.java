@@ -37,6 +37,7 @@ import io.ballerina.servicemodelgenerator.extension.extractor.ReadOnlyMetadataMa
 import io.ballerina.servicemodelgenerator.extension.model.Codedata;
 import io.ballerina.servicemodelgenerator.extension.model.Function;
 import io.ballerina.servicemodelgenerator.extension.model.MetaData;
+import io.ballerina.servicemodelgenerator.extension.model.PropertyType;
 import io.ballerina.servicemodelgenerator.extension.model.Service;
 import io.ballerina.servicemodelgenerator.extension.model.ServiceInitModel;
 import io.ballerina.servicemodelgenerator.extension.model.Value;
@@ -47,6 +48,7 @@ import io.ballerina.servicemodelgenerator.extension.model.context.GetServiceInit
 import io.ballerina.servicemodelgenerator.extension.model.context.ModelFromSourceContext;
 import io.ballerina.servicemodelgenerator.extension.model.context.UpdateModelContext;
 import io.ballerina.servicemodelgenerator.extension.util.ListenerUtil;
+import io.ballerina.servicemodelgenerator.extension.util.ServiceClassUtil;
 import io.ballerina.servicemodelgenerator.extension.util.Utils;
 import io.ballerina.tools.text.LinePosition;
 import io.ballerina.tools.text.LineRange;
@@ -66,8 +68,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import static io.ballerina.servicemodelgenerator.extension.model.PropertyType.deserializeTypes;
 import static io.ballerina.servicemodelgenerator.extension.model.ServiceInitModel.KEY_LISTENER_VAR_NAME;
 import static io.ballerina.servicemodelgenerator.extension.util.Constants.ANNOT_PREFIX;
+import static io.ballerina.servicemodelgenerator.extension.util.Constants.ARG_TYPE_LISTENER_PARAM_CONFIG_FIELD;
 import static io.ballerina.servicemodelgenerator.extension.util.Constants.ARG_TYPE_LISTENER_PARAM_INCLUDED_DEFAULTABLE_FIELD;
 import static io.ballerina.servicemodelgenerator.extension.util.Constants.ARG_TYPE_LISTENER_PARAM_INCLUDED_FIELD;
 import static io.ballerina.servicemodelgenerator.extension.util.Constants.ARG_TYPE_LISTENER_PARAM_REQUIRED;
@@ -87,7 +91,6 @@ import static io.ballerina.servicemodelgenerator.extension.util.Constants.SERVIC
 import static io.ballerina.servicemodelgenerator.extension.util.Constants.SPACE;
 import static io.ballerina.servicemodelgenerator.extension.util.Constants.TAB;
 import static io.ballerina.servicemodelgenerator.extension.util.Constants.TWO_NEW_LINES;
-import static io.ballerina.servicemodelgenerator.extension.util.Constants.VALUE_TYPE_IDENTIFIER;
 import static io.ballerina.servicemodelgenerator.extension.util.ListenerUtil.getDefaultListenerDeclarationStmt;
 import static io.ballerina.servicemodelgenerator.extension.util.ServiceModelUtils.createFallbackServiceModel;
 import static io.ballerina.servicemodelgenerator.extension.util.ServiceModelUtils.extractFunctionsFromSource;
@@ -110,7 +113,6 @@ import static io.ballerina.servicemodelgenerator.extension.util.Utils.FunctionAd
 import static io.ballerina.servicemodelgenerator.extension.util.Utils.FunctionSignatureContext.FUNCTION_ADD;
 import static io.ballerina.servicemodelgenerator.extension.util.Utils.addServiceAnnotationTextEdits;
 import static io.ballerina.servicemodelgenerator.extension.util.Utils.addServiceDocTextEdits;
-import static io.ballerina.servicemodelgenerator.extension.util.Utils.deserializeSelections;
 import static io.ballerina.servicemodelgenerator.extension.util.Utils.generateFunctionDefSource;
 import static io.ballerina.servicemodelgenerator.extension.util.Utils.getAnnotationEdits;
 import static io.ballerina.servicemodelgenerator.extension.util.Utils.getDocumentationEdits;
@@ -163,6 +165,7 @@ public abstract class AbstractServiceBuilder implements ServiceNodeBuilder {
         Map<String, Value> properties = serviceInitModel.getProperties();
         List<String> requiredParams = new ArrayList<>();
         List<String> includedParams = new ArrayList<>();
+        List<String> lnConfigParams = new ArrayList<>();
         for (Map.Entry<String, Value> entry : properties.entrySet()) {
             Value value = entry.getValue();
             if (value.getCodedata() == null) {
@@ -178,10 +181,16 @@ public abstract class AbstractServiceBuilder implements ServiceNodeBuilder {
             } else if (argType.equals(ARG_TYPE_LISTENER_PARAM_INCLUDED_FIELD)
                     || argType.equals(ARG_TYPE_LISTENER_PARAM_INCLUDED_DEFAULTABLE_FIELD)) {
                 includedParams.add(entry.getKey() + " = " + value.getValue());
+            } else if (argType.equals(ARG_TYPE_LISTENER_PARAM_CONFIG_FIELD)) {
+                lnConfigParams.add(String.format("%s: %s", entry.getKey(), value.getValue()));
             }
         }
         String listenerProtocol = getProtocol(serviceInitModel.getModuleName());
         String listenerVarName = properties.get(KEY_LISTENER_VAR_NAME).getValue();
+        if (!lnConfigParams.isEmpty()) {
+            String configParams = String.format("{%s}", String.join(", ", lnConfigParams));
+            requiredParams.add(configParams);
+        }
         requiredParams.addAll(includedParams);
         String args = String.join(", ", requiredParams);
         String listenerDeclaration = String.format("listener %s:%s %s = new (%s);",
@@ -272,8 +281,7 @@ public abstract class AbstractServiceBuilder implements ServiceNodeBuilder {
                 .setMetadata(new MetaData("Listener Name", "Provide a name for the listener being created"))
                 .setCodedata(new Codedata(ARG_TYPE_LISTENER_VAR_NAME))
                 .value(listenerName)
-                .valueType(VALUE_TYPE_IDENTIFIER)
-                .setValueTypeConstraint("Global")
+                .types(List.of(PropertyType.types(Value.FieldType.IDENTIFIER)))
                 .editable(true)
                 .enabled(true)
                 .optional(false)
@@ -308,18 +316,12 @@ public abstract class AbstractServiceBuilder implements ServiceNodeBuilder {
             Codedata.Builder codedataBuilder = new Codedata.Builder()
                     .setArgType(property.sourceKind());
 
-            List<Object> items = property.selections() != null && !property.selections().isEmpty() ?
-                    deserializeSelections(property.selections()) : List.of();
-
             Value.ValueBuilder builder = new Value.ValueBuilder()
                     .metadata(property.label(), property.description())
                     .setCodedata(codedataBuilder.build())
                     .value(property.defaultValue())
                     .setPlaceholder(property.placeholder())
-                    .valueType(property.valueType())
-                    .setValueTypeConstraint(property.typeConstraint())
-                    .setItems(items)
-                    .setTypeMembers(property.memberTypes())
+                    .types(deserializeTypes(property.types()))
                     .enabled(true)
                     .editable(true);
             serviceInitModel.addProperty(property.keyName(), builder.build());
@@ -349,7 +351,7 @@ public abstract class AbstractServiceBuilder implements ServiceNodeBuilder {
         String protocol = getProtocol(context.moduleName());
 
         String label = serviceTemplate.displayName();
-        Value documentation = getServiceDocumentation();
+        Value documentation = getServiceDocumentation(ServiceClassUtil.ServiceClassContext.SERVICE_DIAGRAM);
         String icon = CommonUtils.generateIcon(pkg.org(), pkg.name(), pkg.version());
 
         Map<String, Value> properties = new LinkedHashMap<>();
@@ -371,7 +373,8 @@ public abstract class AbstractServiceBuilder implements ServiceNodeBuilder {
                 .setFunctions(new ArrayList<>());
 
         Service service = serviceBuilder.build();
-        properties.put(PROP_KEY_LISTENER, getListenersProperty(protocol, serviceTemplate.listenerKind()));
+        properties.put(PROP_KEY_LISTENER, getListenersProperty(protocol,
+                Value.FieldType.valueOf(serviceTemplate.listenerKind())));
 
         // type descriptor
         properties.put(PROP_KEY_SERVICE_TYPE, getTypeDescriptorProperty(serviceTemplate, pkg.packageId()));
@@ -526,7 +529,7 @@ public abstract class AbstractServiceBuilder implements ServiceNodeBuilder {
      * @param context the model context
      * @return the base service model or null if template not found
      */
-    private Service createBaseServiceModel(ModelFromSourceContext context) {
+    protected Service createBaseServiceModel(ModelFromSourceContext context) {
         String serviceType = getServiceTypeIdentifier(context.serviceType());
         Optional<Service> serviceTemplate = ServiceBuilderRouter.getModelTemplate(
                 context.orgName(), context.moduleName());
@@ -650,6 +653,29 @@ public abstract class AbstractServiceBuilder implements ServiceNodeBuilder {
             // Convert List<String> to ArrayList<String> and put directly in readOnlyMetaData
             currentProps.put(displayName, new ArrayList<>(values));
         }
+    }
+
+    /**
+     * Recursively unwraps GROUP_SECTION values by promoting their children into the parent map.
+     *
+     * @param properties the properties map to unwrap in-place
+     */
+    protected static void unwrapGroupSections(Map<String, Value> properties) {
+        List<String> groupKeys = new ArrayList<>();
+        Map<String, Value> childProps = new LinkedHashMap<>();
+        for (Map.Entry<String, Value> entry : properties.entrySet()) {
+            Value value = entry.getValue();
+            if (value.getTypes() != null && value.getTypes().stream()
+                    .anyMatch(t -> t.fieldType() == Value.FieldType.GROUP_SECTION)) {
+                groupKeys.add(entry.getKey());
+                if (value.getProperties() != null) {
+                    unwrapGroupSections(value.getProperties());
+                    childProps.putAll(value.getProperties());
+                }
+            }
+        }
+        groupKeys.forEach(properties::remove);
+        properties.putAll(childProps);
     }
 
     public abstract String kind();

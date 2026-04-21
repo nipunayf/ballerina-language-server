@@ -68,7 +68,12 @@
               "label": "Comment",
               "description": "Comment to describe the flow"
             },
-            "valueType": "STRING",
+            "types": [
+              {
+                "fieldType": "TEXT",
+                "selected": true
+              }
+            ],
             "value": "Create an instance of Calculator class",
             "optional": false,
             "editable": true,
@@ -82,7 +87,7 @@
         "id": "59685",
         "metadata": {
           "label": "Declare Variable",
-          "description": "Assign a value to a variable"
+          "description": "Create a new variable"
         },
         "codedata": {
           "node": "VARIABLE",
@@ -106,7 +111,12 @@
               "label": "Expression",
               "description": "Initialize with value"
             },
-            "valueType": "ACTION_OR_EXPRESSION",
+            "types": [
+              {
+                "fieldType": "ACTION_OR_EXPRESSION",
+                "selected": true
+              }
+            ],
             "value": "new Calculator(10)",
             "optional": true,
             "editable": true,
@@ -118,7 +128,12 @@
               "label": "Name",
               "description": "Name of the variable"
             },
-            "valueType": "IDENTIFIER",
+            "types": [
+              {
+                "fieldType": "IDENTIFIER",
+                "selected": true
+              }
+            ],
             "value": "calc",
             "optional": false,
             "editable": false,
@@ -143,7 +158,12 @@
               "label": "Type",
               "description": "Type of the variable"
             },
-            "valueType": "TYPE",
+            "types": [
+              {
+                "fieldType": "TYPE",
+                "selected": true
+              }
+            ],
             "value": "Calculator",
             "placeholder": "var",
             "optional": false,
@@ -183,7 +203,12 @@
               "label": "Comment",
               "description": "Comment to describe the flow"
             },
-            "valueType": "STRING",
+            "types": [
+              {
+                "fieldType": "TEXT",
+                "selected": true
+              }
+            ],
             "value": "Method call examples",
             "optional": false,
             "editable": true,
@@ -227,7 +252,12 @@
               "label": "View",
               "description": "Function definition location"
             },
-            "valueType": "VIEW",
+            "types": [
+              {
+                "fieldType": "VIEW",
+                "selected": true
+              }
+            ],
             "value": {
               "fileName": "method_call.bal",
               "startLine": {
@@ -249,7 +279,12 @@
               "label": "Object",
               "description": "The object which you want to call the method on"
             },
-            "valueType": "EXPRESSION",
+            "types": [
+              {
+                "fieldType": "EXPRESSION",
+                "selected": true
+              }
+            ],
             "value": "calc",
             "optional": false,
             "editable": false,
@@ -260,8 +295,18 @@
             "metadata": {
               "label": "Value"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "int",
+            "types": [
+              {
+                "fieldType": "NUMBER",
+                "ballerinaType": "int",
+                "selected": true
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "int",
+                "selected": false
+              }
+            ],
             "value": "5",
             "placeholder": "0",
             "optional": false,
@@ -271,23 +316,19 @@
             "codedata": {
               "kind": "REQUIRED",
               "originalName": "value"
-            },
-            "typeMembers": [
-              {
-                "type": "int",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": true
-              }
-            ]
+            }
           },
           "variable": {
             "metadata": {
               "label": "Result",
               "description": "Name of the result variable"
             },
-            "valueType": "IDENTIFIER",
+            "types": [
+              {
+                "fieldType": "IDENTIFIER",
+                "selected": true
+              }
+            ],
             "value": "result1",
             "optional": false,
             "editable": false,
@@ -312,7 +353,12 @@
               "label": "Result Type",
               "description": "Type of the variable"
             },
-            "valueType": "TYPE",
+            "types": [
+              {
+                "fieldType": "TYPE",
+                "selected": true
+              }
+            ],
             "value": "int",
             "placeholder": "var",
             "optional": false,
@@ -358,7 +404,12 @@
               "label": "View",
               "description": "Function definition location"
             },
-            "valueType": "VIEW",
+            "types": [
+              {
+                "fieldType": "VIEW",
+                "selected": true
+              }
+            ],
             "value": {
               "fileName": "method_call.bal",
               "startLine": {
@@ -380,7 +431,12 @@
               "label": "Object",
               "description": "The object which you want to call the method on"
             },
-            "valueType": "EXPRESSION",
+            "types": [
+              {
+                "fieldType": "EXPRESSION",
+                "selected": true
+              }
+            ],
             "value": "calc",
             "optional": false,
             "editable": false,
@@ -391,8 +447,18 @@
             "metadata": {
               "label": "Value"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "int",
+            "types": [
+              {
+                "fieldType": "NUMBER",
+                "ballerinaType": "int",
+                "selected": true
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "int",
+                "selected": false
+              }
+            ],
             "value": "2",
             "placeholder": "0",
             "optional": false,
@@ -402,23 +468,19 @@
             "codedata": {
               "kind": "REQUIRED",
               "originalName": "value"
-            },
-            "typeMembers": [
-              {
-                "type": "int",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": true
-              }
-            ]
+            }
           },
           "variable": {
             "metadata": {
               "label": "Result",
               "description": "Name of the result variable"
             },
-            "valueType": "IDENTIFIER",
+            "types": [
+              {
+                "fieldType": "IDENTIFIER",
+                "selected": true
+              }
+            ],
             "value": "result2",
             "optional": false,
             "editable": false,
@@ -443,7 +505,12 @@
               "label": "Result Type",
               "description": "Type of the variable"
             },
-            "valueType": "TYPE",
+            "types": [
+              {
+                "fieldType": "TYPE",
+                "selected": true
+              }
+            ],
             "value": "int",
             "placeholder": "var",
             "optional": false,
@@ -489,7 +556,12 @@
               "label": "View",
               "description": "Function definition location"
             },
-            "valueType": "VIEW",
+            "types": [
+              {
+                "fieldType": "VIEW",
+                "selected": true
+              }
+            ],
             "value": {
               "fileName": "method_call.bal",
               "startLine": {
@@ -511,7 +583,12 @@
               "label": "Object",
               "description": "The object which you want to call the method on"
             },
-            "valueType": "EXPRESSION",
+            "types": [
+              {
+                "fieldType": "EXPRESSION",
+                "selected": true
+              }
+            ],
             "value": "calc",
             "optional": false,
             "editable": false,
@@ -523,7 +600,12 @@
               "label": "Result",
               "description": "Name of the result variable"
             },
-            "valueType": "IDENTIFIER",
+            "types": [
+              {
+                "fieldType": "IDENTIFIER",
+                "selected": true
+              }
+            ],
             "value": "total",
             "optional": false,
             "editable": false,
@@ -548,7 +630,12 @@
               "label": "Result Type",
               "description": "Type of the variable"
             },
-            "valueType": "TYPE",
+            "types": [
+              {
+                "fieldType": "TYPE",
+                "selected": true
+              }
+            ],
             "value": "string",
             "placeholder": "var",
             "optional": false,
@@ -594,7 +681,12 @@
               "label": "View",
               "description": "Function definition location"
             },
-            "valueType": "VIEW",
+            "types": [
+              {
+                "fieldType": "VIEW",
+                "selected": true
+              }
+            ],
             "value": {
               "fileName": "method_call.bal",
               "startLine": {
@@ -616,7 +708,12 @@
               "label": "Object",
               "description": "The object which you want to call the method on"
             },
-            "valueType": "EXPRESSION",
+            "types": [
+              {
+                "fieldType": "EXPRESSION",
+                "selected": true
+              }
+            ],
             "value": "    calc",
             "optional": false,
             "editable": false,

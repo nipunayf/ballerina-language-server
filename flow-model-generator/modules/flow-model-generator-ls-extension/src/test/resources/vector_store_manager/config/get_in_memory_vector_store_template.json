@@ -33,7 +33,12 @@
             "label": "Result Type",
             "description": "Type of the variable"
           },
-          "valueType": "TYPE",
+          "types": [
+            {
+              "fieldType": "TYPE",
+              "selected": true
+            }
+          ],
           "value": "ai:InMemoryVectorStore",
           "placeholder": "var",
           "optional": false,
@@ -50,7 +55,12 @@
             "label": "Vector Store Name",
             "description": "Vector store instance name"
           },
-          "valueType": "IDENTIFIER",
+          "types": [
+            {
+              "fieldType": "IDENTIFIER",
+              "selected": true
+            }
+          ],
           "value": "aiInmemoryvectorstore",
           "optional": false,
           "editable": true,
@@ -62,8 +72,18 @@
             "label": "Top K",
             "description": "The maximum number of top similar vectors to return in query results"
           },
-          "valueType": "EXPRESSION",
-          "valueTypeConstraint": "int",
+          "types": [
+            {
+              "fieldType": "NUMBER",
+              "ballerinaType": "int",
+              "selected": false
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "int",
+              "selected": false
+            }
+          ],
           "placeholder": "0",
           "optional": true,
           "editable": true,
@@ -73,24 +93,38 @@
             "kind": "DEFAULTABLE",
             "originalName": "topK"
           },
-          "typeMembers": [
-            {
-              "type": "int",
-              "packageInfo": "",
-              "packageName": "",
-              "kind": "BASIC_TYPE",
-              "selected": false
-            }
-          ],
-          "defaultValue": "0"
+          "defaultValue": "3"
         },
         "similarityMetric": {
           "metadata": {
             "label": "Similarity Metric",
             "description": "The metric used for vector similarity"
           },
-          "valueType": "EXPRESSION",
-          "valueTypeConstraint": "ai:SimilarityMetric",
+          "types": [
+            {
+              "fieldType": "SINGLE_SELECT",
+              "options": [
+                {
+                  "label": "DOT_PRODUCT",
+                  "value": "\"DOT_PRODUCT\""
+                },
+                {
+                  "label": "EUCLIDEAN",
+                  "value": "\"EUCLIDEAN\""
+                },
+                {
+                  "label": "COSINE",
+                  "value": "\"COSINE\""
+                }
+              ],
+              "selected": false
+            },
+            {
+              "fieldType": "EXPRESSION",
+              "ballerinaType": "ai:SimilarityMetric",
+              "selected": false
+            }
+          ],
           "placeholder": "\"DOT_PRODUCT\"",
           "optional": true,
           "editable": true,
@@ -100,23 +134,19 @@
             "kind": "DEFAULTABLE",
             "originalName": "similarityMetric"
           },
-          "typeMembers": [
-            {
-              "type": "SimilarityMetric",
-              "packageInfo": "ballerina:ai:1.1.0",
-              "packageName": "ai",
-              "kind": "BASIC_TYPE",
-              "selected": false
-            }
-          ],
-          "defaultValue": "\"DOT_PRODUCT\""
+          "defaultValue": "COSINE"
         },
         "scope": {
           "metadata": {
             "label": "Connection Scope",
             "description": "Scope of the connection, Global or Local"
           },
-          "valueType": "ENUM",
+          "types": [
+            {
+              "fieldType": "ENUM",
+              "selected": true
+            }
+          ],
           "value": "Global",
           "optional": false,
           "editable": true,
@@ -128,7 +158,12 @@
             "label": "Check Error",
             "description": "Terminate on error"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": true,
           "optional": false,
           "editable": false,

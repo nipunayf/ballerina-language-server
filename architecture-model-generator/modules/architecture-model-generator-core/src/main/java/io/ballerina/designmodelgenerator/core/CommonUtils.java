@@ -364,11 +364,24 @@ public class CommonUtils {
 
                     if (fieldName.equals(currentFieldName)) {
                         Optional<ExpressionNode> valueExpr = specificField.valueExpr();
-                        if (valueExpr.isPresent() && valueExpr.get() instanceof BasicLiteralNode literalNode) {
-                            String value = literalNode.literalToken().text().trim();
-                            // Remove quotes if present
-                            return Optional.of(value.replace("\"", ""));
+                        if (valueExpr.isEmpty()) {
+                            return Optional.empty();
                         }
+                        String value = "";
+                        ExpressionNode expr = valueExpr.get();
+                        if (expr instanceof BasicLiteralNode literalNode) {
+                            value = literalNode.literalToken().text().trim();
+                            // Removes quotes
+                            value = value.replaceAll("^\"|\"$", "");
+                        } else {
+                            // Handles variables etc
+                            value = expr.toSourceCode().trim();
+                        }
+                        if (!value.isEmpty()) {
+                            return Optional.of(value);
+                        }
+                        // So - doesnt get appended when value is empty
+                        return Optional.empty();
                     }
                 }
             }

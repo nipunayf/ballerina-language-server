@@ -1,6 +1,7 @@
 {
   "description": "",
   "source": "listener.bal",
+  "packageName": ".",
   "output": {
     "Listeners": {
       "httpDefaultListener": {
@@ -19,7 +20,8 @@
         "type": "LISTENER",
         "name": "httpDefaultListener",
         "scope": "Global",
-        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.15.0.png",
+        "visibility": "module",
+        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.16.1.png",
         "module": "http",
         "children": {}
       },
@@ -39,6 +41,7 @@
         "type": "LISTENER",
         "name": "httpListener",
         "scope": "Global",
+        "visibility": "module",
         "children": {}
       },
       "rabbitmqListener": {
@@ -57,7 +60,8 @@
         "type": "LISTENER",
         "name": "rabbitmqListener",
         "scope": "Global",
-        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerinax_rabbitmq_3.3.0.png",
+        "visibility": "module",
+        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerinax_rabbitmq_3.3.1.png",
         "module": "rabbitmq",
         "children": {}
       },
@@ -77,7 +81,8 @@
         "type": "LISTENER",
         "name": "refListener",
         "scope": "Global",
-        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.15.0.png",
+        "visibility": "module",
+        "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.16.1.png",
         "module": "http",
         "children": {}
       }

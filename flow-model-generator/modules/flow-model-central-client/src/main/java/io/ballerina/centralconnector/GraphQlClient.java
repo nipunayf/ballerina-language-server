@@ -27,9 +27,13 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 import io.ballerina.centralconnector.response.ConnectorApiResponse;
+import io.ballerina.centralconnector.response.DependentPackage;
 import io.ballerina.centralconnector.response.Function;
 import io.ballerina.centralconnector.response.FunctionResponse;
 import io.ballerina.centralconnector.response.FunctionsResponse;
+import io.ballerina.centralconnector.response.Listener;
+import io.ballerina.centralconnector.response.ListenerResponse;
+import io.ballerina.centralconnector.response.Listeners;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -40,6 +44,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +64,7 @@ class GraphQlClient {
     private static final String QUERY_DIRECTORY = "graphql_queries";
     private static final String GET_FUNCTIONS_QUERY = "GetFunctions.graphql";
     private static final String GET_FUNCTION_QUERY = "GetFunction.graphql";
+    private static final String GET_LISTENERS_QUERY = "GetListeners.graphql";
     private static final String GET_CONNECTION_QUERY = "GetConnector.graphql";
 
     public GraphQlClient() {
@@ -78,6 +84,27 @@ class GraphQlClient {
         return gson.fromJson(response, FunctionsResponse.class);
     }
 
+    static Type listenersType = new TypeToken<List<Listener>>() {
+    }.getType();
+
+    public Listeners getListeners(String org, String module, String version) {
+        String queryTemplate = getQueryTemplate(GET_LISTENERS_QUERY);
+        String queryBody = String.format(queryTemplate, org, module, version);
+        String response = query(queryBody);
+        ListenerResponse listenerResponse = gson.fromJson(response, ListenerResponse.class);
+        ListenerResponse.ApiDocs apiDocs = listenerResponse.data().apiDocs();
+        List<Listener> newListeners = new ArrayList<>();
+        if (apiDocs != null) {
+            List<ListenerResponse.Module> modules = apiDocs.docsData().modules();
+            for (ListenerResponse.Module mod : modules) {
+                String listeners = mod.listeners();
+                newListeners.addAll(gson.fromJson(listeners, listenersType));
+            }
+        }
+
+        return new Listeners(org, module, version, newListeners);
+    }
+
     public FunctionResponse getFunction(String organization, String name, String version, String functionName) {
         String queryTemplate = getQueryTemplate(GET_FUNCTION_QUERY);
         String queryBody = String.format(queryTemplate, organization, name, version, functionName);
@@ -91,6 +118,92 @@ class GraphQlClient {
         String queryBody = String.format(queryTemplate, organization, name, version, clientName);
         String response = query(queryBody);
         return gson.fromJson(response, ConnectorApiResponse.class);
+    }
+
+    public Map<String, List<DependentPackage>> getDependentPackages(String org, String packageName,
+                                                                    List<String> versions) {
+        StringBuilder queryBody = new StringBuilder("query Package { ");
+        for (String version : versions) {
+            String alias = versionToAlias(version);
+            queryBody.append(alias)
+                    .append(": package(orgName: \\\"").append(org)
+                    .append("\\\", packageName: \\\"").append(packageName)
+                    .append("\\\", version: \\\"").append(version)
+                    .append("\\\") { dependentPackages { organization name version } } ");
+        }
+        queryBody.append("}");
+
+        String response = query(queryBody.toString());
+        JsonObject root = gson.fromJson(response, JsonObject.class);
+        if (root == null || !root.has("data") || root.getAsJsonObject("data") == null) {
+            throw new RuntimeException("Invalid GraphQL response: missing 'data' field");
+        }
+        JsonObject data = root.getAsJsonObject("data");
+
+        Map<String, List<DependentPackage>> result = new HashMap<>();
+        for (String version : versions) {
+            String alias = versionToAlias(version);
+            JsonObject pkgObj = data.getAsJsonObject(alias);
+            if (pkgObj == null || !pkgObj.has("dependentPackages")
+                    || !pkgObj.get("dependentPackages").isJsonArray()) {
+                continue;
+            }
+            List<DependentPackage> deps = new ArrayList<>();
+            for (JsonElement elem : pkgObj.getAsJsonArray("dependentPackages")) {
+                deps.add(gson.fromJson(elem, DependentPackage.class));
+            }
+            result.put(version, deps);
+        }
+        return result;
+    }
+
+    public Map<String, List<String>> getPackageKeywords(List<DependentPackage> modules) {
+        if (modules.isEmpty()) {
+            return Map.of();
+        }
+        StringBuilder queryBody = new StringBuilder("query Keywords { ");
+        Map<String, DependentPackage> aliasToModule = new HashMap<>();
+        for (DependentPackage module : modules) {
+            String alias = moduleToAlias(module);
+            aliasToModule.put(alias, module);
+            queryBody.append(alias)
+                    .append(": package(orgName: \\\"").append(module.organization())
+                    .append("\\\", packageName: \\\"").append(module.name())
+                    .append("\\\", version: \\\"").append(module.version())
+                    .append("\\\") { keywords } ");
+        }
+        queryBody.append("}");
+
+        String response = query(queryBody.toString());
+        JsonObject data = gson.fromJson(response, JsonObject.class).getAsJsonObject("data");
+        if (data == null) {
+            return Map.of();
+        }
+
+        Map<String, List<String>> result = new HashMap<>();
+        for (Map.Entry<String, DependentPackage> entry : aliasToModule.entrySet()) {
+            JsonObject pkgObj = data.getAsJsonObject(entry.getKey());
+            if (pkgObj == null || !pkgObj.has("keywords")) {
+                continue;
+            }
+            DependentPackage mod = entry.getValue();
+            String key = mod.organization() + ":" + mod.name() + ":" + mod.version();
+            List<String> keywords = new ArrayList<>();
+            for (JsonElement elem : pkgObj.getAsJsonArray("keywords")) {
+                keywords.add(elem.getAsString());
+            }
+            result.put(key, keywords);
+        }
+        return result;
+    }
+
+    private static String moduleToAlias(DependentPackage module) {
+        return (module.organization() + "_" + module.name() + "_" + module.version())
+                .replaceAll("[^a-zA-Z0-9]", "_");
+    }
+
+    private static String versionToAlias(String version) {
+        return "v" + version.replace(".", "_");
     }
 
     private String query(String queryBody) {

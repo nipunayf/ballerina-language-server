@@ -21,12 +21,12 @@ package io.ballerina.flowmodelgenerator.core.model.node;
 import com.google.gson.Gson;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.compiler.syntax.tree.Token;
+import io.ballerina.flowmodelgenerator.core.model.Codedata;
 import io.ballerina.flowmodelgenerator.core.model.FormBuilder;
 import io.ballerina.flowmodelgenerator.core.model.NodeBuilder;
 import io.ballerina.flowmodelgenerator.core.model.NodeKind;
 import io.ballerina.flowmodelgenerator.core.model.Property;
 import io.ballerina.flowmodelgenerator.core.model.SourceBuilder;
-import io.ballerina.tools.text.LineRange;
 import org.eclipse.lsp4j.TextEdit;
 
 import java.nio.file.Path;
@@ -82,12 +82,13 @@ public class FunctionDefinitionBuilder extends NodeBuilder {
                 .functionDescription(description)
                 .returnType(returnType, null, true)
                 .returnDescription(returnDescription)
+                .isPublic(false, false, true, false)
                 .nestedProperty();
     }
 
     public static void setProperty(FormBuilder<?> formBuilder, String type, String name, String description,
                                    Token token) {
-        formBuilder.parameterWithDescription(type, name, token, Property.ValueType.TYPE, null, description);
+        formBuilder.parameterWithDescription(type, name, token, Property.ValueType.TYPE, description);
     }
 
     public static void setOptionalProperties(NodeBuilder nodeBuilder) {
@@ -162,8 +163,14 @@ public class FunctionDefinitionBuilder extends NodeBuilder {
 
         Optional<Property> annotationsProperty = sourceBuilder.getProperty(Property.ANNOTATIONS_KEY);
         if (annotationsProperty.isPresent()) {
-            sourceBuilder.token().name(annotationsProperty.get().toSourceCode());
+            sourceBuilder.token().name(annotationsProperty.get().toSourceCode()).newLine();
         }
+
+        Optional<Property> visibilityProperty = sourceBuilder.getProperty(Property.IS_PUBLIC_KEY);
+        if (visibilityProperty.isPresent() && Boolean.parseBoolean(visibilityProperty.get().value().toString())) {
+            sourceBuilder.token().keyword(SyntaxKind.PUBLIC_KEYWORD);
+        }
+
         Optional<Property> isolatedProperty = sourceBuilder.getProperty(Property.IS_ISOLATED_KEY);
         if (isolatedProperty.isPresent()) {
             sourceBuilder.token().keyword(SyntaxKind.ISOLATED_KEYWORD);
@@ -192,8 +199,8 @@ public class FunctionDefinitionBuilder extends NodeBuilder {
 
         // Generate text edits based on the line range. If a line range exists, update the signature of the existing
         // function. Otherwise, create a new function definition in "functions.bal".
-        LineRange lineRange = sourceBuilder.flowNode.codedata().lineRange();
-        if (lineRange == null) {
+        Codedata codedata = sourceBuilder.flowNode.codedata();
+        if (codedata.lineRange() == null || Boolean.TRUE.equals(codedata.isNew())) {
             sourceBuilder
                     .token()
                         .openBrace()

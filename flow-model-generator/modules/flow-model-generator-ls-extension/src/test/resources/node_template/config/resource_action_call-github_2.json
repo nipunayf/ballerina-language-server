@@ -38,8 +38,13 @@
           "label": "Connection",
           "description": "Connection to use"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "github:Client",
+        "types": [
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "github:Client",
+            "selected": false
+          }
+        ],
         "value": "githubClient",
         "optional": false,
         "editable": false,
@@ -51,7 +56,12 @@
           "label": "Resource Path",
           "description": "Resource Path"
         },
-        "valueType": "ACTION_PATH",
+        "types": [
+          {
+            "fieldType": "ACTION_PATH",
+            "selected": false
+          }
+        ],
         "value": "/orgs/[org]/repos",
         "optional": false,
         "editable": false,
@@ -66,8 +76,18 @@
           "label": "org",
           "description": "The organization name. The name is not case sensitive."
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "string",
+        "types": [
+          {
+            "fieldType": "TEXT",
+            "ballerinaType": "string",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "string",
+            "selected": false
+          }
+        ],
         "placeholder": "\"\"",
         "optional": false,
         "editable": true,
@@ -76,16 +96,50 @@
         "codedata": {
           "kind": "PATH_PARAM",
           "originalName": "org"
-        },
-        "typeMembers": []
+        }
       },
       "$type": {
         "metadata": {
           "label": "Type",
           "description": "Specifies the types of repositories you want returned."
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "\"all\"|\"public\"|\"private\"|\"forks\"|\"sources\"|\"member\"",
+        "types": [
+          {
+            "fieldType": "SINGLE_SELECT",
+            "options": [
+              {
+                "label": "all",
+                "value": "\"all\""
+              },
+              {
+                "label": "public",
+                "value": "\"public\""
+              },
+              {
+                "label": "private",
+                "value": "\"private\""
+              },
+              {
+                "label": "forks",
+                "value": "\"forks\""
+              },
+              {
+                "label": "sources",
+                "value": "\"sources\""
+              },
+              {
+                "label": "member",
+                "value": "\"member\""
+              }
+            ],
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "\"all\"|\"public\"|\"private\"|\"forks\"|\"sources\"|\"member\"",
+            "selected": false
+          }
+        ],
         "placeholder": "\"all\"",
         "optional": true,
         "editable": true,
@@ -95,50 +149,6 @@
           "kind": "DEFAULTABLE",
           "originalName": "'type"
         },
-        "typeMembers": [
-          {
-            "type": "\"all\"",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          },
-          {
-            "type": "\"forks\"",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          },
-          {
-            "type": "\"member\"",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          },
-          {
-            "type": "\"private\"",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          },
-          {
-            "type": "\"public\"",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          },
-          {
-            "type": "\"sources\"",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "\"all\""
       },
       "sort": {
@@ -146,8 +156,35 @@
           "label": "Sort",
           "description": "The property to sort the results by."
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "\"created\"|\"updated\"|\"pushed\"|\"full_name\"",
+        "types": [
+          {
+            "fieldType": "SINGLE_SELECT",
+            "options": [
+              {
+                "label": "created",
+                "value": "\"created\""
+              },
+              {
+                "label": "updated",
+                "value": "\"updated\""
+              },
+              {
+                "label": "pushed",
+                "value": "\"pushed\""
+              },
+              {
+                "label": "full_name",
+                "value": "\"full_name\""
+              }
+            ],
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "\"created\"|\"updated\"|\"pushed\"|\"full_name\"",
+            "selected": false
+          }
+        ],
         "placeholder": "\"created\"",
         "optional": true,
         "editable": true,
@@ -157,36 +194,6 @@
           "kind": "DEFAULTABLE",
           "originalName": "sort"
         },
-        "typeMembers": [
-          {
-            "type": "\"created\"",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          },
-          {
-            "type": "\"full_name\"",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          },
-          {
-            "type": "\"pushed\"",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          },
-          {
-            "type": "\"updated\"",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "\"created\""
       },
       "direction": {
@@ -194,8 +201,13 @@
           "label": "Direction",
           "description": "The order to sort by. Default: `asc` when using `full_name`, otherwise `desc`."
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "\"desc\"|()|\"asc\"",
+        "types": [
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "\"desc\"?|\"asc\"",
+            "selected": false
+          }
+        ],
         "placeholder": "()",
         "optional": true,
         "editable": true,
@@ -205,29 +217,6 @@
           "kind": "DEFAULTABLE",
           "originalName": "direction"
         },
-        "typeMembers": [
-          {
-            "type": "\"asc\"",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          },
-          {
-            "type": "\"desc\"",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          },
-          {
-            "type": "()",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "()"
       },
       "per_page": {
@@ -235,8 +224,18 @@
           "label": "Per Page",
           "description": "The number of results per page (max 100)."
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "int",
+        "types": [
+          {
+            "fieldType": "NUMBER",
+            "ballerinaType": "int",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "int",
+            "selected": false
+          }
+        ],
         "placeholder": "0",
         "optional": true,
         "editable": true,
@@ -246,24 +245,25 @@
           "kind": "DEFAULTABLE",
           "originalName": "per_page"
         },
-        "typeMembers": [
-          {
-            "type": "int",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
-        "defaultValue": "0"
+        "defaultValue": "30"
       },
       "page": {
         "metadata": {
           "label": "Page",
           "description": "Page number of the results to fetch."
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "int",
+        "types": [
+          {
+            "fieldType": "NUMBER",
+            "ballerinaType": "int",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "int",
+            "selected": false
+          }
+        ],
         "placeholder": "0",
         "optional": true,
         "editable": true,
@@ -273,23 +273,19 @@
           "kind": "DEFAULTABLE",
           "originalName": "page"
         },
-        "typeMembers": [
-          {
-            "type": "int",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
-        "defaultValue": "0"
+        "defaultValue": "1"
       },
       "type": {
         "metadata": {
           "label": "Result Type",
           "description": "Type of the variable"
         },
-        "valueType": "TYPE",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "selected": true
+          }
+        ],
         "value": "github:MinimalRepository[]",
         "placeholder": "var",
         "optional": false,
@@ -303,7 +299,12 @@
           "label": "Result",
           "description": "Name of the result variable"
         },
-        "valueType": "IDENTIFIER",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
         "value": "githubMinimalrepository",
         "optional": false,
         "editable": true,
@@ -315,7 +316,12 @@
           "label": "Check Error",
           "description": "Trigger error flow"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": true,
         "optional": false,
         "editable": true,

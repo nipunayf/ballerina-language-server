@@ -24,8 +24,10 @@ import io.ballerina.compiler.api.symbols.AnnotationSymbol;
 import io.ballerina.compiler.api.symbols.ArrayTypeSymbol;
 import io.ballerina.compiler.api.symbols.IntersectionTypeSymbol;
 import io.ballerina.compiler.api.symbols.MapTypeSymbol;
+import io.ballerina.compiler.api.symbols.ModuleSymbol;
 import io.ballerina.compiler.api.symbols.StreamTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeDescKind;
+import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.UnionTypeSymbol;
 import io.ballerina.modelgenerator.commons.CommonUtils;
@@ -33,6 +35,7 @@ import io.ballerina.modelgenerator.commons.ModuleInfo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -86,16 +89,21 @@ public class TypeUtils {
      * @return the type id
      */
     public static String generateReferencedTypeId(TypeSymbol typeSymbol, ModuleInfo moduleInfo) {
-        if (typeSymbol.getName().isEmpty()) {
+        Optional<ModuleSymbol> moduleSymbol = typeSymbol.getModule();
+        if (typeSymbol.getName().isEmpty() || moduleSymbol.isEmpty()) {
             return typeSymbol.signature();  // anonymous type
         }
 
+        ModuleID moduleId = moduleSymbol.get().id();
         if (CommonUtils.isWithinPackage(typeSymbol, moduleInfo)) {
-            return typeSymbol.getName().get();
+            String moduleName = moduleId.moduleName();
+            if (moduleName.equals(moduleInfo.moduleName())) {
+                return typeSymbol.getName().get();
+            }
+            return String.format("%s:%s", moduleId.modulePrefix(), typeSymbol.getName().get());
         }
 
         // referred type is not from the given package
-        ModuleID moduleId = typeSymbol.getModule().get().id();
         return String.format("%s/%s:%s",
                 moduleId.orgName(), moduleId.packageName(), typeSymbol.getName().get());
     }
@@ -145,5 +153,21 @@ public class TypeUtils {
                 typeRefs.add(ts.signature());
             }
         }
+    }
+
+    /**
+     * Resolves type references to get the actual underlying type.
+     *
+     * @param typeSymbol the type symbol which may be a type reference
+     * @return the resolved type (unwrapped from type reference if applicable)
+     */
+    public static TypeSymbol resolveTypeReference(TypeSymbol typeSymbol) {
+        if (typeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+            typeSymbol = ((TypeReferenceTypeSymbol) typeSymbol).typeDescriptor();
+            if (typeSymbol.typeKind() == TypeDescKind.TYPE_REFERENCE) {
+                return resolveTypeReference(typeSymbol);
+            }
+        }
+        return typeSymbol;
     }
 }

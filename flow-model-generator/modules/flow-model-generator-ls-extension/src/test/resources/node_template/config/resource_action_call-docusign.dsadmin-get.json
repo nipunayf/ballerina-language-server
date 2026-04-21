@@ -38,8 +38,13 @@
           "label": "Connection",
           "description": "Connection to use"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "dsadmin:Client",
+        "types": [
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "dsadmin:Client",
+            "selected": false
+          }
+        ],
         "value": "dsAdminClient",
         "optional": false,
         "editable": false,
@@ -51,7 +56,12 @@
           "label": "Resource Path",
           "description": "Resource Path"
         },
-        "valueType": "ACTION_PATH",
+        "types": [
+          {
+            "fieldType": "ACTION_PATH",
+            "selected": false
+          }
+        ],
         "value": "/v2/organizations/[organizationId]/accounts/[accountId]/groups",
         "optional": false,
         "editable": false,
@@ -66,8 +76,18 @@
           "label": "organizationId",
           "description": "The organization ID Guid"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "string",
+        "types": [
+          {
+            "fieldType": "TEXT",
+            "ballerinaType": "string",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "string",
+            "selected": false
+          }
+        ],
         "placeholder": "\"\"",
         "optional": false,
         "editable": true,
@@ -76,16 +96,25 @@
         "codedata": {
           "kind": "PATH_PARAM",
           "originalName": "organizationId"
-        },
-        "typeMembers": []
+        }
       },
       "accountId": {
         "metadata": {
           "label": "accountId",
           "description": "The account ID Guid"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "string",
+        "types": [
+          {
+            "fieldType": "TEXT",
+            "ballerinaType": "string",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "string",
+            "selected": false
+          }
+        ],
         "placeholder": "\"\"",
         "optional": false,
         "editable": true,
@@ -94,16 +123,25 @@
         "codedata": {
           "kind": "PATH_PARAM",
           "originalName": "accountId"
-        },
-        "typeMembers": []
+        }
       },
       "start": {
         "metadata": {
           "label": "Start",
           "description": "Index of first item to include in the response. The default value is 0."
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "int:Signed32|()",
+        "types": [
+          {
+            "fieldType": "NUMBER",
+            "ballerinaType": "int:Signed32",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "int:Signed32?",
+            "selected": false
+          }
+        ],
         "placeholder": "()",
         "optional": true,
         "editable": true,
@@ -113,22 +151,6 @@
           "kind": "DEFAULTABLE",
           "originalName": "'start"
         },
-        "typeMembers": [
-          {
-            "type": "()",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          },
-          {
-            "type": "Signed32",
-            "packageInfo": "ballerina:lang.int:0.0.0",
-            "packageName": "lang.int",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "()"
       },
       "take": {
@@ -136,8 +158,18 @@
           "label": "Take",
           "description": "Page size of the response. The default value is 20."
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "int:Signed32|()",
+        "types": [
+          {
+            "fieldType": "NUMBER",
+            "ballerinaType": "int:Signed32",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "int:Signed32?",
+            "selected": false
+          }
+        ],
         "placeholder": "()",
         "optional": true,
         "editable": true,
@@ -147,22 +179,6 @@
           "kind": "DEFAULTABLE",
           "originalName": "take"
         },
-        "typeMembers": [
-          {
-            "type": "()",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          },
-          {
-            "type": "Signed32",
-            "packageInfo": "ballerina:lang.int:0.0.0",
-            "packageName": "lang.int",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "()"
       },
       "end": {
@@ -170,8 +186,18 @@
           "label": "End",
           "description": "Index of the last item to include in the response. Ignored if `take` parameter is specified."
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "int:Signed32|()",
+        "types": [
+          {
+            "fieldType": "NUMBER",
+            "ballerinaType": "int:Signed32",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "int:Signed32?",
+            "selected": false
+          }
+        ],
         "placeholder": "()",
         "optional": true,
         "editable": true,
@@ -181,22 +207,6 @@
           "kind": "DEFAULTABLE",
           "originalName": "end"
         },
-        "typeMembers": [
-          {
-            "type": "()",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          },
-          {
-            "type": "Signed32",
-            "packageInfo": "ballerina:lang.int:0.0.0",
-            "packageName": "lang.int",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "()"
       },
       "type": {
@@ -204,7 +214,12 @@
           "label": "Result Type",
           "description": "Type of the variable"
         },
-        "valueType": "TYPE",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "selected": true
+          }
+        ],
         "value": "dsadmin:MemberGroupsResponse",
         "placeholder": "var",
         "optional": false,
@@ -218,7 +233,12 @@
           "label": "Result",
           "description": "Name of the result variable"
         },
-        "valueType": "IDENTIFIER",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
         "value": "dsadminMembergroupsresponse",
         "optional": false,
         "editable": true,
@@ -230,7 +250,12 @@
           "label": "Check Error",
           "description": "Trigger error flow"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": true,
         "optional": false,
         "editable": true,

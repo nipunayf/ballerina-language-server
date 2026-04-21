@@ -38,8 +38,13 @@
           "label": "Connection",
           "description": "Connection to use"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "github:Client",
+        "types": [
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "github:Client",
+            "selected": false
+          }
+        ],
         "value": "githubClient",
         "optional": false,
         "editable": false,
@@ -51,7 +56,12 @@
           "label": "Resource Path",
           "description": "Resource Path"
         },
-        "valueType": "ACTION_PATH",
+        "types": [
+          {
+            "fieldType": "ACTION_PATH",
+            "selected": false
+          }
+        ],
         "value": "/app-manifests/[code]/conversions",
         "optional": false,
         "editable": false,
@@ -65,8 +75,18 @@
         "metadata": {
           "label": "code"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "string",
+        "types": [
+          {
+            "fieldType": "TEXT",
+            "ballerinaType": "string",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "string",
+            "selected": false
+          }
+        ],
         "placeholder": "\"\"",
         "optional": false,
         "editable": true,
@@ -75,15 +95,19 @@
         "codedata": {
           "kind": "PATH_PARAM",
           "originalName": "code"
-        },
-        "typeMembers": []
+        }
       },
       "type": {
         "metadata": {
           "label": "Result Type",
           "description": "Type of the variable"
         },
-        "valueType": "TYPE",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "selected": true
+          }
+        ],
         "value": "github:ManifestConversions",
         "placeholder": "var",
         "optional": false,
@@ -97,7 +121,12 @@
           "label": "Result",
           "description": "Name of the result variable"
         },
-        "valueType": "IDENTIFIER",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
         "value": "githubManifestconversions",
         "optional": false,
         "editable": true,
@@ -109,7 +138,12 @@
           "label": "Check Error",
           "description": "Trigger error flow"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": true,
         "optional": false,
         "editable": true,

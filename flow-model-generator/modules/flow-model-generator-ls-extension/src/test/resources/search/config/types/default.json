@@ -9,6 +9,156 @@
   "categories": [
     {
       "metadata": {
+        "label": "Current Integration",
+        "description": "Components defined within the current integration",
+        "keywords": [
+          "Project",
+          "Local",
+          "Function",
+          "Types",
+          "Data Mapper"
+        ]
+      },
+      "items": [
+        {
+          "metadata": {
+            "label": "Location",
+            "description": ""
+          },
+          "codedata": {
+            "node": "RECORD",
+            "org": "nipunaf",
+            "module": "proj",
+            "packageName": "proj",
+            "symbol": "Location",
+            "version": "0.1.0"
+          },
+          "enabled": true
+        },
+        {
+          "metadata": {
+            "label": "Address",
+            "description": ""
+          },
+          "codedata": {
+            "node": "RECORD",
+            "org": "nipunaf",
+            "module": "proj",
+            "packageName": "proj",
+            "symbol": "Address",
+            "version": "0.1.0"
+          },
+          "enabled": true
+        },
+        {
+          "metadata": {
+            "label": "Employee",
+            "description": ""
+          },
+          "codedata": {
+            "node": "RECORD",
+            "org": "nipunaf",
+            "module": "proj",
+            "packageName": "proj",
+            "symbol": "Employee",
+            "version": "0.1.0"
+          },
+          "enabled": true
+        },
+        {
+          "metadata": {
+            "label": "Person",
+            "description": ""
+          },
+          "codedata": {
+            "node": "RECORD",
+            "org": "nipunaf",
+            "module": "proj",
+            "packageName": "proj",
+            "symbol": "Person",
+            "version": "0.1.0"
+          },
+          "enabled": true
+        },
+        {
+          "metadata": {
+            "label": "Admission",
+            "description": ""
+          },
+          "codedata": {
+            "node": "RECORD",
+            "org": "nipunaf",
+            "module": "proj",
+            "packageName": "proj",
+            "symbol": "Admission",
+            "version": "0.1.0"
+          },
+          "enabled": true
+        },
+        {
+          "metadata": {
+            "label": "Event",
+            "description": ""
+          },
+          "codedata": {
+            "node": "RECORD",
+            "org": "nipunaf",
+            "module": "proj",
+            "packageName": "proj",
+            "symbol": "Event",
+            "version": "0.1.0"
+          },
+          "enabled": true
+        },
+        {
+          "metadata": {
+            "label": "MyAcceptRec",
+            "description": ""
+          },
+          "codedata": {
+            "node": "RECORD",
+            "org": "nipunaf",
+            "module": "proj",
+            "packageName": "proj",
+            "symbol": "MyAcceptRec",
+            "version": "0.1.0"
+          },
+          "enabled": true
+        },
+        {
+          "metadata": {
+            "label": "Addresses",
+            "description": ""
+          },
+          "codedata": {
+            "node": "ARRAY",
+            "org": "nipunaf",
+            "module": "proj",
+            "packageName": "proj",
+            "symbol": "Addresses",
+            "version": "0.1.0"
+          },
+          "enabled": true
+        },
+        {
+          "metadata": {
+            "label": "JsonArray",
+            "description": ""
+          },
+          "codedata": {
+            "node": "ARRAY",
+            "org": "nipunaf",
+            "module": "proj",
+            "packageName": "proj",
+            "symbol": "JsonArray",
+            "version": "0.1.0"
+          },
+          "enabled": true
+        }
+      ]
+    },
+    {
+      "metadata": {
         "label": "Imported Types",
         "description": "Types imported from other integrations",
         "keywords": [
@@ -18,6 +168,255 @@
         ]
       },
       "items": [
+        {
+          "metadata": {
+            "label": "time",
+            "description": "",
+            "keywords": []
+          },
+          "items": [
+            {
+              "metadata": {
+                "label": "Error",
+                "description": "The generic module level error.",
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_time_2.8.0.png"
+              },
+              "codedata": {
+                "node": "TYPEDESC",
+                "org": "ballerina",
+                "module": "time",
+                "packageName": "time",
+                "symbol": "Error",
+                "version": "2.8.0"
+              },
+              "enabled": true
+            },
+            {
+              "metadata": {
+                "label": "FormatError",
+                "description": "The error to be returned when arguments are invalid.",
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_time_2.8.0.png"
+              },
+              "codedata": {
+                "node": "TYPEDESC",
+                "org": "ballerina",
+                "module": "time",
+                "packageName": "time",
+                "symbol": "FormatError",
+                "version": "2.8.0"
+              },
+              "enabled": true
+            },
+            {
+              "metadata": {
+                "label": "Seconds",
+                "description": "Holds the seconds as a decimal value.  ",
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_time_2.8.0.png"
+              },
+              "codedata": {
+                "node": "TYPEDESC",
+                "org": "ballerina",
+                "module": "time",
+                "packageName": "time",
+                "symbol": "Seconds",
+                "version": "2.8.0"
+              },
+              "enabled": true
+            },
+            {
+              "metadata": {
+                "label": "Utc",
+                "description": "Point on UTC time-scale.\nThis is represented by a tuple of length 2.\nThe tuple is an ordered type and so the values can be\ncompared using the Ballerina <, <=, >, >= operators.\nThe first member of the tuple is int representing an integral number of\nseconds from the epoch.\nEpoch is the traditional UNIX epoch of `1970-01-01T00:00:00Z`.\nThe second member of the tuple is a decimal giving the fraction of\na second.\nFor times before the epoch, n is negative and f is\nnon-negative. In other words, the UTC time represented\nis on or after the second specified by n.\nLeap seconds are handled as follows. The first member\nof the tuple ignores leap seconds: it assumes that every day\nhas 86400 seconds. The second member of the tuple is >= 0.\nand is < 1 except during positive leaps seconds in which it\nis >= 1 and < 2. So given a tuple [n,f] after the epoch,\nn / 86400 gives the day number, and (n % 86400) + f gives the\ntime in seconds since midnight UTC (for which the limit is\n86401 on day with a positive leap second).",
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_time_2.8.0.png"
+              },
+              "codedata": {
+                "node": "TYPEDESC",
+                "org": "ballerina",
+                "module": "time",
+                "packageName": "time",
+                "symbol": "Utc",
+                "version": "2.8.0"
+              },
+              "enabled": true
+            },
+            {
+              "metadata": {
+                "label": "DayOfWeek",
+                "description": "The day of week according to the US convention.",
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_time_2.8.0.png"
+              },
+              "codedata": {
+                "node": "TYPEDESC",
+                "org": "ballerina",
+                "module": "time",
+                "packageName": "time",
+                "symbol": "DayOfWeek",
+                "version": "2.8.0"
+              },
+              "enabled": true
+            },
+            {
+              "metadata": {
+                "label": "Date",
+                "description": "Date in proleptic Gregorian calendar.\n",
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_time_2.8.0.png"
+              },
+              "codedata": {
+                "node": "TYPEDESC",
+                "org": "ballerina",
+                "module": "time",
+                "packageName": "time",
+                "symbol": "Date",
+                "version": "2.8.0"
+              },
+              "enabled": true
+            },
+            {
+              "metadata": {
+                "label": "ZoneOffset",
+                "description": "This is closed so it is a subtype of Delta\nFields can negative\nif any of the three fields are > 0, then all must be >= 0\nif any of the three fields are < 0, then all must be <= 0\nSemantic is that durations should be left out",
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_time_2.8.0.png"
+              },
+              "codedata": {
+                "node": "TYPEDESC",
+                "org": "ballerina",
+                "module": "time",
+                "packageName": "time",
+                "symbol": "ZoneOffset",
+                "version": "2.8.0"
+              },
+              "enabled": true
+            },
+            {
+              "metadata": {
+                "label": "TimeOfDay",
+                "description": "Time within a day\nNot always duration from midnight.\n",
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_time_2.8.0.png"
+              },
+              "codedata": {
+                "node": "TYPEDESC",
+                "org": "ballerina",
+                "module": "time",
+                "packageName": "time",
+                "symbol": "TimeOfDay",
+                "version": "2.8.0"
+              },
+              "enabled": true
+            },
+            {
+              "metadata": {
+                "label": "ZERO_OR_ONE",
+                "description": "Represents the type that can be either zero or one.",
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_time_2.8.0.png"
+              },
+              "codedata": {
+                "node": "TYPEDESC",
+                "org": "ballerina",
+                "module": "time",
+                "packageName": "time",
+                "symbol": "ZERO_OR_ONE",
+                "version": "2.8.0"
+              },
+              "enabled": true
+            },
+            {
+              "metadata": {
+                "label": "Civil",
+                "description": "Time within some region relative to a\ntime scale stipulated by civilian authorities.",
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_time_2.8.0.png"
+              },
+              "codedata": {
+                "node": "TYPEDESC",
+                "org": "ballerina",
+                "module": "time",
+                "packageName": "time",
+                "symbol": "Civil",
+                "version": "2.8.0"
+              },
+              "enabled": true
+            },
+            {
+              "metadata": {
+                "label": "UtcZoneHandling",
+                "description": "Default zone value representation in different formats.",
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_time_2.8.0.png"
+              },
+              "codedata": {
+                "node": "TYPEDESC",
+                "org": "ballerina",
+                "module": "time",
+                "packageName": "time",
+                "symbol": "UtcZoneHandling",
+                "version": "2.8.0"
+              },
+              "enabled": true
+            },
+            {
+              "metadata": {
+                "label": "Duration",
+                "description": "Represents the time duration used to adjust a civil date-time value by a specified amount.\nThe duration can be added to or subtracted from the civil time.\nFields in the record can be negative, in which case the duration is subtracted.",
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_time_2.8.0.png"
+              },
+              "codedata": {
+                "node": "TYPEDESC",
+                "org": "ballerina",
+                "module": "time",
+                "packageName": "time",
+                "symbol": "Duration",
+                "version": "2.8.0"
+              },
+              "enabled": true
+            },
+            {
+              "metadata": {
+                "label": "HeaderZoneHandling",
+                "description": "Indicate how to handle both `zoneOffset` and `timeAbbrev`.",
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_time_2.8.0.png"
+              },
+              "codedata": {
+                "node": "TYPEDESC",
+                "org": "ballerina",
+                "module": "time",
+                "packageName": "time",
+                "symbol": "HeaderZoneHandling",
+                "version": "2.8.0"
+              },
+              "enabled": true
+            },
+            {
+              "metadata": {
+                "label": "Zone",
+                "description": "Abstract object representation to handle time zones.  ",
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_time_2.8.0.png"
+              },
+              "codedata": {
+                "node": "TYPEDESC",
+                "org": "ballerina",
+                "module": "time",
+                "packageName": "time",
+                "symbol": "Zone",
+                "version": "2.8.0"
+              },
+              "enabled": true
+            },
+            {
+              "metadata": {
+                "label": "TimeZone",
+                "description": "Localized time zone implementation to handle time zones.  ",
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_time_2.8.0.png"
+              },
+              "codedata": {
+                "node": "TYPEDESC",
+                "org": "ballerina",
+                "module": "time",
+                "packageName": "time",
+                "symbol": "TimeZone",
+                "version": "2.8.0"
+              },
+              "enabled": true
+            }
+          ]
+        },
         {
           "metadata": {
             "label": "io",
@@ -582,7 +981,7 @@
               "metadata": {
                 "label": "ExecutionStep",
                 "description": "Execution step information",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_ai_1.6.1.png"
+                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_ai_1.11.0.png"
               },
               "codedata": {
                 "node": "TYPEDESC",
@@ -590,247 +989,7 @@
                 "module": "ai",
                 "packageName": "ai",
                 "symbol": "ExecutionStep",
-                "version": "1.6.1"
-              },
-              "enabled": true
-            },
-            {
-              "metadata": {
-                "label": "Context",
-                "description": "Represents a contextual storage object used to pass additional data to tools during agent execution.",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_ai_1.6.1.png"
-              },
-              "codedata": {
-                "node": "TYPEDESC",
-                "org": "ballerina",
-                "module": "ai",
-                "packageName": "ai",
-                "symbol": "Context",
-                "version": "1.6.1"
-              },
-              "enabled": true
-            },
-            {
-              "metadata": {
-                "label": "Cloneable",
-                "description": "Represents a non-error type that can be cloned.",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_ai_1.6.1.png"
-              },
-              "codedata": {
-                "node": "TYPEDESC",
-                "org": "ballerina",
-                "module": "ai",
-                "packageName": "ai",
-                "symbol": "Cloneable",
-                "version": "1.6.1"
-              },
-              "enabled": true
-            },
-            {
-              "metadata": {
-                "label": "ContextEntry",
-                "description": "Represents the type of a value stored in the `Context` object.",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_ai_1.6.1.png"
-              },
-              "codedata": {
-                "node": "TYPEDESC",
-                "org": "ballerina",
-                "module": "ai",
-                "packageName": "ai",
-                "symbol": "ContextEntry",
-                "version": "1.6.1"
-              },
-              "enabled": true
-            },
-            {
-              "metadata": {
-                "label": "ExecutionResult",
-                "description": "Execution step information",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_ai_1.6.1.png"
-              },
-              "codedata": {
-                "node": "TYPEDESC",
-                "org": "ballerina",
-                "module": "ai",
-                "packageName": "ai",
-                "symbol": "ExecutionResult",
-                "version": "1.6.1"
-              },
-              "enabled": true
-            },
-            {
-              "metadata": {
-                "label": "LlmToolResponse",
-                "description": "Tool selected by LLM to be performed by the agent",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_ai_1.6.1.png"
-              },
-              "codedata": {
-                "node": "TYPEDESC",
-                "org": "ballerina",
-                "module": "ai",
-                "packageName": "ai",
-                "symbol": "LlmToolResponse",
-                "version": "1.6.1"
-              },
-              "enabled": true
-            },
-            {
-              "metadata": {
-                "label": "ExecutionError",
-                "description": "",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_ai_1.6.1.png"
-              },
-              "codedata": {
-                "node": "TYPEDESC",
-                "org": "ballerina",
-                "module": "ai",
-                "packageName": "ai",
-                "symbol": "ExecutionError",
-                "version": "1.6.1"
-              },
-              "enabled": true
-            },
-            {
-              "metadata": {
-                "label": "Error",
-                "description": "Defines the common error type for the module.",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_ai_1.6.1.png"
-              },
-              "codedata": {
-                "node": "TYPEDESC",
-                "org": "ballerina",
-                "module": "ai",
-                "packageName": "ai",
-                "symbol": "Error",
-                "version": "1.6.1"
-              },
-              "enabled": true
-            },
-            {
-              "metadata": {
-                "label": "LlmError",
-                "description": "Any error occurred during LLM generation is classified under this error type.",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_ai_1.6.1.png"
-              },
-              "codedata": {
-                "node": "TYPEDESC",
-                "org": "ballerina",
-                "module": "ai",
-                "packageName": "ai",
-                "symbol": "LlmError",
-                "version": "1.6.1"
-              },
-              "enabled": true
-            },
-            {
-              "metadata": {
-                "label": "LlmInvalidGenerationError",
-                "description": "Errors occurred due to invalid LLM generation.",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_ai_1.6.1.png"
-              },
-              "codedata": {
-                "node": "TYPEDESC",
-                "org": "ballerina",
-                "module": "ai",
-                "packageName": "ai",
-                "symbol": "LlmInvalidGenerationError",
-                "version": "1.6.1"
-              },
-              "enabled": true
-            },
-            {
-              "metadata": {
-                "label": "ToolExecutionError",
-                "description": "Errors during tool execution.",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_ai_1.6.1.png"
-              },
-              "codedata": {
-                "node": "TYPEDESC",
-                "org": "ballerina",
-                "module": "ai",
-                "packageName": "ai",
-                "symbol": "ToolExecutionError",
-                "version": "1.6.1"
-              },
-              "enabled": true
-            },
-            {
-              "metadata": {
-                "label": "MemoryError",
-                "description": "Represents errors that occur during memory-related operations.  ",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_ai_1.6.1.png"
-              },
-              "codedata": {
-                "node": "TYPEDESC",
-                "org": "ballerina",
-                "module": "ai",
-                "packageName": "ai",
-                "symbol": "MemoryError",
-                "version": "1.6.1"
-              },
-              "enabled": true
-            },
-            {
-              "metadata": {
-                "label": "ToolOutput",
-                "description": "Output from executing an action",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_ai_1.6.1.png"
-              },
-              "codedata": {
-                "node": "TYPEDESC",
-                "org": "ballerina",
-                "module": "ai",
-                "packageName": "ai",
-                "symbol": "ToolOutput",
-                "version": "1.6.1"
-              },
-              "enabled": true
-            },
-            {
-              "metadata": {
-                "label": "ModelProvider",
-                "description": "Represents an extendable client for interacting with an AI model.",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_ai_1.6.1.png"
-              },
-              "codedata": {
-                "node": "TYPEDESC",
-                "org": "ballerina",
-                "module": "ai",
-                "packageName": "ai",
-                "symbol": "ModelProvider",
-                "version": "1.6.1"
-              },
-              "enabled": true
-            },
-            {
-              "metadata": {
-                "label": "ToolStore",
-                "description": "",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_ai_1.6.1.png"
-              },
-              "codedata": {
-                "node": "TYPEDESC",
-                "org": "ballerina",
-                "module": "ai",
-                "packageName": "ai",
-                "symbol": "ToolStore",
-                "version": "1.6.1"
-              },
-              "enabled": true
-            },
-            {
-              "metadata": {
-                "label": "Tool",
-                "description": "This is the tool used by LLMs during reasoning.\nThis tool is same as the Tool record, but it has a clear separation between the variables that should be generated with the help of the LLMs and the constants that are defined by the users. ",
-                "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_ai_1.6.1.png"
-              },
-              "codedata": {
-                "node": "TYPEDESC",
-                "org": "ballerina",
-                "module": "ai",
-                "packageName": "ai",
-                "symbol": "Tool",
-                "version": "1.6.1"
+                "version": "1.11.0"
               },
               "enabled": true
             }

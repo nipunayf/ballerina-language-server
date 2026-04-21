@@ -42,8 +42,10 @@ public class FunctionData {
     private final boolean returnError;
     private final boolean inferredReturnType;
     private final String importStatements;
+    private boolean agentToolCompatible;
     private Map<String, ParameterData> parameters;
     private String packageId;
+    private ReturnTypeData returnTypeData;
 
     public FunctionData(int functionId, String name, String description, String returnType,
                         String packageName, String moduleName, String org, String version, String resourcePath,
@@ -69,6 +71,14 @@ public class FunctionData {
 
     public void setPackageId(String attachmentId) {
         this.packageId = attachmentId;
+    }
+
+    public void setReturnTypeData(ReturnTypeData returnTypeData) {
+        this.returnTypeData = returnTypeData;
+    }
+
+    public void setAgentToolCompatible(boolean agentToolCompatible) {
+        this.agentToolCompatible = agentToolCompatible;
     }
 
     // Getters
@@ -132,12 +142,20 @@ public class FunctionData {
         return packageId;
     }
 
+    public ReturnTypeData returnTypeData() {
+        return returnTypeData;
+    }
+
+    public boolean agentToolCompatible() {
+        return agentToolCompatible;
+    }
+    
     public enum Kind {
         FUNCTION,
         CONNECTOR,
         MODEL_PROVIDER,
         MEMORY,
-        MEMORY_STORE,
+        SHORT_TERM_MEMORY_STORE,
         EMBEDDING_PROVIDER,
         VECTOR_STORE,
         KNOWLEDGE_BASE,
@@ -147,12 +165,14 @@ public class FunctionData {
         REMOTE,
         RESOURCE,
         LISTENER_INIT,
-        CLASS_INIT;
+        CLASS_INIT,
+        ACTIVITY,
+        WAIT_DATA;
 
         private static final Set<Kind> AI_CLASS_KINDS = EnumSet.of(
                 FunctionData.Kind.MODEL_PROVIDER,
                 FunctionData.Kind.MEMORY,
-                FunctionData.Kind.MEMORY_STORE,
+                FunctionData.Kind.SHORT_TERM_MEMORY_STORE,
                 FunctionData.Kind.EMBEDDING_PROVIDER,
                 FunctionData.Kind.VECTOR_STORE,
                 FunctionData.Kind.DATA_LOADER,
@@ -167,6 +187,10 @@ public class FunctionData {
 
         public static boolean isConnector(Kind kind) {
             return kind == CONNECTOR;
+        }
+
+        public static boolean isListener(Kind kind) {
+            return kind == LISTENER_INIT;
         }
     }
 }

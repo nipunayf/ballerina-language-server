@@ -37,8 +37,13 @@
           "label": "E",
           "description": "the error value"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "error:error<error:Detail>",
+        "types": [
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "error:error<error:Detail>",
+            "selected": false
+          }
+        ],
         "placeholder": "error(\"\")",
         "optional": false,
         "editable": true,
@@ -47,29 +52,25 @@
         "codedata": {
           "kind": "REQUIRED",
           "originalName": "e"
-        },
-        "typeMembers": [
-          {
-            "type": "error<error",
-            "packageInfo": "ballerina:lang.error:0.0.0",
-            "packageName": "lang.error",
-            "kind": "ERROR_TYPE",
-            "selected": false
-          }
-        ]
+        }
       },
       "type": {
         "metadata": {
           "label": "Result Type",
           "description": "Type of the variable"
         },
-        "valueType": "TYPE",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "selected": true
+          }
+        ],
         "value": "error:Detail & readonly",
         "placeholder": "var",
         "optional": false,
         "editable": false,
         "advanced": false,
-        "hidden": false,
+        "hidden": true,
         "codedata": {}
       },
       "variable": {
@@ -77,8 +78,13 @@
           "label": "Result",
           "description": "Name of the result variable"
         },
-        "valueType": "IDENTIFIER",
-        "value": "errorDetailReadonly",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
+        "value": "errorDetailtypeReadonly",
         "optional": false,
         "editable": true,
         "advanced": false,

@@ -18,6 +18,7 @@
 
 package io.ballerina.flowmodelgenerator.core.model.node;
 
+import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.flowmodelgenerator.core.model.Codedata;
 import io.ballerina.flowmodelgenerator.core.model.FlowNode;
@@ -25,6 +26,7 @@ import io.ballerina.flowmodelgenerator.core.model.NodeKind;
 import io.ballerina.flowmodelgenerator.core.model.Property;
 import io.ballerina.flowmodelgenerator.core.model.PropertyCodedata;
 import io.ballerina.flowmodelgenerator.core.model.SourceBuilder;
+import io.ballerina.flowmodelgenerator.core.utils.FileSystemUtils;
 import io.ballerina.flowmodelgenerator.core.utils.FlowNodeUtil;
 import io.ballerina.flowmodelgenerator.core.utils.ParamUtils;
 import io.ballerina.modelgenerator.commons.CommonUtils;
@@ -33,6 +35,7 @@ import io.ballerina.modelgenerator.commons.FunctionDataBuilder;
 import io.ballerina.modelgenerator.commons.ModuleInfo;
 import io.ballerina.modelgenerator.commons.PackageUtil;
 import io.ballerina.modelgenerator.commons.ParameterData;
+import io.ballerina.projects.Module;
 import org.eclipse.lsp4j.TextEdit;
 
 import java.nio.file.Path;
@@ -72,15 +75,30 @@ public class ResourceActionCallBuilder extends CallBuilder {
                 .parentSymbolType(codedata.object())
                 .resourcePath(codedata.resourcePath())
                 .project(PackageUtil.loadProject(context.workspaceManager(), context.filePath()))
-                .functionResultKind(FunctionData.Kind.RESOURCE);
+                .functionResultKind(FunctionData.Kind.RESOURCE)
+                .workspaceManager(context.workspaceManager())
+                .filePath(context.filePath());
 
         FunctionData functionData = functionDataBuilder.build();
 
+        String defaultIcon = CommonUtils.generateIcon(functionData.org(), functionData.packageName(),
+                functionData.version());
+        String icon;
+        try {
+            SemanticModel semanticModel = FileSystemUtils.getSemanticModel(context.workspaceManager(),
+                    context.filePath());
+            icon = CommonUtils.getClientClassSymbol(semanticModel, functionData, codedata.object())
+                    .filter(cs -> CommonUtils.isPersistClient(cs, semanticModel))
+                    .flatMap(CommonUtils::getPersistDatabaseIcon)
+                    .orElse(defaultIcon);
+        } catch (RuntimeException ignore) {
+            // Fallback to defaultIcon if semantic model lookup or icon resolution fails
+            icon = defaultIcon;
+        }
         metadata()
                 .label(functionData.name())
                 .description(functionData.description())
-                .icon(CommonUtils.generateIcon(functionData.org(), functionData.packageName(),
-                        functionData.version()));
+                .icon(icon);
         codedata()
                 .org(functionData.org())
                 .packageName(functionData.packageName())
@@ -88,12 +106,17 @@ public class ResourceActionCallBuilder extends CallBuilder {
                 .object(codedata.object())
                 .symbol(functionData.name());
 
+        if (functionData.inferredReturnType()) {
+            codedata().inferredReturnType(functionData.returnType());
+        }
+
         setExpressionProperty(codedata);
 
         String resourcePath = functionData.resourcePath();
         properties().resourcePath(resourcePath, resourcePath.equals(ParamUtils.REST_RESOURCE_PATH));
 
-        setParameterProperties(functionData);
+        Module module = context.workspaceManager().module(context.filePath()).orElse(null);
+        setParameterProperties(functionData, module);
 
         String returnTypeName = functionData.returnType();
         if (CommonUtils.hasReturn(returnTypeName)) {
@@ -155,6 +178,10 @@ public class ResourceActionCallBuilder extends CallBuilder {
             }
         }
 
+        // Removing targetType from ignored keys to include it in function parameters
+        Set<String> ignoredKeysOtherThanTargetType = new HashSet<>(ignoredKeys);
+        ignoredKeysOtherThanTargetType.remove(TARGET_TYPE_KEY);
+
         return sourceBuilder.token()
                 .name(connection.get().toSourceCode())
                 .keyword(SyntaxKind.RIGHT_ARROW_TOKEN)
@@ -162,7 +189,7 @@ public class ResourceActionCallBuilder extends CallBuilder {
                 .keyword(SyntaxKind.DOT_TOKEN)
                 .name(sourceBuilder.flowNode.codedata().symbol())
                 .stepOut()
-                .functionParameters(flowNode, ignoredKeys)
+                .functionParameters(flowNode, ignoredKeysOtherThanTargetType)
                 .textEdit()
                 .acceptImportWithVariableType()
                 .build();

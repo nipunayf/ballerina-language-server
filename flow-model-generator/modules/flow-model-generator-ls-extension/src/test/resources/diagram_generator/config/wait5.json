@@ -88,7 +88,12 @@
                   "label": "Worker Name",
                   "description": "Name of the worker"
                 },
-                "valueType": "IDENTIFIER",
+                "types": [
+                  {
+                    "fieldType": "IDENTIFIER",
+                    "selected": true
+                  }
+                ],
                 "value": "WA",
                 "optional": false,
                 "editable": false,
@@ -113,7 +118,12 @@
                   "label": "Return Type",
                   "description": "Type of the return value"
                 },
-                "valueType": "TYPE",
+                "types": [
+                  {
+                    "fieldType": "TYPE",
+                    "selected": true
+                  }
+                ],
                 "value": "string|error",
                 "optional": true,
                 "editable": true,
@@ -150,9 +160,14 @@
                       "label": "Expression",
                       "description": "Return value"
                     },
-                    "valueType": "ACTION_OR_EXPRESSION",
+                    "types": [
+                      {
+                        "fieldType": "ACTION_OR_EXPRESSION",
+                        "selected": true
+                      }
+                    ],
                     "value": "mockFetch(\"http://a.com\", 1)",
-                    "optional": false,
+                    "optional": true,
                     "editable": true,
                     "advanced": false,
                     "hidden": false
@@ -187,7 +202,12 @@
                   "label": "Worker Name",
                   "description": "Name of the worker"
                 },
-                "valueType": "IDENTIFIER",
+                "types": [
+                  {
+                    "fieldType": "IDENTIFIER",
+                    "selected": true
+                  }
+                ],
                 "value": "WB",
                 "optional": false,
                 "editable": false,
@@ -212,7 +232,12 @@
                   "label": "Return Type",
                   "description": "Type of the return value"
                 },
-                "valueType": "TYPE",
+                "types": [
+                  {
+                    "fieldType": "TYPE",
+                    "selected": true
+                  }
+                ],
                 "value": "string|error",
                 "optional": true,
                 "editable": true,
@@ -249,9 +274,14 @@
                       "label": "Expression",
                       "description": "Return value"
                     },
-                    "valueType": "ACTION_OR_EXPRESSION",
+                    "types": [
+                      {
+                        "fieldType": "ACTION_OR_EXPRESSION",
+                        "selected": true
+                      }
+                    ],
                     "value": "mockFetch(\"http://b.com\", 2)",
-                    "optional": false,
+                    "optional": true,
                     "editable": true,
                     "advanced": false,
                     "hidden": false
@@ -286,7 +316,12 @@
                   "label": "Worker Name",
                   "description": "Name of the worker"
                 },
-                "valueType": "IDENTIFIER",
+                "types": [
+                  {
+                    "fieldType": "IDENTIFIER",
+                    "selected": true
+                  }
+                ],
                 "value": "WC",
                 "optional": false,
                 "editable": false,
@@ -311,7 +346,12 @@
                   "label": "Return Type",
                   "description": "Type of the return value"
                 },
-                "valueType": "TYPE",
+                "types": [
+                  {
+                    "fieldType": "TYPE",
+                    "selected": true
+                  }
+                ],
                 "value": "string|error",
                 "optional": true,
                 "editable": true,
@@ -348,9 +388,14 @@
                       "label": "Expression",
                       "description": "Return value"
                     },
-                    "valueType": "ACTION_OR_EXPRESSION",
+                    "types": [
+                      {
+                        "fieldType": "ACTION_OR_EXPRESSION",
+                        "selected": true
+                      }
+                    ],
                     "value": "mockFetch(\"http://error.com\", 3)",
-                    "optional": false,
+                    "optional": true,
                     "editable": true,
                     "advanced": false,
                     "hidden": false
@@ -386,140 +431,45 @@
         },
         "returning": false,
         "properties": {
-          "waitAll": {
-            "metadata": {
-              "label": "Wait All",
-              "description": "Wait for all tasks to complete"
-            },
-            "valueType": "FLAG",
-            "value": true,
-            "optional": false,
-            "editable": true,
-            "advanced": false,
-            "hidden": false
-          },
           "futures": {
-            "metadata": {
-              "label": "Futures",
-              "description": "The futures to wait for"
-            },
-            "valueType": "REPEATABLE_PROPERTY",
             "value": {
-              "future1": {
-                "metadata": {
-                  "label": "Future",
-                  "description": "The worker/async function to wait for"
-                },
-                "valueType": "FIXED_PROPERTY",
-                "value": {
-                  "variable": {
-                    "metadata": {
-                      "label": "Variable Name",
-                      "description": "Name of the variable"
-                    },
-                    "valueType": "IDENTIFIER",
-                    "value": "",
-                    "optional": false,
-                    "editable": true,
-                    "advanced": false,
-                    "hidden": false,
-                    "codedata": {
-                      "dependentProperty": "waitAll"
-                    }
-                  },
-                  "expression": {
-                    "metadata": {
-                      "label": "Expression",
-                      "description": "Expression"
-                    },
-                    "valueType": "EXPRESSION",
-                    "value": "WA",
-                    "optional": false,
-                    "editable": true,
-                    "advanced": false,
-                    "hidden": false
+              "WA": {
+                "types": [
+                  {
+                    "fieldType": "EXPRESSION",
+                    "ballerinaType": "future<any|error>",
+                    "selected": true
                   }
-                },
+                ],
+                "value": "WA",
                 "optional": false,
                 "editable": false,
                 "advanced": false,
                 "hidden": false
               },
-              "future2": {
-                "metadata": {
-                  "label": "Future",
-                  "description": "The worker/async function to wait for"
-                },
-                "valueType": "FIXED_PROPERTY",
-                "value": {
-                  "variable": {
-                    "metadata": {
-                      "label": "Variable Name",
-                      "description": "Name of the variable"
-                    },
-                    "valueType": "IDENTIFIER",
-                    "value": "",
-                    "optional": false,
-                    "editable": true,
-                    "advanced": false,
-                    "hidden": false,
-                    "codedata": {
-                      "dependentProperty": "waitAll"
-                    }
-                  },
-                  "expression": {
-                    "metadata": {
-                      "label": "Expression",
-                      "description": "Expression"
-                    },
-                    "valueType": "EXPRESSION",
-                    "value": "WB",
-                    "optional": false,
-                    "editable": true,
-                    "advanced": false,
-                    "hidden": false
+              "WB": {
+                "types": [
+                  {
+                    "fieldType": "EXPRESSION",
+                    "ballerinaType": "future<any|error>",
+                    "selected": true
                   }
-                },
+                ],
+                "value": "WB",
                 "optional": false,
                 "editable": false,
                 "advanced": false,
                 "hidden": false
               },
-              "future3": {
-                "metadata": {
-                  "label": "Future",
-                  "description": "The worker/async function to wait for"
-                },
-                "valueType": "FIXED_PROPERTY",
-                "value": {
-                  "variable": {
-                    "metadata": {
-                      "label": "Variable Name",
-                      "description": "Name of the variable"
-                    },
-                    "valueType": "IDENTIFIER",
-                    "value": "",
-                    "optional": false,
-                    "editable": true,
-                    "advanced": false,
-                    "hidden": false,
-                    "codedata": {
-                      "dependentProperty": "waitAll"
-                    }
-                  },
-                  "expression": {
-                    "metadata": {
-                      "label": "Expression",
-                      "description": "Expression"
-                    },
-                    "valueType": "EXPRESSION",
-                    "value": "WC",
-                    "optional": false,
-                    "editable": true,
-                    "advanced": false,
-                    "hidden": false
+              "WC": {
+                "types": [
+                  {
+                    "fieldType": "EXPRESSION",
+                    "ballerinaType": "future<any|error>",
+                    "selected": true
                   }
-                },
+                ],
+                "value": "WC",
                 "optional": false,
                 "editable": false,
                 "advanced": false,
@@ -536,7 +486,12 @@
               "label": "Variable Name",
               "description": "Name of the variable"
             },
-            "valueType": "IDENTIFIER",
+            "types": [
+              {
+                "fieldType": "IDENTIFIER",
+                "selected": true
+              }
+            ],
             "value": "mapResult",
             "optional": false,
             "editable": false,
@@ -558,16 +513,21 @@
           },
           "type": {
             "metadata": {
-              "label": "Variable Type",
+              "label": "Type of the variable",
               "description": "Type of the variable"
             },
-            "valueType": "TYPE",
+            "types": [
+              {
+                "fieldType": "TYPE",
+                "selected": true
+              }
+            ],
             "value": "map<string|error>",
             "placeholder": "var",
             "optional": false,
             "editable": true,
             "advanced": false,
-            "hidden": false,
+            "hidden": true,
             "codedata": {}
           }
         },
@@ -601,9 +561,14 @@
               "label": "Expression",
               "description": "Return value"
             },
-            "valueType": "ACTION_OR_EXPRESSION",
+            "types": [
+              {
+                "fieldType": "ACTION_OR_EXPRESSION",
+                "selected": true
+              }
+            ],
             "value": "mapResult",
-            "optional": false,
+            "optional": true,
             "editable": true,
             "advanced": false,
             "hidden": false

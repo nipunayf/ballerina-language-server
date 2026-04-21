@@ -66,6 +66,8 @@ public class Constants {
     public static final String ASB = "asb";
     public static final String SF = "salesforce";
     public static final String TRIGGER_GITHUB = "trigger.github";
+    public static final String MSSQL = "mssql";
+    public static final String POSTGRESQL = "postgresql";
 
     public static final String FTP = "ftp";
     public static final String FILE = "file";
@@ -88,6 +90,7 @@ public class Constants {
 
     public static final String PARAMETER = "parameter";
     public static final String SERVICE = "service";
+    public static final String SERVICE_TYPE = "Service";
     public static final String RESOURCE = "resource";
     public static final String REMOTE = "remote";
     public static final String BASE_PATH = "basePath";
@@ -100,18 +103,6 @@ public class Constants {
 
     // different input boxes in the UI
     public static final String VALUE_TYPE_CONDITIONAL_FIELDS = "CONDITIONAL_FIELDS";
-    public static final String VALUE_TYPE_FORM = "FORM";
-    public static final String VALUE_TYPE_CHOICE = "CHOICE";
-    public static final String VALUE_TYPE_HEADER_SET = "HEADER_SET";
-    public static final String VALUE_TYPE_SINGLE_SELECT = "SINGLE_SELECT";
-    public static final String VALUE_TYPE_FLAG = "FLAG";
-    public static final String VALUE_TYPE_MULTIPLE_SELECT = "MULTIPLE_SELECT";
-    public static final String VALUE_TYPE_EXPRESSION = "EXPRESSION";
-    public static final String VALUE_TYPE_IDENTIFIER = "IDENTIFIER";
-    public static final String VALUE_TYPE_TYPE = "TYPE";
-    public static final String VALUE_TYPE_STRING = "STRING";
-    public static final String VALUE_TYPE_SINGLE_SELECT_LISTENER = "SINGLE_SELECT_LISTENER";
-    public static final String VALUE_TYPE_MULTIPLE_SELECT_LISTENER = "MULTIPLE_SELECT_LISTENER";
 
     public static final String DB_KIND_OPTIONAL = "OPTIONAL";
 
@@ -123,6 +114,8 @@ public class Constants {
     public static final String ARG_TYPE_LISTENER_PARAM_INCLUDED_FIELD = "LISTENER_PARAM_INCLUDED_FIELD";
     public static final String ARG_TYPE_LISTENER_PARAM_INCLUDED_DEFAULTABLE_FIELD =
             "LISTENER_PARAM_INCLUDED_DEFAULTABLE_FIELD";
+    // Use this argument type with listener configuration parameters which can't be provided as included-fields
+    public static final String ARG_TYPE_LISTENER_PARAM_CONFIG_FIELD = "LISTENER_PARAM_CONFIG_FIELD";
     public static final String ARG_TYPE_SERVICE_BASE_PATH = "SERVICE_BASE_PATH";
     public static final String ARG_TYPE_SERVICE_TYPE_DESCRIPTOR = "SERVICE_TYPE_DESCRIPTOR";
 
@@ -135,12 +128,14 @@ public class Constants {
     public static final String TYPE_HTTP_SERVICE_CONFIG = "http:ServiceConfig";
 
     public static final String PROP_KEY_VARIABLE_NAME = "variableNameKey";
+    public static final String PROP_KEY_LISTENER_TYPE = "listenerType";
     public static final String PROP_KEY_LISTENER = "listener";
     public static final String PROP_KEY_SERVICE_TYPE = "serviceType";
     public static final String PROP_KEY_BASE_PATH = "basePath";
     public static final String PROP_KEY_STRING_LITERAL = "stringLiteral";
     public static final String PROP_READONLY_METADATA_KEY = "readOnlyMetadata";
     public static final String PROP_KEY_DEFAULT_LISTENER = "defaultListener";
+    public static final String DEFAULT_LISTENER_TYPE = "Listener";
 
     // protocol listeners
     public static final String HTTP_DEFAULT_LISTENER_EXPR = "http:getDefaultListener()";
@@ -211,9 +206,12 @@ public class Constants {
             "The description of the resource");
     public static final MetaData SERVICE_DOCUMENTATION_METADATA = new MetaData("Description", "The " +
             "description of the class");
+    public static final MetaData GRAPHQL_OBJECT_DOCUMENTATION_METADATA = new MetaData("Description",
+            "The description of the object");
 
     // organization names
     public static final String BALLERINA = "ballerina";
+    public static final String BALLERINAX = "ballerinax";
 
     // types
     public static final String USER_DEFINED_TYPE = "User-Defined";

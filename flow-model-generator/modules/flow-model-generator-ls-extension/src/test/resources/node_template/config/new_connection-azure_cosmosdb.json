@@ -17,7 +17,7 @@
   "output": {
     "id": "31",
     "metadata": {
-      "label": "New Connection",
+      "label": "Azure CosmosDB DataPlane",
       "description": "This is the Azure Cosmos DB SQL API, a fast NoSQL database servic offers rich querying over diverse data, helps \ndeliver configurable and reliable performance, is globally distributed, and enables rapid development. ",
       "icon": "https://bcentral-packageicons.azureedge.net/images/ballerinax_azure_cosmosdb_4.2.0.png"
     },
@@ -37,8 +37,27 @@
         "metadata": {
           "label": "Config"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "azure_cosmosdb:ConnectionConfig",
+        "types": [
+          {
+            "fieldType": "RECORD_MAP_EXPRESSION",
+            "ballerinaType": "azure_cosmosdb:ConnectionConfig",
+            "typeMembers": [
+              {
+                "type": "ConnectionConfig",
+                "packageInfo": "ballerinax:azure_cosmosdb:4.2.0",
+                "packageName": "azure_cosmosdb",
+                "kind": "RECORD_TYPE",
+                "selected": false
+              }
+            ],
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "azure_cosmosdb:ConnectionConfig",
+            "selected": false
+          }
+        ],
         "placeholder": "{baseUrl: \"\", primaryKeyOrResourceToken: \"\"}",
         "optional": false,
         "editable": true,
@@ -47,23 +66,19 @@
         "codedata": {
           "kind": "REQUIRED",
           "originalName": "config"
-        },
-        "typeMembers": [
-          {
-            "type": "ConnectionConfig",
-            "packageInfo": "ballerinax:azure_cosmosdb:4.2.0",
-            "packageName": "azure_cosmosdb",
-            "kind": "RECORD_TYPE",
-            "selected": false
-          }
-        ]
+        }
       },
       "type": {
         "metadata": {
           "label": "Result Type",
           "description": "Type of the variable"
         },
-        "valueType": "TYPE",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "selected": true
+          }
+        ],
         "value": "azure_cosmosdb:DataPlaneClient",
         "placeholder": "var",
         "optional": false,
@@ -80,7 +95,12 @@
           "label": "Connection Name",
           "description": "Name of the connection"
         },
-        "valueType": "IDENTIFIER",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
         "value": "azureCosmosdbDataplaneclient",
         "optional": false,
         "editable": true,
@@ -92,7 +112,12 @@
           "label": "Connection Scope",
           "description": "Scope of the connection, Global or Local"
         },
-        "valueType": "ENUM",
+        "types": [
+          {
+            "fieldType": "ENUM",
+            "selected": true
+          }
+        ],
         "value": "Global",
         "optional": false,
         "editable": true,
@@ -104,7 +129,12 @@
           "label": "Check Error",
           "description": "Terminate on error"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": true,
         "optional": false,
         "editable": false,

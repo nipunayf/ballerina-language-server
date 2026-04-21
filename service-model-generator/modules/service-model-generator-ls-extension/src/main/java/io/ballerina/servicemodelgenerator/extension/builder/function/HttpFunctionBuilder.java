@@ -69,7 +69,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 import static io.ballerina.servicemodelgenerator.extension.util.Constants.BALLERINA;
 import static io.ballerina.servicemodelgenerator.extension.util.Constants.HTTP;
@@ -90,7 +89,6 @@ import static io.ballerina.servicemodelgenerator.extension.util.Utils.addParamAn
 import static io.ballerina.servicemodelgenerator.extension.util.Utils.getImportStmt;
 import static io.ballerina.servicemodelgenerator.extension.util.Utils.getParamAnnotations;
 import static io.ballerina.servicemodelgenerator.extension.util.Utils.getPath;
-import static io.ballerina.servicemodelgenerator.extension.util.Utils.getVisibleSymbols;
 import static io.ballerina.servicemodelgenerator.extension.util.Utils.importExists;
 import static io.ballerina.servicemodelgenerator.extension.util.Utils.updateAnnotationAttachmentProperty;
 
@@ -261,9 +259,8 @@ public class HttpFunctionBuilder extends AbstractFunctionBuilder {
         Map<String, String> importsForTypesBal = new HashMap<>();
         List<String> newTypeDefinitions = new ArrayList<>();
 
-        String functionNode = NEW_LINE_WITH_TAB + generateHttpResourceDefinition(context.function(),
-                context.semanticModel(), context.document(), newTypeDefinitions, importsForMainBal, importsForTypesBal)
-                .replace(NEW_LINE, NEW_LINE_WITH_TAB) + NEW_LINE;
+        String functionNode = NEW_LINE_WITH_TAB + generateHttpResourceDefinition(context.function(), newTypeDefinitions,
+                importsForMainBal, importsForTypesBal).replace(NEW_LINE, NEW_LINE_WITH_TAB) + NEW_LINE;
 
         List<TextEdit> mainBalTextEdits = new ArrayList<>();
         textEditsMap.put(context.filePath(), mainBalTextEdits);
@@ -324,7 +321,7 @@ public class HttpFunctionBuilder extends AbstractFunctionBuilder {
 
         if (!importStmts.isEmpty()) {
             String importsStmts = String.join(NEW_LINE, importStmts);
-            textEdits.add(new TextEdit(Utils.toRange(rootNode.lineRange().startLine()), importsStmts));
+            textEdits.addFirst(new TextEdit(Utils.toRange(rootNode.lineRange().startLine()), importsStmts));
         }
     }
 
@@ -381,7 +378,7 @@ public class HttpFunctionBuilder extends AbstractFunctionBuilder {
         });
         if (!typesBalImports.isEmpty()) {
             String importsStmts = String.join(NEW_LINE, typesBalImports);
-            typesBalTextEdits.add(new TextEdit(Utils.toRange(LinePosition.from(0, 0)), importsStmts));
+            typesBalTextEdits.addFirst(new TextEdit(Utils.toRange(LinePosition.from(0, 0)), importsStmts));
         }
     }
 
@@ -414,9 +411,8 @@ public class HttpFunctionBuilder extends AbstractFunctionBuilder {
                                          Map<String, String> importsForMainBal, Map<String, String> importsForTypesBal,
                                          FunctionDefinitionNode functionDefinitionNode,
                                          List<TextEdit> mainBalTextEdits) {
-        Set<String> visibleSymbols = getVisibleSymbols(context.semanticModel(), context.document());
         String functionSignature = HttpUtil.generateHttpResourceSignature(context.function(), newTypeDefinitions,
-                importsForMainBal, importsForTypesBal, visibleSymbols, false);
+                importsForMainBal, importsForTypesBal, false);
         LineRange signatureRange = functionDefinitionNode.functionSignature().lineRange();
         mainBalTextEdits.add(new TextEdit(Utils.toRange(signatureRange), functionSignature));
     }

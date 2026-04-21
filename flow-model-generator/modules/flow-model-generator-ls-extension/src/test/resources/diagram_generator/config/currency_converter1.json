@@ -75,7 +75,12 @@
               "label": "Comment",
               "description": "Comment to describe the flow"
             },
-            "valueType": "STRING",
+            "types": [
+              {
+                "fieldType": "TEXT",
+                "selected": true
+              }
+            ],
             "value": "error handler",
             "optional": false,
             "editable": true,
@@ -156,7 +161,12 @@
                       "label": "Comment",
                       "description": "Comment to describe the flow"
                     },
-                    "valueType": "STRING",
+                    "types": [
+                      {
+                        "fieldType": "TEXT",
+                        "selected": true
+                      }
+                    ],
                     "value": "new data",
                     "optional": false,
                     "editable": true,
@@ -170,7 +180,7 @@
                 "id": "51006",
                 "metadata": {
                   "label": "Declare Variable",
-                  "description": "Assign a value to a variable"
+                  "description": "Create a new variable"
                 },
                 "codedata": {
                   "node": "VARIABLE",
@@ -194,7 +204,12 @@
                       "label": "Expression",
                       "description": "Initialize with value"
                     },
-                    "valueType": "ACTION_OR_EXPRESSION",
+                    "types": [
+                      {
+                        "fieldType": "ACTION_OR_EXPRESSION",
+                        "selected": true
+                      }
+                    ],
                     "value": "'from + \"-\" + to",
                     "optional": true,
                     "editable": true,
@@ -206,7 +221,12 @@
                       "label": "Name",
                       "description": "Name of the variable"
                     },
-                    "valueType": "IDENTIFIER",
+                    "types": [
+                      {
+                        "fieldType": "IDENTIFIER",
+                        "selected": true
+                      }
+                    ],
                     "value": "key",
                     "optional": false,
                     "editable": false,
@@ -231,7 +251,12 @@
                       "label": "Type",
                       "description": "Type of the variable"
                     },
-                    "valueType": "TYPE",
+                    "types": [
+                      {
+                        "fieldType": "TYPE",
+                        "selected": true
+                      }
+                    ],
                     "value": "string",
                     "placeholder": "var",
                     "optional": false,
@@ -271,7 +296,12 @@
                       "label": "Comment",
                       "description": "Comment to describe the flow"
                     },
-                    "valueType": "STRING",
+                    "types": [
+                      {
+                        "fieldType": "TEXT",
+                        "selected": true
+                      }
+                    ],
                     "value": "action call - redis get call",
                     "optional": false,
                     "editable": true,
@@ -314,9 +344,17 @@
                   "connection": {
                     "metadata": {
                       "label": "Connection",
-                      "description": "Connection to use"
+                      "description": "Connection to use",
+                      "data": {
+                        "connectorType": "Database"
+                      }
                     },
-                    "valueType": "EXPRESSION",
+                    "types": [
+                      {
+                        "fieldType": "EXPRESSION",
+                        "selected": true
+                      }
+                    ],
                     "value": "redisClient",
                     "optional": false,
                     "editable": false,
@@ -328,8 +366,18 @@
                       "label": "Key",
                       "description": "Key referring to a value"
                     },
-                    "valueType": "EXPRESSION",
-                    "valueTypeConstraint": "string",
+                    "types": [
+                      {
+                        "fieldType": "TEXT",
+                        "ballerinaType": "string",
+                        "selected": false
+                      },
+                      {
+                        "fieldType": "EXPRESSION",
+                        "ballerinaType": "string",
+                        "selected": true
+                      }
+                    ],
                     "value": "key",
                     "placeholder": "\"\"",
                     "optional": false,
@@ -339,23 +387,19 @@
                     "codedata": {
                       "kind": "REQUIRED",
                       "originalName": "key"
-                    },
-                    "typeMembers": [
-                      {
-                        "type": "string",
-                        "packageInfo": "",
-                        "packageName": "",
-                        "kind": "BASIC_TYPE",
-                        "selected": true
-                      }
-                    ]
+                    }
                   },
                   "checkError": {
                     "metadata": {
                       "label": "Check Error",
                       "description": "Trigger error flow"
                     },
-                    "valueType": "FLAG",
+                    "types": [
+                      {
+                        "fieldType": "FLAG",
+                        "selected": true
+                      }
+                    ],
                     "value": true,
                     "optional": false,
                     "editable": true,
@@ -367,7 +411,12 @@
                       "label": "Result",
                       "description": "Name of the result variable"
                     },
-                    "valueType": "IDENTIFIER",
+                    "types": [
+                      {
+                        "fieldType": "IDENTIFIER",
+                        "selected": true
+                      }
+                    ],
                     "value": "cacheValue",
                     "optional": false,
                     "editable": false,
@@ -392,7 +441,12 @@
                       "label": "Result Type",
                       "description": "Type of the variable"
                     },
-                    "valueType": "TYPE",
+                    "types": [
+                      {
+                        "fieldType": "TYPE",
+                        "selected": true
+                      }
+                    ],
                     "value": "string|()",
                     "placeholder": "var",
                     "optional": false,
@@ -432,7 +486,12 @@
                       "label": "Comment",
                       "description": "Comment to describe the flow"
                     },
-                    "valueType": "STRING",
+                    "types": [
+                      {
+                        "fieldType": "TEXT",
+                        "selected": true
+                      }
+                    ],
                     "value": "if node",
                     "optional": false,
                     "editable": true,
@@ -490,8 +549,13 @@
                           "label": "Condition",
                           "description": "Boolean Condition"
                         },
-                        "valueType": "EXPRESSION",
-                        "valueTypeConstraint": "boolean",
+                        "types": [
+                          {
+                            "fieldType": "EXPRESSION",
+                            "ballerinaType": "boolean",
+                            "selected": true
+                          }
+                        ],
                         "value": "cacheValue is string ",
                         "placeholder": "true",
                         "optional": false,
@@ -529,7 +593,12 @@
                               "label": "Comment",
                               "description": "Comment to describe the flow"
                             },
-                            "valueType": "STRING",
+                            "types": [
+                              {
+                                "fieldType": "TEXT",
+                                "selected": true
+                              }
+                            ],
                             "value": "new data",
                             "optional": false,
                             "editable": true,
@@ -543,7 +612,7 @@
                         "id": "58112",
                         "metadata": {
                           "label": "Declare Variable",
-                          "description": "Assign a value to a variable"
+                          "description": "Create a new variable"
                         },
                         "codedata": {
                           "node": "VARIABLE",
@@ -567,7 +636,12 @@
                               "label": "Expression",
                               "description": "Initialize with value"
                             },
-                            "valueType": "ACTION_OR_EXPRESSION",
+                            "types": [
+                              {
+                                "fieldType": "ACTION_OR_EXPRESSION",
+                                "selected": true
+                              }
+                            ],
                             "value": "{\n                    value: check calculate(amount, cacheValue)\n                }",
                             "optional": true,
                             "editable": true,
@@ -579,7 +653,12 @@
                               "label": "Name",
                               "description": "Name of the variable"
                             },
-                            "valueType": "IDENTIFIER",
+                            "types": [
+                              {
+                                "fieldType": "IDENTIFIER",
+                                "selected": true
+                              }
+                            ],
                             "value": "newData",
                             "optional": false,
                             "editable": false,
@@ -604,7 +683,12 @@
                               "label": "Type",
                               "description": "Type of the variable"
                             },
-                            "valueType": "TYPE",
+                            "types": [
+                              {
+                                "fieldType": "TYPE",
+                                "selected": true
+                              }
+                            ],
                             "value": "json",
                             "placeholder": "var",
                             "optional": false,
@@ -644,7 +728,12 @@
                               "label": "Comment",
                               "description": "Comment to describe the flow"
                             },
-                            "valueType": "STRING",
+                            "types": [
+                              {
+                                "fieldType": "TEXT",
+                                "selected": true
+                              }
+                            ],
                             "value": "return",
                             "optional": false,
                             "editable": true,
@@ -682,9 +771,14 @@
                               "label": "Expression",
                               "description": "Return value"
                             },
-                            "valueType": "ACTION_OR_EXPRESSION",
+                            "types": [
+                              {
+                                "fieldType": "ACTION_OR_EXPRESSION",
+                                "selected": true
+                              }
+                            ],
                             "value": "newData",
-                            "optional": false,
+                            "optional": true,
                             "editable": true,
                             "advanced": false,
                             "hidden": false
@@ -742,7 +836,12 @@
                               "label": "Comment",
                               "description": "Comment to describe the flow"
                             },
-                            "valueType": "STRING",
+                            "types": [
+                              {
+                                "fieldType": "TEXT",
+                                "selected": true
+                              }
+                            ],
                             "value": "action call - http get call",
                             "optional": false,
                             "editable": true,
@@ -757,7 +856,7 @@
                         "metadata": {
                           "label": "get",
                           "description": "Retrieve a representation of a specified resource from an HTTP endpoint.\n",
-                          "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.15.0.png"
+                          "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.16.1.png"
                         },
                         "codedata": {
                           "node": "REMOTE_ACTION_CALL",
@@ -766,7 +865,7 @@
                           "packageName": "http",
                           "object": "Client",
                           "symbol": "get",
-                          "version": "2.15.0",
+                          "version": "2.16.1",
                           "lineRange": {
                             "fileName": "main.bal",
                             "startLine": {
@@ -786,9 +885,17 @@
                           "connection": {
                             "metadata": {
                               "label": "Connection",
-                              "description": "Connection to use"
+                              "description": "Connection to use",
+                              "data": {
+                                "connectorType": "Network"
+                              }
                             },
-                            "valueType": "EXPRESSION",
+                            "types": [
+                              {
+                                "fieldType": "EXPRESSION",
+                                "selected": true
+                              }
+                            ],
                             "value": "currencyClient",
                             "optional": false,
                             "editable": false,
@@ -800,8 +907,18 @@
                               "label": "Path",
                               "description": "Request path"
                             },
-                            "valueType": "EXPRESSION",
-                            "valueTypeConstraint": "string",
+                            "types": [
+                              {
+                                "fieldType": "TEXT",
+                                "ballerinaType": "string",
+                                "selected": false
+                              },
+                              {
+                                "fieldType": "EXPRESSION",
+                                "ballerinaType": "string",
+                                "selected": true
+                              }
+                            ],
                             "value": "\"/latest?base=\" + 'from + \"&to=\" + to",
                             "placeholder": "\"\"",
                             "optional": false,
@@ -811,24 +928,66 @@
                             "codedata": {
                               "kind": "REQUIRED",
                               "originalName": "path"
-                            },
-                            "typeMembers": [
-                              {
-                                "type": "string",
-                                "packageInfo": "",
-                                "packageName": "",
-                                "kind": "BASIC_TYPE",
-                                "selected": true
-                              }
-                            ]
+                            }
                           },
                           "headers": {
                             "metadata": {
                               "label": "Headers",
                               "description": "The entity headers"
                             },
-                            "valueType": "EXPRESSION",
-                            "valueTypeConstraint": "map<string|string[]>|()",
+                            "types": [
+                              {
+                                "fieldType": "REPEATABLE_MAP",
+                                "ballerinaType": "map<string|string[]>",
+                                "template": {
+                                  "types": [
+                                    {
+                                      "fieldType": "TEXT",
+                                      "ballerinaType": "string",
+                                      "selected": false
+                                    },
+                                    {
+                                      "fieldType": "REPEATABLE_LIST",
+                                      "ballerinaType": "string[]",
+                                      "template": {
+                                        "types": [
+                                          {
+                                            "fieldType": "TEXT",
+                                            "ballerinaType": "string",
+                                            "selected": false
+                                          },
+                                          {
+                                            "fieldType": "EXPRESSION",
+                                            "ballerinaType": "string",
+                                            "selected": false
+                                          }
+                                        ],
+                                        "optional": false,
+                                        "editable": false,
+                                        "advanced": false,
+                                        "hidden": false
+                                      },
+                                      "selected": false
+                                    },
+                                    {
+                                      "fieldType": "EXPRESSION",
+                                      "ballerinaType": "string|string[]",
+                                      "selected": false
+                                    }
+                                  ],
+                                  "optional": false,
+                                  "editable": false,
+                                  "advanced": false,
+                                  "hidden": false
+                                },
+                                "selected": false
+                              },
+                              {
+                                "fieldType": "EXPRESSION",
+                                "ballerinaType": "map<string|string[]>?",
+                                "selected": false
+                              }
+                            ],
                             "placeholder": "()",
                             "optional": true,
                             "editable": true,
@@ -838,22 +997,6 @@
                               "kind": "DEFAULTABLE",
                               "originalName": "headers"
                             },
-                            "typeMembers": [
-                              {
-                                "type": "()",
-                                "packageInfo": "",
-                                "packageName": "",
-                                "kind": "BASIC_TYPE",
-                                "selected": false
-                              },
-                              {
-                                "type": "map<string|string[]>",
-                                "packageInfo": "",
-                                "packageName": "",
-                                "kind": "MAP_TYPE",
-                                "selected": false
-                              }
-                            ],
                             "defaultValue": "()"
                           },
                           "checkError": {
@@ -861,7 +1004,12 @@
                               "label": "Check Error",
                               "description": "Trigger error flow"
                             },
-                            "valueType": "FLAG",
+                            "types": [
+                              {
+                                "fieldType": "FLAG",
+                                "selected": true
+                              }
+                            ],
                             "value": true,
                             "optional": false,
                             "editable": true,
@@ -873,10 +1021,15 @@
                               "label": "Target Type",
                               "description": "Expected return type (to be used for automatic data binding).\nSupported types:\n- Built-in subtypes of `anydata` (`string`, `byte[]`, `json|xml`, etc.)\n- Custom types (e.g., `User`, `Student?`, `Person[]`, etc.)\n- Full HTTP response with headers and status (`http:Response`)\n- Stream of Server-Sent Events (`stream<http:SseEvent, error?>`)"
                             },
-                            "valueType": "TYPE",
-                            "valueTypeConstraint": "anydata",
+                            "types": [
+                              {
+                                "fieldType": "TYPE",
+                                "ballerinaType": "http:Response|anydata|stream<http:SseEvent, error?>",
+                                "selected": false
+                              }
+                            ],
                             "value": "json",
-                            "placeholder": "anydata",
+                            "placeholder": "http:Response|anydata|stream<http:SseEvent, error?>",
                             "optional": false,
                             "editable": true,
                             "advanced": false,
@@ -885,14 +1038,19 @@
                               "kind": "PARAM_FOR_TYPE_INFER",
                               "originalName": "targetType"
                             },
-                            "defaultValue": "anydata"
+                            "defaultValue": "http:Response|anydata|stream<http:SseEvent, error?>"
                           },
                           "variable": {
                             "metadata": {
                               "label": "Result",
                               "description": "Name of the result variable"
                             },
-                            "valueType": "IDENTIFIER",
+                            "types": [
+                              {
+                                "fieldType": "IDENTIFIER",
+                                "selected": true
+                              }
+                            ],
                             "value": "response",
                             "optional": false,
                             "editable": false,
@@ -917,7 +1075,12 @@
                               "label": "Result Type",
                               "description": "Type of the variable"
                             },
-                            "valueType": "TYPE",
+                            "types": [
+                              {
+                                "fieldType": "TYPE",
+                                "selected": true
+                              }
+                            ],
                             "value": "json",
                             "placeholder": "var",
                             "optional": false,
@@ -957,7 +1120,12 @@
                               "label": "Comment",
                               "description": "Comment to describe the flow"
                             },
-                            "valueType": "STRING",
+                            "types": [
+                              {
+                                "fieldType": "TEXT",
+                                "selected": true
+                              }
+                            ],
                             "value": "new data",
                             "optional": false,
                             "editable": true,
@@ -971,7 +1139,7 @@
                         "id": "68005",
                         "metadata": {
                           "label": "Declare Variable",
-                          "description": "Assign a value to a variable"
+                          "description": "Create a new variable"
                         },
                         "codedata": {
                           "node": "VARIABLE",
@@ -995,7 +1163,12 @@
                               "label": "Expression",
                               "description": "Initialize with value"
                             },
-                            "valueType": "ACTION_OR_EXPRESSION",
+                            "types": [
+                              {
+                                "fieldType": "ACTION_OR_EXPRESSION",
+                                "selected": true
+                              }
+                            ],
                             "value": "check response.value",
                             "optional": true,
                             "editable": true,
@@ -1007,7 +1180,12 @@
                               "label": "Name",
                               "description": "Name of the variable"
                             },
-                            "valueType": "IDENTIFIER",
+                            "types": [
+                              {
+                                "fieldType": "IDENTIFIER",
+                                "selected": true
+                              }
+                            ],
                             "value": "value",
                             "optional": false,
                             "editable": false,
@@ -1032,7 +1210,12 @@
                               "label": "Type",
                               "description": "Type of the variable"
                             },
-                            "valueType": "TYPE",
+                            "types": [
+                              {
+                                "fieldType": "TYPE",
+                                "selected": true
+                              }
+                            ],
                             "value": "decimal",
                             "placeholder": "var",
                             "optional": false,
@@ -1072,7 +1255,12 @@
                               "label": "Comment",
                               "description": "Comment to describe the flow"
                             },
-                            "valueType": "STRING",
+                            "types": [
+                              {
+                                "fieldType": "TEXT",
+                                "selected": true
+                              }
+                            ],
                             "value": "function call",
                             "optional": false,
                             "editable": true,
@@ -1115,7 +1303,12 @@
                               "label": "View",
                               "description": "Function definition location"
                             },
-                            "valueType": "VIEW",
+                            "types": [
+                              {
+                                "fieldType": "VIEW",
+                                "selected": true
+                              }
+                            ],
                             "value": {
                               "fileName": "main.bal",
                               "startLine": {
@@ -1136,8 +1329,18 @@
                             "metadata": {
                               "label": "Amount"
                             },
-                            "valueType": "EXPRESSION",
-                            "valueTypeConstraint": "decimal",
+                            "types": [
+                              {
+                                "fieldType": "NUMBER",
+                                "ballerinaType": "decimal",
+                                "selected": false
+                              },
+                              {
+                                "fieldType": "EXPRESSION",
+                                "ballerinaType": "decimal",
+                                "selected": true
+                              }
+                            ],
                             "value": "amount",
                             "placeholder": "0.0d",
                             "optional": false,
@@ -1147,23 +1350,24 @@
                             "codedata": {
                               "kind": "REQUIRED",
                               "originalName": "amount"
-                            },
-                            "typeMembers": [
-                              {
-                                "type": "decimal",
-                                "packageInfo": "",
-                                "packageName": "",
-                                "kind": "BASIC_TYPE",
-                                "selected": true
-                              }
-                            ]
+                            }
                           },
                           "cacheValue": {
                             "metadata": {
                               "label": "Cache Value"
                             },
-                            "valueType": "EXPRESSION",
-                            "valueTypeConstraint": "string",
+                            "types": [
+                              {
+                                "fieldType": "TEXT",
+                                "ballerinaType": "string",
+                                "selected": false
+                              },
+                              {
+                                "fieldType": "EXPRESSION",
+                                "ballerinaType": "string",
+                                "selected": true
+                              }
+                            ],
                             "value": "value.toString()",
                             "placeholder": "\"\"",
                             "optional": false,
@@ -1173,23 +1377,19 @@
                             "codedata": {
                               "kind": "REQUIRED",
                               "originalName": "cacheValue"
-                            },
-                            "typeMembers": [
-                              {
-                                "type": "string",
-                                "packageInfo": "",
-                                "packageName": "",
-                                "kind": "BASIC_TYPE",
-                                "selected": true
-                              }
-                            ]
+                            }
                           },
                           "checkError": {
                             "metadata": {
                               "label": "Check Error",
                               "description": "Trigger error flow"
                             },
-                            "valueType": "FLAG",
+                            "types": [
+                              {
+                                "fieldType": "FLAG",
+                                "selected": true
+                              }
+                            ],
                             "value": true,
                             "optional": false,
                             "editable": true,
@@ -1201,7 +1401,12 @@
                               "label": "Result",
                               "description": "Name of the result variable"
                             },
-                            "valueType": "IDENTIFIER",
+                            "types": [
+                              {
+                                "fieldType": "IDENTIFIER",
+                                "selected": true
+                              }
+                            ],
                             "value": "convertedAmount",
                             "optional": false,
                             "editable": false,
@@ -1226,7 +1431,12 @@
                               "label": "Result Type",
                               "description": "Type of the variable"
                             },
-                            "valueType": "TYPE",
+                            "types": [
+                              {
+                                "fieldType": "TYPE",
+                                "selected": true
+                              }
+                            ],
                             "value": "decimal",
                             "placeholder": "var",
                             "optional": false,
@@ -1266,7 +1476,12 @@
                               "label": "Comment",
                               "description": "Comment to describe the flow"
                             },
-                            "valueType": "STRING",
+                            "types": [
+                              {
+                                "fieldType": "TEXT",
+                                "selected": true
+                              }
+                            ],
                             "value": "action call - redis set call",
                             "optional": false,
                             "editable": true,
@@ -1309,9 +1524,17 @@
                           "connection": {
                             "metadata": {
                               "label": "Connection",
-                              "description": "Connection to use"
+                              "description": "Connection to use",
+                              "data": {
+                                "connectorType": "Database"
+                              }
                             },
-                            "valueType": "EXPRESSION",
+                            "types": [
+                              {
+                                "fieldType": "EXPRESSION",
+                                "selected": true
+                              }
+                            ],
                             "value": "redisClient",
                             "optional": false,
                             "editable": false,
@@ -1323,8 +1546,18 @@
                               "label": "Key",
                               "description": "Key referring to a value"
                             },
-                            "valueType": "EXPRESSION",
-                            "valueTypeConstraint": "string",
+                            "types": [
+                              {
+                                "fieldType": "TEXT",
+                                "ballerinaType": "string",
+                                "selected": false
+                              },
+                              {
+                                "fieldType": "EXPRESSION",
+                                "ballerinaType": "string",
+                                "selected": true
+                              }
+                            ],
                             "value": "key",
                             "placeholder": "\"\"",
                             "optional": false,
@@ -1334,24 +1567,25 @@
                             "codedata": {
                               "kind": "REQUIRED",
                               "originalName": "key"
-                            },
-                            "typeMembers": [
-                              {
-                                "type": "string",
-                                "packageInfo": "",
-                                "packageName": "",
-                                "kind": "BASIC_TYPE",
-                                "selected": true
-                              }
-                            ]
+                            }
                           },
                           "value": {
                             "metadata": {
                               "label": "Value",
                               "description": "Values"
                             },
-                            "valueType": "EXPRESSION",
-                            "valueTypeConstraint": "string",
+                            "types": [
+                              {
+                                "fieldType": "TEXT",
+                                "ballerinaType": "string",
+                                "selected": false
+                              },
+                              {
+                                "fieldType": "EXPRESSION",
+                                "ballerinaType": "string",
+                                "selected": true
+                              }
+                            ],
                             "value": "convertedAmount.toString()",
                             "placeholder": "\"\"",
                             "optional": false,
@@ -1361,23 +1595,19 @@
                             "codedata": {
                               "kind": "REQUIRED",
                               "originalName": "value"
-                            },
-                            "typeMembers": [
-                              {
-                                "type": "string",
-                                "packageInfo": "",
-                                "packageName": "",
-                                "kind": "BASIC_TYPE",
-                                "selected": true
-                              }
-                            ]
+                            }
                           },
                           "checkError": {
                             "metadata": {
                               "label": "Check Error",
                               "description": "Trigger error flow"
                             },
-                            "valueType": "FLAG",
+                            "types": [
+                              {
+                                "fieldType": "FLAG",
+                                "selected": true
+                              }
+                            ],
                             "value": true,
                             "optional": false,
                             "editable": true,
@@ -1415,7 +1645,12 @@
                               "label": "Comment",
                               "description": "Comment to describe the flow"
                             },
-                            "valueType": "STRING",
+                            "types": [
+                              {
+                                "fieldType": "TEXT",
+                                "selected": true
+                              }
+                            ],
                             "value": "new data",
                             "optional": false,
                             "editable": true,
@@ -1429,7 +1664,7 @@
                         "id": "75968",
                         "metadata": {
                           "label": "Declare Variable",
-                          "description": "Assign a value to a variable"
+                          "description": "Create a new variable"
                         },
                         "codedata": {
                           "node": "VARIABLE",
@@ -1453,7 +1688,12 @@
                               "label": "Expression",
                               "description": "Initialize with value"
                             },
-                            "valueType": "ACTION_OR_EXPRESSION",
+                            "types": [
+                              {
+                                "fieldType": "ACTION_OR_EXPRESSION",
+                                "selected": true
+                              }
+                            ],
                             "value": "{\n                    value\n                }",
                             "optional": true,
                             "editable": true,
@@ -1465,7 +1705,12 @@
                               "label": "Name",
                               "description": "Name of the variable"
                             },
-                            "valueType": "IDENTIFIER",
+                            "types": [
+                              {
+                                "fieldType": "IDENTIFIER",
+                                "selected": true
+                              }
+                            ],
                             "value": "newData",
                             "optional": false,
                             "editable": false,
@@ -1490,7 +1735,12 @@
                               "label": "Type",
                               "description": "Type of the variable"
                             },
-                            "valueType": "TYPE",
+                            "types": [
+                              {
+                                "fieldType": "TYPE",
+                                "selected": true
+                              }
+                            ],
                             "value": "json",
                             "placeholder": "var",
                             "optional": false,
@@ -1530,7 +1780,12 @@
                               "label": "Comment",
                               "description": "Comment to describe the flow"
                             },
-                            "valueType": "STRING",
+                            "types": [
+                              {
+                                "fieldType": "TEXT",
+                                "selected": true
+                              }
+                            ],
                             "value": "return",
                             "optional": false,
                             "editable": true,
@@ -1568,9 +1823,14 @@
                               "label": "Expression",
                               "description": "Return value"
                             },
-                            "valueType": "ACTION_OR_EXPRESSION",
+                            "types": [
+                              {
+                                "fieldType": "ACTION_OR_EXPRESSION",
+                                "selected": true
+                              }
+                            ],
                             "value": "newData",
-                            "optional": false,
+                            "optional": true,
                             "editable": true,
                             "advanced": false,
                             "hidden": false
@@ -1610,7 +1870,12 @@
                   "label": "Ignore",
                   "description": "Ignore the error value"
                 },
-                "valueType": "EXPRESSION",
+                "types": [
+                  {
+                    "fieldType": "EXPRESSION",
+                    "selected": true
+                  }
+                ],
                 "value": "false",
                 "optional": false,
                 "editable": true,
@@ -1622,7 +1887,12 @@
                   "label": "Error Variable",
                   "description": "Name of the error variable"
                 },
-                "valueType": "IDENTIFIER",
+                "types": [
+                  {
+                    "fieldType": "IDENTIFIER",
+                    "selected": true
+                  }
+                ],
                 "value": "e ",
                 "placeholder": "err",
                 "optional": false,
@@ -1635,7 +1905,12 @@
                   "label": "Error Type",
                   "description": "Type of the error"
                 },
-                "valueType": "TYPE",
+                "types": [
+                  {
+                    "fieldType": "TYPE",
+                    "selected": true
+                  }
+                ],
                 "value": "redis:error|error|http:error|error",
                 "placeholder": "error",
                 "optional": false,
@@ -1673,7 +1948,12 @@
                       "label": "Comment",
                       "description": "Comment to describe the flow"
                     },
-                    "valueType": "STRING",
+                    "types": [
+                      {
+                        "fieldType": "TEXT",
+                        "selected": true
+                      }
+                    ],
                     "value": "library call - log error",
                     "optional": false,
                     "editable": true,
@@ -1688,7 +1968,7 @@
                 "metadata": {
                   "label": "printError",
                   "description": "Prints error logs.\n```ballerina\nerror e = error(\"error occurred\");\nlog:printError(\"error log with cause\", 'error = e, id = 845315);\n```\n",
-                  "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_log_2.14.0.png"
+                  "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_log_2.17.0.png"
                 },
                 "codedata": {
                   "node": "FUNCTION_CALL",
@@ -1696,7 +1976,7 @@
                   "module": "log",
                   "packageName": "log",
                   "symbol": "printError",
-                  "version": "2.14.0",
+                  "version": "2.17.0",
                   "lineRange": {
                     "fileName": "main.bal",
                     "startLine": {
@@ -1717,8 +1997,18 @@
                       "label": "Msg",
                       "description": "The message to be logged"
                     },
-                    "valueType": "EXPRESSION",
-                    "valueTypeConstraint": "string|log:PrintableRawTemplate",
+                    "types": [
+                      {
+                        "fieldType": "TEXT",
+                        "ballerinaType": "string",
+                        "selected": true
+                      },
+                      {
+                        "fieldType": "EXPRESSION",
+                        "ballerinaType": "string|log:PrintableRawTemplate",
+                        "selected": false
+                      }
+                    ],
                     "value": "\"error occured\"",
                     "placeholder": "\"\"",
                     "optional": false,
@@ -1728,31 +2018,20 @@
                     "codedata": {
                       "kind": "REQUIRED",
                       "originalName": "msg"
-                    },
-                    "typeMembers": [
-                      {
-                        "type": "PrintableRawTemplate",
-                        "packageInfo": "ballerina:log:2.12.0",
-                        "packageName": "log",
-                        "kind": "OBJECT_TYPE",
-                        "selected": false
-                      },
-                      {
-                        "type": "string",
-                        "packageInfo": "",
-                        "packageName": "",
-                        "kind": "BASIC_TYPE",
-                        "selected": true
-                      }
-                    ]
+                    }
                   },
                   "error": {
                     "metadata": {
                       "label": "Error",
                       "description": "The error struct to be logged"
                     },
-                    "valueType": "EXPRESSION",
-                    "valueTypeConstraint": "error|()",
+                    "types": [
+                      {
+                        "fieldType": "EXPRESSION",
+                        "ballerinaType": "error?",
+                        "selected": true
+                      }
+                    ],
                     "value": "e",
                     "placeholder": "()",
                     "optional": true,
@@ -1763,22 +2042,6 @@
                       "kind": "DEFAULTABLE",
                       "originalName": "'error"
                     },
-                    "typeMembers": [
-                      {
-                        "type": "()",
-                        "packageInfo": "",
-                        "packageName": "",
-                        "kind": "BASIC_TYPE",
-                        "selected": false
-                      },
-                      {
-                        "type": "error",
-                        "packageInfo": "ballerina:lang.annotations:0.0.0",
-                        "packageName": "lang.annotations",
-                        "kind": "ERROR_TYPE",
-                        "selected": false
-                      }
-                    ],
                     "defaultValue": "()"
                   },
                   "stackTrace": {
@@ -1786,8 +2049,31 @@
                       "label": "Stack Trace",
                       "description": "The error stack trace to be logged"
                     },
-                    "valueType": "EXPRESSION",
-                    "valueTypeConstraint": "error:StackFrame[]|()",
+                    "types": [
+                      {
+                        "fieldType": "REPEATABLE_LIST",
+                        "ballerinaType": "error:StackFrame[]",
+                        "template": {
+                          "types": [
+                            {
+                              "fieldType": "EXPRESSION",
+                              "ballerinaType": "error:StackFrame",
+                              "selected": false
+                            }
+                          ],
+                          "optional": false,
+                          "editable": false,
+                          "advanced": false,
+                          "hidden": false
+                        },
+                        "selected": false
+                      },
+                      {
+                        "fieldType": "EXPRESSION",
+                        "ballerinaType": "error:StackFrame[]?",
+                        "selected": false
+                      }
+                    ],
                     "placeholder": "()",
                     "optional": true,
                     "editable": true,
@@ -1797,22 +2083,6 @@
                       "kind": "DEFAULTABLE",
                       "originalName": "stackTrace"
                     },
-                    "typeMembers": [
-                      {
-                        "type": "()",
-                        "packageInfo": "",
-                        "packageName": "",
-                        "kind": "BASIC_TYPE",
-                        "selected": false
-                      },
-                      {
-                        "type": "StackFrame",
-                        "packageInfo": "ballerina:lang.error:0.0.0",
-                        "packageName": "lang.error",
-                        "kind": "ARRAY_TYPE",
-                        "selected": false
-                      }
-                    ],
                     "defaultValue": "()"
                   },
                   "additionalValues": {
@@ -1820,9 +2090,27 @@
                       "label": "Additional Values",
                       "description": "Capture key value pairs"
                     },
-                    "valueType": "MAPPING_EXPRESSION_SET",
-                    "valueTypeConstraint": "log:Value",
-                    "value": [],
+                    "types": [
+                      {
+                        "fieldType": "REPEATABLE_MAP",
+                        "ballerinaType": "log:Value",
+                        "template": {
+                          "types": [
+                            {
+                              "fieldType": "EXPRESSION",
+                              "ballerinaType": "log:Value",
+                              "selected": false
+                            }
+                          ],
+                          "optional": false,
+                          "editable": false,
+                          "advanced": false,
+                          "hidden": false
+                        },
+                        "selected": true
+                      }
+                    ],
+                    "value": {},
                     "placeholder": "{}",
                     "optional": true,
                     "editable": true,
@@ -1831,8 +2119,7 @@
                     "codedata": {
                       "kind": "INCLUDED_RECORD_REST",
                       "originalName": "Additional Values"
-                    },
-                    "typeMembers": []
+                    }
                   }
                 },
                 "flags": 0
@@ -1865,7 +2152,12 @@
                       "label": "Comment",
                       "description": "Comment to describe the flow"
                     },
-                    "valueType": "STRING",
+                    "types": [
+                      {
+                        "fieldType": "TEXT",
+                        "selected": true
+                      }
+                    ],
                     "value": "return ",
                     "optional": false,
                     "editable": true,
@@ -1903,9 +2195,14 @@
                       "label": "Expression",
                       "description": "Return value"
                     },
-                    "valueType": "ACTION_OR_EXPRESSION",
+                    "types": [
+                      {
+                        "fieldType": "ACTION_OR_EXPRESSION",
+                        "selected": true
+                      }
+                    ],
                     "value": "http:INTERNAL_SERVER_ERROR",
-                    "optional": false,
+                    "optional": true,
                     "editable": true,
                     "advanced": false,
                     "hidden": false
@@ -1923,9 +2220,9 @@
       {
         "id": "42750",
         "metadata": {
-          "label": "New Connection",
+          "label": "HTTP",
           "description": "The HTTP client provides functionality to connect to remote HTTP services and perform requests using standard HTTP methods like GET, POST, PUT, DELETE, etc.\n",
-          "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.14.2.png"
+          "icon": "https://bcentral-packageicons.azureedge.net/images/ballerina_http_2.16.1.png"
         },
         "codedata": {
           "node": "NEW_CONNECTION",
@@ -1953,8 +2250,18 @@
               "label": "Url",
               "description": "URL of the target service"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "string",
+            "types": [
+              {
+                "fieldType": "TEXT",
+                "ballerinaType": "string",
+                "selected": true
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "string",
+                "selected": false
+              }
+            ],
             "value": "\"https://api.exchangeratesapi.io/latest\"",
             "placeholder": "\"\"",
             "optional": false,
@@ -1964,24 +2271,38 @@
             "codedata": {
               "kind": "REQUIRED",
               "originalName": "url"
-            },
-            "typeMembers": [
-              {
-                "type": "string",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": true
-              }
-            ]
+            }
           },
           "httpVersion": {
             "metadata": {
               "label": "HTTP Version",
               "description": "HTTP protocol version supported by the client"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:HttpVersion",
+            "types": [
+              {
+                "fieldType": "SINGLE_SELECT",
+                "options": [
+                  {
+                    "label": "2.0",
+                    "value": "\"2.0\""
+                  },
+                  {
+                    "label": "1.1",
+                    "value": "\"1.1\""
+                  },
+                  {
+                    "label": "1.0",
+                    "value": "\"1.0\""
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:HttpVersion",
+                "selected": false
+              }
+            ],
             "placeholder": "\"2.0\"",
             "optional": true,
             "editable": true,
@@ -1991,15 +2312,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "httpVersion"
             },
-            "typeMembers": [
-              {
-                "type": "HttpVersion",
-                "packageInfo": "ballerina:http:2.14.2",
-                "packageName": "http",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "\"2.0\""
           },
           "http1Settings": {
@@ -2007,8 +2319,27 @@
               "label": "HTTP1 Settings",
               "description": "HTTP/1.x specific settings"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:ClientHttp1Settings",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "http:ClientHttp1Settings",
+                "typeMembers": [
+                  {
+                    "type": "ClientHttp1Settings",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:ClientHttp1Settings",
+                "selected": false
+              }
+            ],
             "placeholder": "{}",
             "optional": true,
             "editable": true,
@@ -2018,15 +2349,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "http1Settings"
             },
-            "typeMembers": [
-              {
-                "type": "ClientHttp1Settings",
-                "packageInfo": "ballerina:http:2.14.2",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "{}"
           },
           "http2Settings": {
@@ -2034,8 +2356,27 @@
               "label": "HTTP2 Settings",
               "description": "HTTP/2 specific settings"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:ClientHttp2Settings",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "http:ClientHttp2Settings",
+                "typeMembers": [
+                  {
+                    "type": "ClientHttp2Settings",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:ClientHttp2Settings",
+                "selected": false
+              }
+            ],
             "placeholder": "{}",
             "optional": true,
             "editable": true,
@@ -2045,15 +2386,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "http2Settings"
             },
-            "typeMembers": [
-              {
-                "type": "ClientHttp2Settings",
-                "packageInfo": "ballerina:http:2.14.2",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "{}"
           },
           "timeout": {
@@ -2061,8 +2393,18 @@
               "label": "Timeout",
               "description": "Maximum time(in seconds) to wait for a response before the request times out"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "decimal",
+            "types": [
+              {
+                "fieldType": "NUMBER",
+                "ballerinaType": "decimal",
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "decimal",
+                "selected": false
+              }
+            ],
             "placeholder": "0.0d",
             "optional": true,
             "editable": true,
@@ -2072,15 +2414,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "timeout"
             },
-            "typeMembers": [
-              {
-                "type": "decimal",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "0.0d"
           },
           "forwarded": {
@@ -2088,8 +2421,18 @@
               "label": "Forwarded",
               "description": "The choice of setting `Forwarded`/`X-Forwarded-For` header, when acting as a proxy"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "string",
+            "types": [
+              {
+                "fieldType": "TEXT",
+                "ballerinaType": "string",
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "string",
+                "selected": false
+              }
+            ],
             "placeholder": "\"\"",
             "optional": true,
             "editable": true,
@@ -2099,15 +2442,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "forwarded"
             },
-            "typeMembers": [
-              {
-                "type": "string",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "\"\""
           },
           "followRedirects": {
@@ -2115,8 +2449,27 @@
               "label": "Follow Redirects",
               "description": "HTTP redirect handling configurations (with 3xx status codes)"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:FollowRedirects|()",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "http:FollowRedirects",
+                "typeMembers": [
+                  {
+                    "type": "FollowRedirects",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:FollowRedirects?",
+                "selected": false
+              }
+            ],
             "placeholder": "()",
             "optional": true,
             "editable": true,
@@ -2126,22 +2479,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "followRedirects"
             },
-            "typeMembers": [
-              {
-                "type": "()",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              },
-              {
-                "type": "FollowRedirects",
-                "packageInfo": "ballerina:http:2.14.2",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "()"
           },
           "poolConfig": {
@@ -2149,8 +2486,27 @@
               "label": "Pool Config",
               "description": "Configurations associated with the request connection pool"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:PoolConfiguration|()",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "http:PoolConfiguration",
+                "typeMembers": [
+                  {
+                    "type": "PoolConfiguration",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:PoolConfiguration?",
+                "selected": false
+              }
+            ],
             "placeholder": "()",
             "optional": true,
             "editable": true,
@@ -2160,22 +2516,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "poolConfig"
             },
-            "typeMembers": [
-              {
-                "type": "()",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              },
-              {
-                "type": "PoolConfiguration",
-                "packageInfo": "ballerina:http:2.14.2",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "()"
           },
           "cache": {
@@ -2183,8 +2523,27 @@
               "label": "Cache",
               "description": "HTTP response caching related configurations"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:CacheConfig",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "http:CacheConfig",
+                "typeMembers": [
+                  {
+                    "type": "CacheConfig",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:CacheConfig",
+                "selected": false
+              }
+            ],
             "placeholder": "{}",
             "optional": true,
             "editable": true,
@@ -2194,15 +2553,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "cache"
             },
-            "typeMembers": [
-              {
-                "type": "CacheConfig",
-                "packageInfo": "ballerina:http:2.14.2",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "{}"
           },
           "compression": {
@@ -2210,8 +2560,31 @@
               "label": "Compression",
               "description": "Enable request/response compression (using `accept-encoding` header)"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:Compression",
+            "types": [
+              {
+                "fieldType": "SINGLE_SELECT",
+                "options": [
+                  {
+                    "label": "AUTO",
+                    "value": "\"AUTO\""
+                  },
+                  {
+                    "label": "ALWAYS",
+                    "value": "\"ALWAYS\""
+                  },
+                  {
+                    "label": "NEVER",
+                    "value": "\"NEVER\""
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:Compression",
+                "selected": false
+              }
+            ],
             "placeholder": "\"AUTO\"",
             "optional": true,
             "editable": true,
@@ -2221,15 +2594,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "compression"
             },
-            "typeMembers": [
-              {
-                "type": "Compression",
-                "packageInfo": "ballerina:http:2.14.2",
-                "packageName": "http",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "\"AUTO\""
           },
           "auth": {
@@ -2237,8 +2601,69 @@
               "label": "Auth",
               "description": "Client authentication options (Basic, Bearer token, OAuth, etc.)"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:CredentialsConfig|http:BearerTokenConfig|http:JwtIssuerConfig|http:OAuth2ClientCredentialsGrantConfig|http:OAuth2PasswordGrantConfig|http:OAuth2RefreshTokenGrantConfig|http:OAuth2JwtBearerGrantConfig|()",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "http:CredentialsConfig|http:BearerTokenConfig|http:JwtIssuerConfig|http:OAuth2ClientCredentialsGrantConfig|http:OAuth2PasswordGrantConfig|http:OAuth2RefreshTokenGrantConfig|http:OAuth2JwtBearerGrantConfig",
+                "typeMembers": [
+                  {
+                    "type": "CredentialsConfig",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  },
+                  {
+                    "type": "BearerTokenConfig",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  },
+                  {
+                    "type": "JwtIssuerConfig",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  },
+                  {
+                    "type": "OAuth2ClientCredentialsGrantConfig",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  },
+                  {
+                    "type": "OAuth2PasswordGrantConfig",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  },
+                  {
+                    "type": "OAuth2RefreshTokenGrantConfig",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  },
+                  {
+                    "type": "OAuth2JwtBearerGrantConfig",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:ClientAuthConfig?",
+                "selected": false
+              }
+            ],
             "placeholder": "()",
             "optional": true,
             "editable": true,
@@ -2248,64 +2673,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "auth"
             },
-            "typeMembers": [
-              {
-                "type": "()",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              },
-              {
-                "type": "BearerTokenConfig",
-                "packageInfo": "ballerina:http:2.14.2",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              },
-              {
-                "type": "CredentialsConfig",
-                "packageInfo": "ballerina:http:2.14.2",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              },
-              {
-                "type": "JwtIssuerConfig",
-                "packageInfo": "ballerina:http:2.14.2",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              },
-              {
-                "type": "OAuth2ClientCredentialsGrantConfig",
-                "packageInfo": "ballerina:http:2.14.2",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              },
-              {
-                "type": "OAuth2JwtBearerGrantConfig",
-                "packageInfo": "ballerina:http:2.14.2",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              },
-              {
-                "type": "OAuth2PasswordGrantConfig",
-                "packageInfo": "ballerina:http:2.14.2",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              },
-              {
-                "type": "OAuth2RefreshTokenGrantConfig",
-                "packageInfo": "ballerina:http:2.14.2",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "()"
           },
           "circuitBreaker": {
@@ -2313,8 +2680,27 @@
               "label": "Circuit Breaker",
               "description": "Circuit breaker configurations to prevent cascading failures"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:CircuitBreakerConfig|()",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "http:CircuitBreakerConfig",
+                "typeMembers": [
+                  {
+                    "type": "CircuitBreakerConfig",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:CircuitBreakerConfig?",
+                "selected": false
+              }
+            ],
             "placeholder": "()",
             "optional": true,
             "editable": true,
@@ -2324,22 +2710,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "circuitBreaker"
             },
-            "typeMembers": [
-              {
-                "type": "()",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              },
-              {
-                "type": "CircuitBreakerConfig",
-                "packageInfo": "ballerina:http:2.14.2",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "()"
           },
           "retryConfig": {
@@ -2347,8 +2717,27 @@
               "label": "Retry Config",
               "description": "Automatic retry settings for failed requests"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:RetryConfig|()",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "http:RetryConfig",
+                "typeMembers": [
+                  {
+                    "type": "RetryConfig",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:RetryConfig?",
+                "selected": false
+              }
+            ],
             "placeholder": "()",
             "optional": true,
             "editable": true,
@@ -2358,22 +2747,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "retryConfig"
             },
-            "typeMembers": [
-              {
-                "type": "()",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              },
-              {
-                "type": "RetryConfig",
-                "packageInfo": "ballerina:http:2.14.2",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "()"
           },
           "cookieConfig": {
@@ -2381,8 +2754,27 @@
               "label": "Cookie Config",
               "description": "Cookie handling settings for session management"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:CookieConfig|()",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "http:CookieConfig",
+                "typeMembers": [
+                  {
+                    "type": "CookieConfig",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:CookieConfig?",
+                "selected": false
+              }
+            ],
             "placeholder": "()",
             "optional": true,
             "editable": true,
@@ -2392,22 +2784,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "cookieConfig"
             },
-            "typeMembers": [
-              {
-                "type": "()",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              },
-              {
-                "type": "CookieConfig",
-                "packageInfo": "ballerina:http:2.14.2",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "()"
           },
           "responseLimits": {
@@ -2415,8 +2791,27 @@
               "label": "Response Limits",
               "description": "Limits for response size and headers (to prevent memory issues)"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:ResponseLimitConfigs",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "http:ResponseLimitConfigs",
+                "typeMembers": [
+                  {
+                    "type": "ResponseLimitConfigs",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:ResponseLimitConfigs",
+                "selected": false
+              }
+            ],
             "placeholder": "{}",
             "optional": true,
             "editable": true,
@@ -2426,15 +2821,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "responseLimits"
             },
-            "typeMembers": [
-              {
-                "type": "ResponseLimitConfigs",
-                "packageInfo": "ballerina:http:2.14.2",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "{}"
           },
           "proxy": {
@@ -2442,8 +2828,27 @@
               "label": "Proxy",
               "description": "Proxy server settings if requests need to go through a proxy"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:ProxyConfig|()",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "http:ProxyConfig",
+                "typeMembers": [
+                  {
+                    "type": "ProxyConfig",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:ProxyConfig?",
+                "selected": false
+              }
+            ],
             "placeholder": "()",
             "optional": true,
             "editable": true,
@@ -2453,22 +2858,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "proxy"
             },
-            "typeMembers": [
-              {
-                "type": "()",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              },
-              {
-                "type": "ProxyConfig",
-                "packageInfo": "ballerina:http:2.14.2",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "()"
           },
           "validation": {
@@ -2476,8 +2865,18 @@
               "label": "Validation",
               "description": "Enable automatic payload validation for request/response data against constraints"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "boolean",
+            "types": [
+              {
+                "fieldType": "FLAG",
+                "ballerinaType": "boolean",
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "boolean",
+                "selected": false
+              }
+            ],
             "placeholder": "false",
             "optional": true,
             "editable": true,
@@ -2487,15 +2886,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "validation"
             },
-            "typeMembers": [
-              {
-                "type": "boolean",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "false"
           },
           "socketConfig": {
@@ -2503,8 +2893,27 @@
               "label": "Socket Config",
               "description": "Low-level socket settings (timeouts, buffer sizes, etc.)"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:ClientSocketConfig",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "http:ClientSocketConfig",
+                "typeMembers": [
+                  {
+                    "type": "ClientSocketConfig",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:ClientSocketConfig",
+                "selected": false
+              }
+            ],
             "placeholder": "{}",
             "optional": true,
             "editable": true,
@@ -2514,15 +2923,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "socketConfig"
             },
-            "typeMembers": [
-              {
-                "type": "ClientSocketConfig",
-                "packageInfo": "ballerina:http:2.14.2",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "{}"
           },
           "laxDataBinding": {
@@ -2530,8 +2930,18 @@
               "label": "Lax Data Binding",
               "description": "Enable relaxed data binding on the client side.\nWhen enabled:\n- `null` values in JSON are allowed to be mapped to optional fields\n- missing fields in JSON are allowed to be mapped as `null` values"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "boolean",
+            "types": [
+              {
+                "fieldType": "FLAG",
+                "ballerinaType": "boolean",
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "boolean",
+                "selected": false
+              }
+            ],
             "placeholder": "false",
             "optional": true,
             "editable": true,
@@ -2541,15 +2951,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "laxDataBinding"
             },
-            "typeMembers": [
-              {
-                "type": "boolean",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "false"
           },
           "secureSocket": {
@@ -2557,8 +2958,27 @@
               "label": "Secure Socket",
               "description": "SSL/TLS security settings for HTTPS connections"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "http:ClientSecureSocket|()",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "http:ClientSecureSocket",
+                "typeMembers": [
+                  {
+                    "type": "ClientSecureSocket",
+                    "packageInfo": "ballerina:http:2.16.1",
+                    "packageName": "http",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "http:ClientSecureSocket?",
+                "selected": false
+              }
+            ],
             "placeholder": "()",
             "optional": true,
             "editable": true,
@@ -2568,22 +2988,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "secureSocket"
             },
-            "typeMembers": [
-              {
-                "type": "()",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              },
-              {
-                "type": "ClientSecureSocket",
-                "packageInfo": "ballerina:http:2.14.2",
-                "packageName": "http",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "()"
           },
           "checkError": {
@@ -2591,7 +2995,12 @@
               "label": "Check Error",
               "description": "Terminate on error"
             },
-            "valueType": "FLAG",
+            "types": [
+              {
+                "fieldType": "FLAG",
+                "selected": true
+              }
+            ],
             "value": true,
             "optional": false,
             "editable": false,
@@ -2603,7 +3012,12 @@
               "label": "Connection Scope",
               "description": "Scope of the connection, Global or Local"
             },
-            "valueType": "ENUM",
+            "types": [
+              {
+                "fieldType": "ENUM",
+                "selected": true
+              }
+            ],
             "value": "Global",
             "optional": false,
             "editable": true,
@@ -2613,9 +3027,14 @@
           "variable": {
             "metadata": {
               "label": "Connection Name",
-              "description": "Name of the variable"
+              "description": "Name of the connection"
             },
-            "valueType": "IDENTIFIER",
+            "types": [
+              {
+                "fieldType": "IDENTIFIER",
+                "selected": true
+              }
+            ],
             "value": "currencyClient",
             "optional": false,
             "editable": false,
@@ -2640,7 +3059,12 @@
               "label": "Connection Type",
               "description": "Type of the variable"
             },
-            "valueType": "TYPE",
+            "types": [
+              {
+                "fieldType": "TYPE",
+                "selected": true
+              }
+            ],
             "value": "http:Client",
             "placeholder": "var",
             "optional": false,
@@ -2655,7 +3079,7 @@
       {
         "id": "36800",
         "metadata": {
-          "label": "New Connection",
+          "label": "Redis",
           "description": "Ballerina Redis connector provides the capability to access Redis cache.\nThis connector lets you to perform operations to access and manipulate key-value data stored in a Redis database. \n",
           "icon": "https://bcentral-packageicons.azureedge.net/images/ballerinax_redis_3.1.0.png"
         },
@@ -2685,8 +3109,32 @@
               "label": "Connection Type",
               "description": "Connection configurations of the Redis server. This can be either a single URI or a set of parameters"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "redis:ConnectionUri|redis:ConnectionParams",
+            "types": [
+              {
+                "fieldType": "TEXT",
+                "ballerinaType": "redis:ConnectionUri",
+                "selected": false
+              },
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "redis:ConnectionParams",
+                "typeMembers": [
+                  {
+                    "type": "ConnectionParams",
+                    "packageInfo": "ballerinax:redis:3.1.0",
+                    "packageName": "redis",
+                    "kind": "RECORD_TYPE",
+                    "selected": true
+                  }
+                ],
+                "selected": true
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "redis:ConnectionUri|redis:ConnectionParams",
+                "selected": false
+              }
+            ],
             "value": "{\n    host: \"localhost\",\n    port: 6379\n}",
             "placeholder": "\"\"",
             "optional": true,
@@ -2697,31 +3145,25 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "connection"
             },
-            "typeMembers": [
-              {
-                "type": "ConnectionParams",
-                "packageInfo": "ballerinax:redis:3.1.0",
-                "packageName": "redis",
-                "kind": "RECORD_TYPE",
-                "selected": true
-              },
-              {
-                "type": "ConnectionUri",
-                "packageInfo": "ballerinax:redis:3.1.0",
-                "packageName": "redis",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              }
-            ],
-            "defaultValue": "\"\""
+            "defaultValue": "\"redis://localhost:6379\""
           },
           "connectionPooling": {
             "metadata": {
               "label": "Connection Pooling Enabled",
               "description": "Flag to indicate whether connection pooling is enabled"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "boolean",
+            "types": [
+              {
+                "fieldType": "FLAG",
+                "ballerinaType": "boolean",
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "boolean",
+                "selected": false
+              }
+            ],
             "placeholder": "false",
             "optional": true,
             "editable": true,
@@ -2731,15 +3173,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "connectionPooling"
             },
-            "typeMembers": [
-              {
-                "type": "boolean",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "false"
           },
           "isClusterConnection": {
@@ -2747,8 +3180,18 @@
               "label": "Cluster Mode Enabled",
               "description": "Flag to indicate whether the connection is a cluster connection"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "boolean",
+            "types": [
+              {
+                "fieldType": "FLAG",
+                "ballerinaType": "boolean",
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "boolean",
+                "selected": false
+              }
+            ],
             "placeholder": "false",
             "optional": true,
             "editable": true,
@@ -2758,15 +3201,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "isClusterConnection"
             },
-            "typeMembers": [
-              {
-                "type": "boolean",
-                "packageInfo": "",
-                "packageName": "",
-                "kind": "BASIC_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "false"
           },
           "secureSocket": {
@@ -2774,8 +3208,27 @@
               "label": "Secure Socket Configurations",
               "description": "Configurations related to SSL/TLS encryption"
             },
-            "valueType": "EXPRESSION",
-            "valueTypeConstraint": "redis:SecureSocket",
+            "types": [
+              {
+                "fieldType": "RECORD_MAP_EXPRESSION",
+                "ballerinaType": "redis:SecureSocket",
+                "typeMembers": [
+                  {
+                    "type": "SecureSocket",
+                    "packageInfo": "ballerinax:redis:3.1.0",
+                    "packageName": "redis",
+                    "kind": "RECORD_TYPE",
+                    "selected": false
+                  }
+                ],
+                "selected": false
+              },
+              {
+                "fieldType": "EXPRESSION",
+                "ballerinaType": "redis:SecureSocket",
+                "selected": false
+              }
+            ],
             "placeholder": "{}",
             "optional": true,
             "editable": true,
@@ -2785,15 +3238,6 @@
               "kind": "INCLUDED_FIELD",
               "originalName": "secureSocket"
             },
-            "typeMembers": [
-              {
-                "type": "SecureSocket",
-                "packageInfo": "ballerinax:redis:3.1.0",
-                "packageName": "redis",
-                "kind": "RECORD_TYPE",
-                "selected": false
-              }
-            ],
             "defaultValue": "{}"
           },
           "checkError": {
@@ -2801,7 +3245,12 @@
               "label": "Check Error",
               "description": "Terminate on error"
             },
-            "valueType": "FLAG",
+            "types": [
+              {
+                "fieldType": "FLAG",
+                "selected": true
+              }
+            ],
             "value": true,
             "optional": false,
             "editable": false,
@@ -2813,7 +3262,12 @@
               "label": "Connection Scope",
               "description": "Scope of the connection, Global or Local"
             },
-            "valueType": "ENUM",
+            "types": [
+              {
+                "fieldType": "ENUM",
+                "selected": true
+              }
+            ],
             "value": "Global",
             "optional": false,
             "editable": true,
@@ -2823,9 +3277,14 @@
           "variable": {
             "metadata": {
               "label": "Connection Name",
-              "description": "Name of the variable"
+              "description": "Name of the connection"
             },
-            "valueType": "IDENTIFIER",
+            "types": [
+              {
+                "fieldType": "IDENTIFIER",
+                "selected": true
+              }
+            ],
             "value": "redisClient",
             "optional": false,
             "editable": false,
@@ -2850,7 +3309,12 @@
               "label": "Connection Type",
               "description": "Type of the variable"
             },
-            "valueType": "TYPE",
+            "types": [
+              {
+                "fieldType": "TYPE",
+                "selected": true
+              }
+            ],
             "value": "redis:Client",
             "placeholder": "var",
             "optional": false,

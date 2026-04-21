@@ -37,7 +37,7 @@
         "displayName": "bank",
         "typeName": "Bank",
         "kind": "record",
-        "category": "variable",
+        "category": "local-variable",
         "focusExpression": "banks",
         "ref": "1372568104"
       },
@@ -54,7 +54,7 @@
         "displayName": "banks",
         "typeName": "Bank[]",
         "kind": "array",
-        "category": "variable",
+        "category": "local-variable",
         "ref": "668760670"
       },
       {
@@ -70,7 +70,7 @@
         "displayName": "userInfo",
         "typeName": "UserInfo[]",
         "kind": "array",
-        "category": "variable",
+        "category": "local-variable",
         "ref": "-481592369"
       },
       {
@@ -79,8 +79,10 @@
         "displayName": "info",
         "typeName": "UserInfo",
         "kind": "record",
+        "category": "local-variable",
         "focusExpression": "bank.userInfo",
-        "ref": "1889977605"
+        "ref": "1889977605",
+        "isIterationVariable": true
       }
     ],
     "output": {
@@ -106,7 +108,10 @@
         ],
         "expression": "",
         "diagnostics": [
-          "missing identifier"
+          {
+            "code": "BCE0400",
+            "message": "missing identifier"
+          }
         ],
         "elements": [],
         "isQueryExpression": false,
@@ -224,6 +229,7 @@
         "typeName": "UserInfo",
         "kind": "record"
       }
-    }
+    },
+    "hasInvalidOutput": false
   }
 }

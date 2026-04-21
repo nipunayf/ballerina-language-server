@@ -32,7 +32,12 @@
           "label": "Type name",
           "description": "Unique name to identify the type"
         },
-        "valueType": "IDENTIFIER",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
         "value": "/graphql2",
         "optional": false,
         "editable": false,
@@ -44,7 +49,12 @@
           "label": "Type Qualifiers",
           "description": "Qualifiers of the type"
         },
-        "valueType": "MULTIPLE_SELECT",
+        "types": [
+          {
+            "fieldType": "MULTIPLE_SELECT",
+            "selected": true
+          }
+        ],
         "value": [],
         "optional": true,
         "editable": true,
@@ -56,7 +66,12 @@
           "label": "readonly",
           "description": "Is this readonly"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": "false",
         "optional": true,
         "editable": true,
@@ -68,7 +83,12 @@
           "label": "Is array type",
           "description": "Is this type an array or list value"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": "false",
         "optional": true,
         "editable": true,
@@ -80,7 +100,12 @@
           "label": "Size of the array",
           "description": "Array dimensions"
         },
-        "valueType": "STRING",
+        "types": [
+          {
+            "fieldType": "TEXT",
+            "selected": true
+          }
+        ],
         "value": "",
         "optional": false,
         "editable": false,
@@ -110,7 +135,12 @@
               "label": "private",
               "description": "Is this private"
             },
-            "valueType": "FLAG",
+            "types": [
+              {
+                "fieldType": "FLAG",
+                "selected": true
+              }
+            ],
             "value": "false",
             "optional": true,
             "editable": true,
@@ -120,9 +150,14 @@
           "isPublic": {
             "metadata": {
               "label": "public",
-              "description": "Is this public"
+              "description": "Make visible across the project"
             },
-            "valueType": "FLAG",
+            "types": [
+              {
+                "fieldType": "FLAG",
+                "selected": true
+              }
+            ],
             "value": "false",
             "optional": true,
             "editable": true,
@@ -134,7 +169,12 @@
               "label": "isolated",
               "description": "Is this isolated"
             },
-            "valueType": "FLAG",
+            "types": [
+              {
+                "fieldType": "FLAG",
+                "selected": true
+              }
+            ],
             "value": "false",
             "optional": true,
             "editable": true,
@@ -163,7 +203,12 @@
               "label": "private",
               "description": "Is this private"
             },
-            "valueType": "FLAG",
+            "types": [
+              {
+                "fieldType": "FLAG",
+                "selected": true
+              }
+            ],
             "value": "false",
             "optional": true,
             "editable": true,
@@ -173,9 +218,14 @@
           "isPublic": {
             "metadata": {
               "label": "public",
-              "description": "Is this public"
+              "description": "Make visible across the project"
             },
-            "valueType": "FLAG",
+            "types": [
+              {
+                "fieldType": "FLAG",
+                "selected": true
+              }
+            ],
             "value": "false",
             "optional": true,
             "editable": true,
@@ -187,7 +237,12 @@
               "label": "isolated",
               "description": "Is this isolated"
             },
-            "valueType": "FLAG",
+            "types": [
+              {
+                "fieldType": "FLAG",
+                "selected": true
+              }
+            ],
             "value": "false",
             "optional": true,
             "editable": true,
@@ -207,10 +262,15 @@
               "UserName"
             ],
             "type": "UserName",
+            "typeName": "UserName",
             "name": "userName",
             "optional": false,
             "readonly": false,
-            "isGraphqlId": false
+            "isGraphqlId": false,
+            "imports": {
+              "test_pack2": "testorg/test_pack2:0.1.0"
+            },
+            "selected": false
           }
         ],
         "kind": "REMOTE",
@@ -227,7 +287,12 @@
               "label": "private",
               "description": "Is this private"
             },
-            "valueType": "FLAG",
+            "types": [
+              {
+                "fieldType": "FLAG",
+                "selected": true
+              }
+            ],
             "value": "false",
             "optional": true,
             "editable": true,
@@ -237,9 +302,14 @@
           "isPublic": {
             "metadata": {
               "label": "public",
-              "description": "Is this public"
+              "description": "Make visible across the project"
             },
-            "valueType": "FLAG",
+            "types": [
+              {
+                "fieldType": "FLAG",
+                "selected": true
+              }
+            ],
             "value": "false",
             "optional": true,
             "editable": true,
@@ -251,7 +321,12 @@
               "label": "isolated",
               "description": "Is this isolated"
             },
-            "valueType": "FLAG",
+            "types": [
+              {
+                "fieldType": "FLAG",
+                "selected": true
+              }
+            ],
             "value": "false",
             "optional": true,
             "editable": true,
@@ -291,7 +366,12 @@
             "label": "Type name",
             "description": "Unique name to identify the type"
           },
-          "valueType": "IDENTIFIER",
+          "types": [
+            {
+              "fieldType": "IDENTIFIER",
+              "selected": true
+            }
+          ],
           "value": "Address",
           "optional": false,
           "editable": false,
@@ -301,9 +381,14 @@
         "isPublic": {
           "metadata": {
             "label": "public",
-            "description": "Is this public"
+            "description": "Make visible across the project"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": "true",
           "optional": true,
           "editable": true,
@@ -315,7 +400,12 @@
             "label": "Type description",
             "description": "Detailed description about the type"
           },
-          "valueType": "STRING",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "selected": true
+            }
+          ],
           "value": "",
           "optional": false,
           "editable": true,
@@ -327,7 +417,12 @@
             "label": "Is array type",
             "description": "Is this type an array or list value"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": "false",
           "optional": true,
           "editable": true,
@@ -339,7 +434,12 @@
             "label": "Size of the array",
             "description": "Array dimensions"
           },
-          "valueType": "STRING",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "selected": true
+            }
+          ],
           "value": "",
           "optional": true,
           "editable": true,
@@ -352,34 +452,40 @@
           "kind": "FIELD",
           "refs": [],
           "type": "string",
+          "typeName": "string",
           "name": "number",
           "optional": false,
           "readonly": false,
           "isGraphqlId": false,
           "docs": "",
-          "annotationAttachments": []
+          "annotationAttachments": [],
+          "selected": false
         },
         {
           "kind": "FIELD",
           "refs": [],
           "type": "string",
+          "typeName": "string",
           "name": "street",
           "optional": false,
           "readonly": false,
           "isGraphqlId": false,
           "docs": "",
-          "annotationAttachments": []
+          "annotationAttachments": [],
+          "selected": false
         },
         {
           "kind": "FIELD",
           "refs": [],
           "type": "string",
+          "typeName": "string",
           "name": "city",
           "optional": false,
           "readonly": false,
           "isGraphqlId": false,
           "docs": "",
-          "annotationAttachments": []
+          "annotationAttachments": [],
+          "selected": false
         }
       ],
       "includes": [],
@@ -413,7 +519,12 @@
             "label": "Type name",
             "description": "Unique name to identify the type"
           },
-          "valueType": "IDENTIFIER",
+          "types": [
+            {
+              "fieldType": "IDENTIFIER",
+              "selected": true
+            }
+          ],
           "value": "UserProfile",
           "optional": false,
           "editable": false,
@@ -425,7 +536,12 @@
             "label": "Type Qualifiers",
             "description": "Qualifiers of the type"
           },
-          "valueType": "MULTIPLE_SELECT",
+          "types": [
+            {
+              "fieldType": "MULTIPLE_SELECT",
+              "selected": true
+            }
+          ],
           "value": [
             "service"
           ],
@@ -439,7 +555,12 @@
             "label": "Is array type",
             "description": "Is this type an array or list value"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": "false",
           "optional": true,
           "editable": true,
@@ -451,7 +572,12 @@
             "label": "Size of the array",
             "description": "Array dimensions"
           },
-          "valueType": "STRING",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "selected": true
+            }
+          ],
           "value": "",
           "optional": false,
           "editable": false,
@@ -461,9 +587,14 @@
         "isPublic": {
           "metadata": {
             "label": "public",
-            "description": "Is this public"
+            "description": "Make visible across the project"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": "false",
           "optional": true,
           "editable": true,
@@ -475,7 +606,12 @@
             "label": "distinct",
             "description": "Is this distinct"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": "false",
           "optional": true,
           "editable": true,
@@ -487,7 +623,12 @@
             "label": "isolated",
             "description": "Is this isolated"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": "false",
           "optional": true,
           "editable": true,
@@ -499,7 +640,12 @@
             "label": "readonly",
             "description": "Is this readonly"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": "false",
           "optional": true,
           "editable": true,
@@ -511,10 +657,21 @@
             "label": "Network Qualifier",
             "description": "Network qualifier"
           },
-          "valueType": "SINGLE_SELECT",
-          "valueTypeConstraint": [
-            "service",
-            "client"
+          "types": [
+            {
+              "fieldType": "SINGLE_SELECT",
+              "options": [
+                {
+                  "label": "service",
+                  "value": "service"
+                },
+                {
+                  "label": "client",
+                  "value": "client"
+                }
+              ],
+              "selected": true
+            }
           ],
           "value": "service",
           "optional": true,
@@ -528,21 +685,25 @@
           "kind": "FIELD",
           "refs": [],
           "type": "string",
+          "typeName": "string",
           "name": "name",
           "optional": false,
           "readonly": false,
           "isGraphqlId": false,
-          "docs": ""
+          "docs": "",
+          "selected": false
         },
         {
           "kind": "FIELD",
           "refs": [],
           "type": "int",
+          "typeName": "int",
           "name": "age",
           "optional": false,
           "readonly": false,
           "isGraphqlId": false,
-          "docs": ""
+          "docs": "",
+          "selected": false
         }
       ],
       "includes": [],
@@ -565,7 +726,12 @@
                 "label": "private",
                 "description": "Is this private"
               },
-              "valueType": "FLAG",
+              "types": [
+                {
+                  "fieldType": "FLAG",
+                  "selected": true
+                }
+              ],
               "value": "false",
               "optional": true,
               "editable": true,
@@ -575,9 +741,14 @@
             "isPublic": {
               "metadata": {
                 "label": "public",
-                "description": "Is this public"
+                "description": "Make visible across the project"
               },
-              "valueType": "FLAG",
+              "types": [
+                {
+                  "fieldType": "FLAG",
+                  "selected": true
+                }
+              ],
               "value": "false",
               "optional": true,
               "editable": true,
@@ -589,7 +760,12 @@
                 "label": "isolated",
                 "description": "Is this isolated"
               },
-              "valueType": "FLAG",
+              "types": [
+                {
+                  "fieldType": "FLAG",
+                  "selected": true
+                }
+              ],
               "value": "false",
               "optional": true,
               "editable": true,
@@ -616,7 +792,12 @@
                 "label": "private",
                 "description": "Is this private"
               },
-              "valueType": "FLAG",
+              "types": [
+                {
+                  "fieldType": "FLAG",
+                  "selected": true
+                }
+              ],
               "value": "false",
               "optional": true,
               "editable": true,
@@ -626,9 +807,14 @@
             "isPublic": {
               "metadata": {
                 "label": "public",
-                "description": "Is this public"
+                "description": "Make visible across the project"
               },
-              "valueType": "FLAG",
+              "types": [
+                {
+                  "fieldType": "FLAG",
+                  "selected": true
+                }
+              ],
               "value": "false",
               "optional": true,
               "editable": true,
@@ -640,7 +826,12 @@
                 "label": "isolated",
                 "description": "Is this isolated"
               },
-              "valueType": "FLAG",
+              "types": [
+                {
+                  "fieldType": "FLAG",
+                  "selected": true
+                }
+              ],
               "value": "false",
               "optional": true,
               "editable": true,
@@ -667,7 +858,12 @@
                 "label": "private",
                 "description": "Is this private"
               },
-              "valueType": "FLAG",
+              "types": [
+                {
+                  "fieldType": "FLAG",
+                  "selected": true
+                }
+              ],
               "value": "false",
               "optional": true,
               "editable": true,
@@ -677,9 +873,14 @@
             "isPublic": {
               "metadata": {
                 "label": "public",
-                "description": "Is this public"
+                "description": "Make visible across the project"
               },
-              "valueType": "FLAG",
+              "types": [
+                {
+                  "fieldType": "FLAG",
+                  "selected": true
+                }
+              ],
               "value": "false",
               "optional": true,
               "editable": true,
@@ -691,7 +892,12 @@
                 "label": "isolated",
                 "description": "Is this isolated"
               },
-              "valueType": "FLAG",
+              "types": [
+                {
+                  "fieldType": "FLAG",
+                  "selected": true
+                }
+              ],
               "value": "false",
               "optional": true,
               "editable": true,
@@ -730,7 +936,12 @@
             "label": "Type name",
             "description": "Unique name to identify the type"
           },
-          "valueType": "IDENTIFIER",
+          "types": [
+            {
+              "fieldType": "IDENTIFIER",
+              "selected": true
+            }
+          ],
           "value": "AbstractProfile",
           "optional": false,
           "editable": false,
@@ -740,9 +951,14 @@
         "isPublic": {
           "metadata": {
             "label": "public",
-            "description": "Is this public"
+            "description": "Make visible across the project"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": "true",
           "optional": true,
           "editable": true,
@@ -754,7 +970,12 @@
             "label": "Type description",
             "description": "Detailed description about the type"
           },
-          "valueType": "STRING",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "selected": true
+            }
+          ],
           "value": "",
           "optional": false,
           "editable": true,
@@ -766,7 +987,12 @@
             "label": "Is array type",
             "description": "Is this type an array or list value"
           },
-          "valueType": "FLAG",
+          "types": [
+            {
+              "fieldType": "FLAG",
+              "selected": true
+            }
+          ],
           "value": "false",
           "optional": true,
           "editable": true,
@@ -778,7 +1004,12 @@
             "label": "Size of the array",
             "description": "Array dimensions"
           },
-          "valueType": "STRING",
+          "types": [
+            {
+              "fieldType": "TEXT",
+              "selected": true
+            }
+          ],
           "value": "",
           "optional": true,
           "editable": true,
@@ -791,23 +1022,27 @@
           "kind": "FIELD",
           "refs": [],
           "type": "string",
+          "typeName": "string",
           "name": "name",
           "optional": false,
           "readonly": false,
           "isGraphqlId": false,
           "docs": "",
-          "annotationAttachments": []
+          "annotationAttachments": [],
+          "selected": false
         },
         {
           "kind": "FIELD",
           "refs": [],
           "type": "int",
+          "typeName": "int",
           "name": "age",
           "optional": false,
           "readonly": false,
           "isGraphqlId": false,
           "docs": "",
-          "annotationAttachments": []
+          "annotationAttachments": [],
+          "selected": false
         },
         {
           "kind": "FIELD",
@@ -815,12 +1050,17 @@
             "Address"
           ],
           "type": "Address",
+          "typeName": "Address",
           "name": "address",
           "optional": false,
           "readonly": false,
           "isGraphqlId": false,
           "docs": "",
-          "annotationAttachments": []
+          "annotationAttachments": [],
+          "imports": {
+            "test_pack2": "testorg/test_pack2:0.1.0"
+          },
+          "selected": false
         }
       ],
       "includes": [],

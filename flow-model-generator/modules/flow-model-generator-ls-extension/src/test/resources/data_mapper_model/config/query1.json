@@ -30,7 +30,7 @@
         "displayName": "u",
         "typeName": "User",
         "kind": "record",
-        "category": "variable",
+        "category": "local-variable",
         "ref": "1373151159"
       },
       {
@@ -38,7 +38,9 @@
         "displayName": "secondaryPhonesItem",
         "typeName": "string",
         "kind": "string",
-        "focusExpression": "u.info.secondaryPhones"
+        "category": "local-variable",
+        "focusExpression": "u.info.secondaryPhones",
+        "isIterationVariable": true
       }
     ],
     "output": {
@@ -156,6 +158,7 @@
         "typeName": "User",
         "kind": "record"
       }
-    }
+    },
+    "hasInvalidOutput": false
   }
 }

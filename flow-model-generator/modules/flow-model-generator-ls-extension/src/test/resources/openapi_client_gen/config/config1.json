@@ -21,7 +21,7 @@
   "output": {
     "id": "31",
     "metadata": {
-      "label": "New Connection",
+      "label": "Mod1",
       "description": "",
       "icon": "https://bcentral-packageicons.azureedge.net/images/oas_client1_null.png"
     },
@@ -42,8 +42,27 @@
           "label": "Config",
           "description": "The configurations to be used when initializing the `connector` "
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "mod1:ConnectionConfig",
+        "types": [
+          {
+            "fieldType": "RECORD_MAP_EXPRESSION",
+            "ballerinaType": "mod1:ConnectionConfig",
+            "typeMembers": [
+              {
+                "type": "ConnectionConfig",
+                "packageInfo": "oas:client1.mod1:0.1.0",
+                "packageName": "client1",
+                "kind": "RECORD_TYPE",
+                "selected": false
+              }
+            ],
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "mod1:ConnectionConfig",
+            "selected": false
+          }
+        ],
         "placeholder": "{}",
         "optional": true,
         "editable": true,
@@ -53,15 +72,6 @@
           "kind": "DEFAULTABLE",
           "originalName": "config"
         },
-        "typeMembers": [
-          {
-            "type": "ConnectionConfig",
-            "packageInfo": "oas:client1.mod1:0.1.0",
-            "packageName": "client1",
-            "kind": "RECORD_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "{}"
       },
       "serviceUrl": {
@@ -69,8 +79,18 @@
           "label": "Service Url",
           "description": "URL of the target service "
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "string",
+        "types": [
+          {
+            "fieldType": "TEXT",
+            "ballerinaType": "string",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "string",
+            "selected": false
+          }
+        ],
         "placeholder": "\"\"",
         "optional": true,
         "editable": true,
@@ -80,15 +100,6 @@
           "kind": "DEFAULTABLE",
           "originalName": "serviceUrl"
         },
-        "typeMembers": [
-          {
-            "type": "string",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "\"\""
       },
       "type": {
@@ -96,7 +107,12 @@
           "label": "Result Type",
           "description": "Type of the variable"
         },
-        "valueType": "TYPE",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "selected": true
+          }
+        ],
         "value": "mod1:Client",
         "placeholder": "var",
         "optional": false,
@@ -113,7 +129,12 @@
           "label": "Connection Name",
           "description": "Name of the connection"
         },
-        "valueType": "IDENTIFIER",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
         "value": "mod1Client",
         "optional": false,
         "editable": true,
@@ -125,7 +146,12 @@
           "label": "Connection Scope",
           "description": "Scope of the connection, Global or Local"
         },
-        "valueType": "ENUM",
+        "types": [
+          {
+            "fieldType": "ENUM",
+            "selected": true
+          }
+        ],
         "value": "Global",
         "optional": false,
         "editable": true,
@@ -137,7 +163,12 @@
           "label": "Check Error",
           "description": "Terminate on error"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": true,
         "optional": false,
         "editable": false,

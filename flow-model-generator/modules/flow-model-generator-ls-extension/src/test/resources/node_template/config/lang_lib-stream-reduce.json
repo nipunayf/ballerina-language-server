@@ -36,8 +36,13 @@
           "label": "Stm",
           "description": "the stream"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "stream<(any|error), error?>",
+        "types": [
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "stream<(any|error), error?>",
+            "selected": false
+          }
+        ],
         "placeholder": "new ()",
         "optional": false,
         "editable": true,
@@ -46,24 +51,20 @@
         "codedata": {
           "kind": "REQUIRED",
           "originalName": "stm"
-        },
-        "typeMembers": [
-          {
-            "type": "Type, stream",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "STREAM_TYPE",
-            "selected": false
-          }
-        ]
+        }
       },
       "func": {
         "metadata": {
           "label": "Func",
           "description": "combining function"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "function ((any|error) accum, (any|error) val) returns (any|error)",
+        "types": [
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "function ((any|error) accum, (any|error) val) returns (any|error)",
+            "selected": false
+          }
+        ],
         "placeholder": "",
         "optional": false,
         "editable": true,
@@ -72,24 +73,20 @@
         "codedata": {
           "kind": "REQUIRED",
           "originalName": "func"
-        },
-        "typeMembers": [
-          {
-            "type": "Type1 accum, stream",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "FUNCTION_TYPE",
-            "selected": false
-          }
-        ]
+        }
       },
       "initial": {
         "metadata": {
           "label": "Initial",
           "description": "initial value for the first argument of combining parameter `func`"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "(any|error)",
+        "types": [
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "(any|error)",
+            "selected": false
+          }
+        ],
         "placeholder": "()",
         "optional": false,
         "editable": true,
@@ -98,29 +95,25 @@
         "codedata": {
           "kind": "REQUIRED",
           "originalName": "initial"
-        },
-        "typeMembers": [
-          {
-            "type": "Type1",
-            "packageInfo": "ballerina:lang.stream:0.0.0",
-            "packageName": "lang.stream",
-            "kind": "OTHER",
-            "selected": false
-          }
-        ]
+        }
       },
       "type": {
         "metadata": {
           "label": "Result Type",
           "description": "Type of the variable"
         },
-        "valueType": "TYPE",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "selected": true
+          }
+        ],
         "value": "(any|error)",
         "placeholder": "var",
         "optional": false,
         "editable": false,
         "advanced": false,
-        "hidden": false,
+        "hidden": true,
         "codedata": {}
       },
       "variable": {
@@ -128,8 +121,13 @@
           "label": "Result",
           "description": "Name of the result variable"
         },
-        "valueType": "IDENTIFIER",
-        "value": "anyError",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
+        "value": "streamType1",
         "optional": false,
         "editable": true,
         "advanced": false,
@@ -140,7 +138,12 @@
           "label": "Check Error",
           "description": "Trigger error flow"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": true,
         "optional": false,
         "editable": true,

@@ -64,7 +64,7 @@
                 "org": "ballerina",
                 "module": "ai",
                 "packageName": "ai",
-                "object": "VectorKnowledgeBase",
+                "object": "KnowledgeBase",
                 "symbol": "init",
                 "version": "1.0.0"
               },
@@ -149,19 +149,42 @@
             {
               "metadata": {
                 "label": "Agent",
-                "description": "Create new agent"
+                "description": "Create or reuse an Agent."
               },
               "codedata": {
-                "node": "AGENT_CALL",
-                "org": "ballerina",
-                "module": "ai",
-                "packageName": "ai",
-                "object": "Agent",
-                "symbol": "run"
+                "node": "AGENTS"
               },
               "enabled": true
             }
           ]
+        }
+      ]
+    },
+    {
+      "metadata": {
+        "label": "Workflow",
+        "description": "Workflow orchestration components"
+      },
+      "items": [
+        {
+          "metadata": {
+            "label": "Run Workflow",
+            "description": "Run a new workflow instance"
+          },
+          "codedata": {
+            "node": "WORKFLOW_RUN"
+          },
+          "enabled": true
+        },
+        {
+          "metadata": {
+            "label": "Send Data",
+            "description": "Send data to an existing workflow instance"
+          },
+          "codedata": {
+            "node": "SEND_DATA"
+          },
+          "enabled": true
         }
       ]
     },
@@ -182,8 +205,8 @@
         },
         {
           "metadata": {
-            "label": "Assign",
-            "description": "Assign a value to a variable"
+            "label": "Update Variable",
+            "description": "Update the value of an existing variable"
           },
           "codedata": {
             "node": "ASSIGN"

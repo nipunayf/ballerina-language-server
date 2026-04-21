@@ -37,7 +37,7 @@
         "displayName": "myTypes1",
         "typeName": "MyType[]",
         "kind": "array",
-        "category": "variable",
+        "category": "local-variable",
         "ref": "2079019383"
       },
       {
@@ -46,8 +46,10 @@
         "displayName": "x",
         "typeName": "MyType",
         "kind": "record",
+        "category": "local-variable",
         "focusExpression": "myTypes1",
-        "ref": "819315698"
+        "ref": "819315698",
+        "isIterationVariable": true
       }
     ],
     "output": {
@@ -122,6 +124,7 @@
         "typeName": "MyType",
         "kind": "record"
       }
-    }
+    },
+    "hasInvalidOutput": false
   }
 }

@@ -1,4 +1,5 @@
 {
+  "source": "empty.bal",
   "description": "Test generating template for binary data node",
   "codedata": {
     "node": "BINARY_DATA"
@@ -20,7 +21,12 @@
           "label": "Variable Name",
           "description": "Name of the variable"
         },
-        "valueType": "IDENTIFIER",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
         "value": "var1",
         "optional": false,
         "editable": true,
@@ -32,7 +38,12 @@
           "label": "Variable Type",
           "description": "Type of the variable"
         },
-        "valueType": "TYPE",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "selected": true
+          }
+        ],
         "value": "byte[]",
         "optional": false,
         "editable": true,
@@ -44,7 +55,12 @@
           "label": "Expression",
           "description": "Create new Binary Data"
         },
-        "valueType": "EXPRESSION",
+        "types": [
+          {
+            "fieldType": "EXPRESSION",
+            "selected": true
+          }
+        ],
         "value": "base64 `abcd`",
         "optional": false,
         "editable": true,

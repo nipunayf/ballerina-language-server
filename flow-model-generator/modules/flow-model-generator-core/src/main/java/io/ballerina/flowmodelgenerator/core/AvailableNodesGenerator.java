@@ -20,6 +20,8 @@ package io.ballerina.flowmodelgenerator.core;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.api.symbols.ClassSymbol;
 import io.ballerina.compiler.api.symbols.FunctionSymbol;
@@ -29,18 +31,19 @@ import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.TypeReferenceTypeSymbol;
 import io.ballerina.compiler.api.symbols.TypeSymbol;
 import io.ballerina.compiler.api.symbols.VariableSymbol;
+import io.ballerina.compiler.syntax.tree.FunctionDefinitionNode;
 import io.ballerina.compiler.syntax.tree.ModulePartNode;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.NonTerminalNode;
+import io.ballerina.compiler.syntax.tree.QualifiedNameReferenceNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.flowmodelgenerator.core.model.AvailableNode;
 import io.ballerina.flowmodelgenerator.core.model.Category;
 import io.ballerina.flowmodelgenerator.core.model.Codedata;
 import io.ballerina.flowmodelgenerator.core.model.Item;
 import io.ballerina.flowmodelgenerator.core.model.Metadata;
-import io.ballerina.flowmodelgenerator.core.model.NodeBuilder;
 import io.ballerina.flowmodelgenerator.core.model.NodeKind;
-import io.ballerina.flowmodelgenerator.core.model.node.AgentBuilder;
+import io.ballerina.flowmodelgenerator.core.model.node.AgentRunBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.ChunkerBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.DataLoaderBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.EmbeddingProviderBuilder;
@@ -48,18 +51,21 @@ import io.ballerina.flowmodelgenerator.core.model.node.KnowledgeBaseBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.ModelProviderBuilder;
 import io.ballerina.flowmodelgenerator.core.model.node.NPFunctionCall;
 import io.ballerina.flowmodelgenerator.core.model.node.VectorStoreBuilder;
+import io.ballerina.flowmodelgenerator.core.utils.ConnectorUtil;
+import io.ballerina.flowmodelgenerator.core.utils.WorkflowUtil;
 import io.ballerina.modelgenerator.commons.CommonUtils;
-import io.ballerina.modelgenerator.commons.FunctionData;
-import io.ballerina.modelgenerator.commons.FunctionDataBuilder;
 import io.ballerina.modelgenerator.commons.ModuleInfo;
+import io.ballerina.modelgenerator.commons.PackageUtil;
 import io.ballerina.projects.Document;
 import io.ballerina.projects.Package;
 import io.ballerina.tools.text.LinePosition;
 import io.ballerina.tools.text.TextRange;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -67,11 +73,17 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static io.ballerina.flowmodelgenerator.core.Constants.Ai;
-import static io.ballerina.flowmodelgenerator.core.Constants.BALLERINA;
+import static io.ballerina.flowmodelgenerator.core.Constants.Workflow;
 import static io.ballerina.flowmodelgenerator.core.Constants.NaturalFunctions;
+import static io.ballerina.modelgenerator.commons.CommonUtils.CONNECTOR_TYPE;
+import static io.ballerina.modelgenerator.commons.CommonUtils.PERSIST;
+import static io.ballerina.modelgenerator.commons.CommonUtils.PERSIST_MODEL_FILE;
+import static io.ballerina.modelgenerator.commons.CommonUtils.getPersistDatabaseIcon;
+import static io.ballerina.modelgenerator.commons.CommonUtils.getPersistModelFilePath;
+import static io.ballerina.modelgenerator.commons.CommonUtils.isAgentClass;
 import static io.ballerina.modelgenerator.commons.CommonUtils.isAiEmbeddingProvider;
 import static io.ballerina.modelgenerator.commons.CommonUtils.isAiModelProvider;
-import static io.ballerina.modelgenerator.commons.CommonUtils.isAiKnowledgeBase;
+import static io.ballerina.modelgenerator.commons.CommonUtils.isPersistClient;
 
 /**
  * Generates available nodes for a given position in the diagram.
@@ -85,24 +97,28 @@ public class AvailableNodesGenerator {
     private final Document document;
     private final Package pkg;
     private final Gson gson;
-    private static final String HTTP_MODULE = "http";
-    private static final List<String> HTTP_REMOTE_METHOD_SKIP_LIST = List.of("get", "put", "post", "head",
-            "delete", "patch", "options");
+    private final Path filePath;
     private static final String BALLERINAX = "ballerinax";
+    private static final String TEST_MODULE_PREFIX = "test";
+    private static final String TEST_CONFIG_ANNOTATION = "Config";
 
-    public AvailableNodesGenerator(SemanticModel semanticModel, Document document, Package pkg) {
+    public AvailableNodesGenerator(SemanticModel semanticModel, Document document, Package pkg, Path filePath) {
         this.rootBuilder = new Category.Builder(null).name(Category.Name.ROOT);
         this.gson = new Gson();
         this.semanticModel = semanticModel;
         this.document = document;
         this.pkg = pkg;
+        this.filePath = filePath;
     }
 
-    public JsonArray getAvailableNodes(boolean disableBallerinaAiNodes, LinePosition position) {
+    public JsonArray getAvailableNodes(boolean disableBallerinaAiNodes, LinePosition position,
+                                       Map<String, String> queryMap) {
+        boolean checkAgentToolCompatibility = queryMap != null
+                && "true".equals(queryMap.get("checkAgentToolCompatibility"));
         List<Category> connections = new ArrayList<>();
         List<Symbol> symbols = semanticModel.visibleSymbols(document, position);
         for (Symbol symbol : symbols) {
-            Optional<Category> connection = getConnection(symbol);
+            Optional<Category> connection = getConnection(symbol, checkAgentToolCompatibility);
             if (connection.isEmpty()) {
                 continue;
             }
@@ -111,14 +127,29 @@ public class AvailableNodesGenerator {
         connections.sort(Comparator.comparing(connection -> connection.metadata().label()));
         this.rootBuilder.stepIn(Category.Name.CONNECTIONS).items(new ArrayList<>(connections)).stepOut();
 
+        boolean insideTestFunction = isInsideTestFunction(position);
         List<Item> items = new ArrayList<>();
         items.addAll(getAvailableFlowNodes(position, disableBallerinaAiNodes));
         items.addAll(LocalIndexCentral.getInstance().getFunctions());
-        return gson.toJsonTree(items).getAsJsonArray();
+        if (insideTestFunction) {
+            items.addAll(LocalIndexCentral.getInstance().getTestFunctions());
+        }
+        JsonArray jsonArray = gson.toJsonTree(items).getAsJsonArray();
+
+        if (insideTestFunction) {
+            Path relativePath = pkg.project().sourceRoot().relativize(this.filePath);
+            addFilePathToNodes(jsonArray, relativePath.toString());
+        }
+
+        return jsonArray;
     }
 
     public JsonArray getAvailableNodes(LinePosition position) {
-        return getAvailableNodes(true, position);
+        return getAvailableNodes(true, position, null);
+    }
+
+    public JsonArray getAvailableAgents(LinePosition position) {
+        return this.getAvailableItemsByCategory(position, Category.Name.AGENT, this::getAgent);
     }
 
     public JsonArray getAvailableModelProviders(LinePosition position) {
@@ -163,11 +194,14 @@ public class AvailableNodesGenerator {
         NonTerminalNode nonTerminalNode = ((ModulePartNode) document.syntaxTree().rootNode()).findNode(range);
         NonTerminalNode iterationNode = nonTerminalNode;
 
+        // Check if we're inside a @workflow:Workflow function
+        boolean isInWorkflowFunction = WorkflowUtil.isInsideWorkflowFunction(this.semanticModel, nonTerminalNode);
+
         while (iterationNode != null) {
             SyntaxKind kind = iterationNode.kind();
             switch (kind) {
                 case WHILE_STATEMENT, FOREACH_STATEMENT -> {
-                    setAvailableNodesForIteratingBlock(nonTerminalNode, disableBallerinaAiNodes);
+                    setAvailableNodesForIteratingBlock(nonTerminalNode, disableBallerinaAiNodes, isInWorkflowFunction);
                     return this.rootBuilder.build().items();
                 }
                 default -> iterationNode = iterationNode.parent();
@@ -179,23 +213,84 @@ public class AvailableNodesGenerator {
             switch (kind) {
                 case IF_ELSE_STATEMENT, LOCK_STATEMENT, TRANSACTION_STATEMENT, MATCH_STATEMENT, DO_STATEMENT,
                      ON_FAIL_CLAUSE -> {
-                    setAvailableDefaultNodes(nonTerminalNode, disableBallerinaAiNodes);
+                    setAvailableDefaultNodes(nonTerminalNode, disableBallerinaAiNodes, isInWorkflowFunction);
                     return this.rootBuilder.build().items();
                 }
                 default -> nonTerminalNode = nonTerminalNode.parent();
             }
         }
-        setDefaultNodes(disableBallerinaAiNodes);
+        setDefaultNodes(disableBallerinaAiNodes, isInWorkflowFunction);
         return this.rootBuilder.build().items();
     }
 
-    private void setAvailableDefaultNodes(NonTerminalNode node, boolean disableBallerinaAiNodes) {
-        setDefaultNodes(disableBallerinaAiNodes);
+    private boolean isInsideTestFunction(LinePosition cursorPosition) {
+        return isInsideTestFunction(this.document, cursorPosition);
+    }
+
+    public static boolean isInsideTestFunction(Document document, LinePosition cursorPosition) {
+        int txtPos;
+        try {
+            txtPos = document.textDocument().textPositionFrom(cursorPosition);
+        } catch (Exception e) {
+            return false;
+        }
+        TextRange range = TextRange.from(txtPos, 0);
+        NonTerminalNode node = ((ModulePartNode) document.syntaxTree().rootNode()).findNode(range);
+        while (node != null) {
+            if (node.kind() == SyntaxKind.FUNCTION_DEFINITION) {
+                FunctionDefinitionNode functionDef = (FunctionDefinitionNode) node;
+                boolean isTest = functionDef.metadata().map(metadataNode ->
+                        metadataNode.annotations().stream().anyMatch(annotationNode -> {
+                            Node annotRef = annotationNode.annotReference();
+                            if (annotRef.kind() == SyntaxKind.QUALIFIED_NAME_REFERENCE) {
+                                QualifiedNameReferenceNode qualifiedRef = (QualifiedNameReferenceNode) annotRef;
+                                return TEST_MODULE_PREFIX.equals(qualifiedRef.modulePrefix().text()) &&
+                                        TEST_CONFIG_ANNOTATION.equals(qualifiedRef.identifier().text());
+                            }
+                            return false;
+                        })
+                ).orElse(false);
+                if (isTest) {
+                    return true;
+                }
+            }
+            node = node.parent();
+        }
+        return false;
+    }
+
+    public static void addFilePathToNodes(JsonArray items, String filePathStr) {
+        for (JsonElement item : items) {
+            if (!item.isJsonObject()) {
+                continue;
+            }
+            JsonObject obj = item.getAsJsonObject();
+            if (obj.has("codedata")) {
+                JsonObject codedata = obj.getAsJsonObject("codedata");
+                JsonObject data;
+                if (codedata.has("data") && codedata.get("data").isJsonObject()) {
+                    data = codedata.getAsJsonObject("data");
+                } else {
+                    data = new JsonObject();
+                    codedata.add("data", data);
+                }
+                data.addProperty(Constants.FILE_PATH_KEY, filePathStr);
+            }
+            if (obj.has("items") && obj.get("items").isJsonArray()) {
+                addFilePathToNodes(obj.getAsJsonArray("items"), filePathStr);
+            }
+        }
+    }
+
+    private void setAvailableDefaultNodes(NonTerminalNode node, boolean disableBallerinaAiNodes,
+                                          boolean isInWorkflowFunction) {
+        setDefaultNodes(disableBallerinaAiNodes, isInWorkflowFunction);
         setStopNode(node);
     }
 
-    private void setAvailableNodesForIteratingBlock(NonTerminalNode node, boolean disableBallerinaAiNodes) {
-        setDefaultNodes(disableBallerinaAiNodes);
+    private void setAvailableNodesForIteratingBlock(NonTerminalNode node, boolean disableBallerinaAiNodes,
+                                                     boolean isInWorkflowFunction) {
+        setDefaultNodes(disableBallerinaAiNodes, isInWorkflowFunction);
         setStopNode(node);
         this.rootBuilder.stepIn(Category.Name.CONTROL)
                 .node(NodeKind.BREAK)
@@ -203,9 +298,13 @@ public class AvailableNodesGenerator {
                 .stepOut();
     }
 
-    private void setDefaultNodes(boolean disableBallerinaAiNodes) {
+    private void setDefaultNodes(boolean disableBallerinaAiNodes, boolean isInWorkflowFunction) {
         this.rootBuilder.stepIn(Category.Name.AI)
                 .items(getAiNodes(disableBallerinaAiNodes))
+                .stepOut();
+
+        this.rootBuilder.stepIn(Category.Name.WORKFLOW)
+                .items(getWorkflowNodes(isInWorkflowFunction))
                 .stepOut();
 
         AvailableNode function = new AvailableNode(
@@ -315,18 +414,75 @@ public class AvailableNodesGenerator {
                 .items(List.of(knowledgeBase, dataLoaders, recursiveDocumentChunker, chunkers, augmentUserQuery,
                         vectorStore, embeddingProvider)).build();
 
-        AvailableNode agentCall = new AvailableNode(
-                new Metadata.Builder<>(null).label(AgentBuilder.LABEL)
-                        .description(AgentBuilder.DESCRIPTION).build(),
-                new Codedata.Builder<>(null).node(NodeKind.AGENT_CALL).
-                        org(disableBallerinaAiNodes ? BALLERINAX : BALLERINA).module(Ai.AI_PACKAGE)
-                        .packageName(Ai.AI_PACKAGE).symbol(Ai.AGENT_RUN_METHOD_NAME)
-                        .object(Ai.AGENT_TYPE_NAME).build(), true);
+        AvailableNode agent = new AvailableNode(
+                new Metadata.Builder<>(null).label(AgentRunBuilder.LABEL)
+                        .description(AgentRunBuilder.CATEGORY_DESCRIPTION).build(),
+                new Codedata.Builder<>(null).node(NodeKind.AGENTS).build(), true);
 
         Category agentCategory = new Category.Builder(null).name(Category.Name.AGENT)
-                .items(List.of(agentCall)).build();
+                .items(List.of(agent)).build();
 
         return List.of(directLlmCategory, ragCategory, agentCategory);
+    }
+
+    private List<Item> getWorkflowNodes(boolean isInWorkflowFunction) {
+        List<Item> workflowNodes = new ArrayList<>();
+
+        // Always available workflow orchestration nodes
+        AvailableNode runWorkflow = new AvailableNode(
+                new Metadata.Builder<>(null)
+                        .label(Workflow.RUN_LABEL)
+                        .description(Workflow.RUN_DESCRIPTION)
+                        .build(),
+                new Codedata.Builder<>(null)
+                        .node(NodeKind.WORKFLOW_RUN)
+                        .build(),
+                true
+        );
+
+        AvailableNode sendData = new AvailableNode(
+                new Metadata.Builder<>(null)
+                        .label(Workflow.SEND_DATA_LABEL)
+                        .description(Workflow.SEND_DATA_DESCRIPTION)
+                        .build(),
+                new Codedata.Builder<>(null)
+                        .node(NodeKind.SEND_DATA)
+                        .build(),
+                true
+        );
+
+        workflowNodes.add(runWorkflow);
+        workflowNodes.add(sendData);
+
+        // Only add these nodes inside @workflow:Workflow functions
+        if (isInWorkflowFunction) {
+            AvailableNode callActivity = new AvailableNode(
+                    new Metadata.Builder<>(null)
+                            .label(Workflow.CALL_ACTIVITY_LABEL)
+                            .description(Workflow.CALL_ACTIVITY_DESCRIPTION)
+                            .build(),
+                    new Codedata.Builder<>(null)
+                            .node(NodeKind.ACTIVITY_CALL)
+                            .build(),
+                    true
+            );
+
+            AvailableNode waitData = new AvailableNode(
+                    new Metadata.Builder<>(null)
+                            .label(Workflow.WAIT_DATA_LABEL)
+                            .description(Workflow.WAIT_DATA_DESCRIPTION)
+                            .build(),
+                    new Codedata.Builder<>(null)
+                            .node(NodeKind.WAIT_DATA)
+                            .build(),
+                    true
+            );
+
+            workflowNodes.add(callActivity);
+            workflowNodes.add(waitData);
+        }
+
+        return workflowNodes;
     }
 
     private void setStopNode(NonTerminalNode node) {
@@ -355,12 +511,17 @@ public class AvailableNodesGenerator {
         return typeSymbol.isEmpty() || typeSymbol.get().subtypeOf(semanticModel.types().NIL);
     }
 
-    private Optional<Category> getConnection(Symbol symbol) {
+    private Optional<Category> getConnection(Symbol symbol, boolean checkAgentToolCompatibility) {
         return getCategory(symbol, classSymbol -> classSymbol.qualifiers().contains(Qualifier.CLIENT) &&
-                !isAiModelProvider(classSymbol) && !isAiEmbeddingProvider(classSymbol));
+                !isAiModelProvider(classSymbol) && !isAiEmbeddingProvider(classSymbol), checkAgentToolCompatibility);
     }
 
     private Optional<Category> getCategory(Symbol symbol, Predicate<ClassSymbol> condition) {
+        return getCategory(symbol, condition, false);
+    }
+
+    private Optional<Category> getCategory(Symbol symbol, Predicate<ClassSymbol> condition,
+                                           boolean checkAgentToolCompatibility) {
         try {
             TypeReferenceTypeSymbol typeDescriptorSymbol;
             if (symbol instanceof VariableSymbol variableSymbol) {
@@ -375,77 +536,50 @@ public class AvailableNodesGenerator {
                 return Optional.empty();
             }
             String parentSymbolName = symbol.getName().orElseThrow();
-            String className = classSymbol.getName().orElseThrow();
             ModuleInfo moduleInfo = classSymbol.getModule()
                     .map(moduleSymbol -> ModuleInfo.from(moduleSymbol.id()))
                     .orElse(null);
 
-            FunctionDataBuilder functionDataBuilder = new FunctionDataBuilder()
-                    .parentSymbol(classSymbol)
-                    .parentSymbolType(className)
-                    .project(pkg.project())
-                    .moduleInfo(moduleInfo);
+            // Create and set the resolved package for the function
+            Optional<Package> resolvedPackage = moduleInfo != null ?
+                    PackageUtil.resolveModulePackage(moduleInfo.org(), moduleInfo.packageName(), moduleInfo.version()) :
+                    Optional.empty();
 
-            // Obtain methods of the classes
-            List<FunctionData> methodFunctionsData = functionDataBuilder.buildChildNodes();
+            Optional<String> persistIcon = isPersistClient(classSymbol, semanticModel)
+                    ? getPersistDatabaseIcon(classSymbol) : Optional.empty();
+            List<Item> methods = ConnectionActionProvider.getInstance().getActions(classSymbol, parentSymbolName,
+                    pkg.project(), semanticModel, checkAgentToolCompatibility);
 
-            List<Item> methods = new ArrayList<>();
-            for (FunctionData methodFunction : methodFunctionsData) {
-                String org = methodFunction.org();
-                String packageName = methodFunction.packageName();
-                String version = methodFunction.version();
-                boolean isHttpModule = org.equals(BALLERINA) && packageName.equals(HTTP_MODULE);
-
-                NodeBuilder nodeBuilder;
-                String label;
-                if (methodFunction.kind() == FunctionData.Kind.RESOURCE) {
-                    // TODO: Move this logic to the index
-                    if (isHttpModule && HTTP_REMOTE_METHOD_SKIP_LIST.contains(methodFunction.name())) {
-                        continue;
-                    }
-                    label = methodFunction.name() + (isHttpModule ? "" : methodFunction.resourcePath());
-                    nodeBuilder = NodeBuilder.getNodeFromKind(NodeKind.RESOURCE_ACTION_CALL);
-                } else {
-                    label = methodFunction.name();
-                    FunctionData.Kind kind = methodFunction.kind();
-                    if (kind == FunctionData.Kind.REMOTE) {
-                        nodeBuilder = NodeBuilder.getNodeFromKind(NodeKind.REMOTE_ACTION_CALL);
-                    } else if (kind == FunctionData.Kind.FUNCTION && isAiKnowledgeBase(classSymbol)) {
-                        nodeBuilder = NodeBuilder.getNodeFromKind(NodeKind.KNOWLEDGE_BASE_CALL);
-                    } else if (kind == FunctionData.Kind.FUNCTION) {
-                        nodeBuilder = NodeBuilder.getNodeFromKind(NodeKind.METHOD_CALL);
-                    } else {
-                        throw new IllegalStateException("Unexpected value: " + kind);
-                    }
-                }
-
-                Item node = nodeBuilder
-                        .metadata()
-                        .label(label)
-                        .icon(CommonUtils.generateIcon(org, packageName, version))
-                        .description(methodFunction.description())
-                        .stepOut()
-                        .codedata()
-                        .org(org)
-                        .module(moduleInfo.moduleName())
-                        .packageName(moduleInfo.packageName())
-                        .object(className)
-                        .symbol(methodFunction.name())
-                        .version(version)
-                        .parentSymbol(parentSymbolName)
-                        .resourcePath(methodFunction.resourcePath())
-                        .stepOut()
-                        .buildAvailableNode();
-                methods.add(node);
+            Metadata.Builder<?> metadataBuilder = new Metadata.Builder<>(null)
+                    .label(parentSymbolName);
+            if (isPersistClient(classSymbol, semanticModel)) {
+                persistIcon.ifPresent(metadataBuilder::icon);
+                metadataBuilder.addData(CONNECTOR_TYPE, PERSIST);
+                getPersistModelFilePath(
+                        resolvedPackage.map(p -> p.project().sourceRoot())
+                                .orElse(pkg.project().sourceRoot()),
+                        classSymbol)
+                        .ifPresent(modelFile -> metadataBuilder.addData(PERSIST_MODEL_FILE, modelFile));
+            } else if (moduleInfo != null) {
+                metadataBuilder.addData(CONNECTOR_TYPE,
+                        ConnectorUtil.getConnectionCategory(moduleInfo.moduleName()));
             }
 
-            Metadata metadata = new Metadata.Builder<>(null)
-                    .label(parentSymbolName)
-                    .build();
+            Metadata metadata = metadataBuilder.build();
             return Optional.of(new Category(metadata, methods));
         } catch (RuntimeException ignored) {
             return Optional.empty();
         }
+    }
+
+    private Optional<Category> getAgent(Symbol symbol) {
+        return getCategory(symbol, classSymbol -> {
+            try {
+                return isAgentClass(classSymbol);
+            } catch (Exception e) {
+                return false;
+            }
+        });
     }
 
     private Optional<Category> getModelProvider(Symbol symbol) {

@@ -37,8 +37,18 @@
           "label": "S",
           "description": "Source JSON string value or byte[] or byte-block-stream"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "string",
+        "types": [
+          {
+            "fieldType": "TEXT",
+            "ballerinaType": "string",
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "string",
+            "selected": false
+          }
+        ],
         "placeholder": "\"\"",
         "optional": false,
         "editable": true,
@@ -47,24 +57,34 @@
         "codedata": {
           "kind": "REQUIRED",
           "originalName": "s"
-        },
-        "typeMembers": [
-          {
-            "type": "string",
-            "packageInfo": "",
-            "packageName": "",
-            "kind": "BASIC_TYPE",
-            "selected": false
-          }
-        ]
+        }
       },
       "options": {
         "metadata": {
           "label": "Options",
           "description": "Options to be used for filtering in the projection"
         },
-        "valueType": "EXPRESSION",
-        "valueTypeConstraint": "jsondata:Options",
+        "types": [
+          {
+            "fieldType": "RECORD_MAP_EXPRESSION",
+            "ballerinaType": "jsondata:Options",
+            "typeMembers": [
+              {
+                "type": "Options",
+                "packageInfo": "ballerina:data.jsondata:1.1.0",
+                "packageName": "data.jsondata",
+                "kind": "RECORD_TYPE",
+                "selected": false
+              }
+            ],
+            "selected": false
+          },
+          {
+            "fieldType": "EXPRESSION",
+            "ballerinaType": "jsondata:Options",
+            "selected": false
+          }
+        ],
         "placeholder": "{}",
         "optional": true,
         "editable": true,
@@ -74,15 +94,6 @@
           "kind": "DEFAULTABLE",
           "originalName": "options"
         },
-        "typeMembers": [
-          {
-            "type": "Options",
-            "packageInfo": "ballerina:data.jsondata:1.1.0",
-            "packageName": "data.jsondata",
-            "kind": "RECORD_TYPE",
-            "selected": false
-          }
-        ],
         "defaultValue": "{}"
       },
       "t": {
@@ -90,8 +101,13 @@
           "label": "T",
           "description": "Target type"
         },
-        "valueType": "TYPE",
-        "valueTypeConstraint": "anydata",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "ballerinaType": "anydata",
+            "selected": false
+          }
+        ],
         "placeholder": "anydata",
         "optional": false,
         "editable": true,
@@ -108,7 +124,12 @@
           "label": "Result Type",
           "description": "Type of the variable"
         },
-        "valueType": "TYPE",
+        "types": [
+          {
+            "fieldType": "TYPE",
+            "selected": true
+          }
+        ],
         "value": "t",
         "placeholder": "var",
         "optional": false,
@@ -122,7 +143,12 @@
           "label": "Result",
           "description": "Name of the result variable"
         },
-        "valueType": "IDENTIFIER",
+        "types": [
+          {
+            "fieldType": "IDENTIFIER",
+            "selected": true
+          }
+        ],
         "value": "t",
         "optional": false,
         "editable": true,
@@ -134,7 +160,12 @@
           "label": "Check Error",
           "description": "Trigger error flow"
         },
-        "valueType": "FLAG",
+        "types": [
+          {
+            "fieldType": "FLAG",
+            "selected": true
+          }
+        ],
         "value": true,
         "optional": false,
         "editable": true,
